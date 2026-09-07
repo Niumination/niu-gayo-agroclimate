@@ -1,0 +1,17 @@
+export const LOCATIONS = [
+  { id: 'bebesan', name: 'Bebesan (Kemili)', elevation: 1250, lat: 4.6275, lon: 96.8491, type: 'Sentral Perdagangan & Pengolahan' },
+  { id: 'takengon', name: 'Takengon Kota', elevation: 1200, lat: 4.6300, lon: 96.8450, type: 'Pusat Pemerintahan & Logistik' },
+  { id: 'pegasing', name: 'Pegasing', elevation: 1300, lat: 4.5800, lon: 96.8200, type: 'Sentra Utama Kopi Arabika Gayo' },
+  { id: 'kutepanang', name: 'Kute Panang', elevation: 1450, lat: 4.6800, lon: 96.7900, type: 'Highland Specialty Coffee' },
+  { id: 'atulintang', name: 'Atu Lintang', elevation: 1400, lat: 4.4500, lon: 96.8200, type: 'Perkebunan Kopi Organik Dataran Tinggi' },
+  { id: 'jagongjeget', name: 'Jagong Jeget', elevation: 1450, lat: 4.3800, lon: 96.8000, type: 'Plato Selatan Pertanian Mandiri' },
+  { id: 'luttawar', name: 'Lut Tawar', elevation: 1200, lat: 4.6100, lon: 96.8800, type: 'Pesisir Danau & Agrowisata' },
+  { id: 'bintang', name: 'Bintang', elevation: 1210, lat: 4.5800, lon: 96.9500, type: 'Hulu DAS Peusangan' },
+  { id: 'kebayakan', name: 'Kebayakan', elevation: 1220, lat: 4.6500, lon: 96.8500, type: 'Zona Lembah & Hortikultura' },
+  { id: 'bies', name: 'Bies', elevation: 1350, lat: 4.5900, lon: 96.7800, type: 'Perkebunan Lereng Kopi' },
+  { id: 'silihnara', name: 'Silih Nara (Angkup)', elevation: 1100, lat: 4.6100, lon: 96.7200, type: 'Lembah Sungai & Perkebunan' },
+  { id: 'ketol', name: 'Ketol', elevation: 950, lat: 4.7500, lon: 96.7500, type: 'Zona Sesar Aktif & Pertanian Campuran' },
+  { id: 'celala', name: 'Celala', elevation: 1200, lat: 4.5000, lon: 96.6500, type: 'Lereng Barat Rawan Longsor' },
+  { id: 'rusipantara', name: 'Rusip Antara', elevation: 1050, lat: 4.4000, lon: 96.5500, type: 'Kawasan Hutan & Perbatasan' },
+  { id: 'linge', name: 'Linge (Isaq)', elevation: 900, lat: 4.4200, lon: 97.0200, type: 'Wilayah Sejarah & Savana Selatan' },
+]
