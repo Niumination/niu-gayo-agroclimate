@@ -7,6 +7,8 @@ import LocationRail from './components/LocationRail'
 import InstrumentPanel from './components/InstrumentPanel'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
 import DisasterWarning from './components/DisasterWarning'
+import SeasonalBanner from './components/SeasonalBanner'
+import ReportButton from './components/ReportButton'
 import HourlyForecast from './components/HourlyForecast'
 import RainChart from './components/RainChart'
 import { LOCATIONS } from './data/locations'
@@ -151,6 +153,10 @@ export default function App() {
     <>
       <InstrumentPanel current={data.current} daily={data.daily} location={selectedLocation} tr={tr} />
       <CoffeeAdvisory coffee={data.coffee} tr={tr} />
+      <SeasonalBanner seasonal={data.disaster?.seasonal} />
+      <div className="flex justify-center">
+        <ReportButton location={selectedLocation} />
+      </div>
     </>
   )
 
@@ -186,8 +192,14 @@ export default function App() {
         </div>
 
         {/* Kolom kanan: peringatan + keyakinan ensemble */}
-        <div className="col-span-3 min-w-0">
+        <div className="col-span-3 min-w-0 space-y-4">
           <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
+          {/* F7 — kalender musiman (rail bawah desktop) */}
+          <SeasonalBanner seasonal={data.disaster?.seasonal} />
+          {/* F8 — tombol lapor kejadian */}
+          <div className="flex justify-center">
+            <ReportButton location={selectedLocation} />
+          </div>
         </div>
       </div>
 
