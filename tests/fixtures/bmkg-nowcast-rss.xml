@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <?xml-stylesheet type="text/xsl" href="/cap/nowcast-rss-style.xsl"?>
+    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+        <channel>
+            <title>Peringatan Dini Cuaca BMKG</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/rss.xml</link>
+            <description>Peringatan Dini Cuaca dari BMKG (Badan Meteorologi, Klimatologi, dan Geofisika)</description>
+            <atom:link href="https://www.bmkg.go.id/alerts/nowcast/id/rss.xml" rel="self" type="application/rss+xml"/>
+            <language>id</language>
+            <copyright>public domain</copyright>
+            <pubDate>Sat, 03 Oct 2026 15:45:33 +0000</pubDate>
+            <lastBuildDate>Sat, 03 Oct 2026 15:45:33 +0000</lastBuildDate>
+            <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+            
+        <item>
+            <title>Hujan Lebat disertai Petir di Sumatera Barat</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/CSB20261003006_alert.xml</link>
+            <description>Hujan lebat disertai petir akan terjadi pada 03 October 2026, 22:30 WIB di sebagian wilayah Sumatera Barat, khususnya di BUKIT SUNDI, BUNGUS TELUK KABUNG, IX KOTO SUNGAI LASI, KAPUR IX, KINALI, KOTO XI TARUSAN, KUBUNG, LUBUK BEGALUNG, LUBUK KILANGAN, LUBUK SIKARAH, LUHAK NAN DUO, PADANG BARAT, PADANG SELATAN, PADANG TIMUR, PANGKALAN KOTO BARU, PASAMAN, PAYUNG SEKAKI, PELEMBAYAN, RANAH PESISIR, TANJUNG HARAPAN, X KOTO DIATAS.
+ Kondisi ini berpotensi menimbulkan dampak berupa jarak pandang berkurang, angin kencang, dan banjir lokal.
+ Masyarakat dihimbau untuk tetap waspada, mengurangi aktivitas di luar ruangan, serta mengambil langkah-langkah pencegahan yang diperlukan guna menjaga keselamatan.
+ Kondisi diperkirakan dapat berlangsung hingga 04 October 2026, 00:30 WIB.</description>
+            <author>cuaca.ekstrem@bmkg.go.id (BMKG)</author>
+            <category>Met</category>
+            <guid isPermaLink="false">2.49.0.1.360.0.2026.10.03.15.13.006</guid>
+            <pubDate>Sat, 03 Oct 2026 22:15:00 +0700</pubDate>
+        </item>
+
+        <item>
+            <title>Hujan Lebat disertai Petir di Sumatera Selatan</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/CSS20261003008_alert.xml</link>
+            <description>Hujan lebat disertai petir akan terjadi pada 03 October 2026, 22:10 WIB di sebagian wilayah Sumatera Selatan, khususnya di BAYUNG LENCIR, BTS. ULU, JARAI, KIKIM SELATAN, LINTANG KANAN, MEKAKAU ILIR, MUARA KELINGI, MUARA PINANG, MUARAPAYANG, PAGAR ALAM SELATAN, PAGAR ALAM UTARA, PENDOPO, PULAU BERINGIN, SALING, SANGA DESA, SUKA KARYA, SUKAMERINDU, TANJUNGSAKTI PUMU, TIANG PUMPUNG KEPUNGUT, TUAH NEGERI, TUNGKAL JAYA.
+ Kondisi ini berpotensi menimbulkan dampak berupa jarak pandang berkurang, angin kencang, dan banjir lokal.
+ Masyarakat dihimbau untuk tetap waspada, mengurangi aktivitas di luar ruangan, serta mengambil langkah-langkah pencegahan yang diperlukan guna menjaga keselamatan.
+ Kondisi diperkirakan dapat berlangsung hingga 04 October 2026, 00:30 WIB.</description>
+            <author>cuaca.ekstrem@bmkg.go.id (BMKG)</author>
+            <category>Met</category>
+            <guid isPermaLink="false">2.49.0.1.360.0.2026.10.03.15.16.008</guid>
+            <pubDate>Sat, 03 Oct 2026 21:50:00 +0700</pubDate>
+        </item>
+
+        <item>
+            <title>Hujan Lebat disertai Petir di Bengkulu</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/CBK20261003005_alert.xml</link>
+            <description>Hujan lebat disertai petir akan terjadi pada 03 October 2026, 21:05 WIB di sebagian wilayah Bengkulu, khususnya di KAUR SELATAN, KOTA MUKOMUKO, MAJE, NASAL, TETAP.
+ Kondisi ini berpotensi menimbulkan dampak berupa jarak pandang berkurang, angin kencang, dan banjir lokal.
+ Masyarakat dihimbau untuk tetap waspada, mengurangi aktivitas di luar ruangan, serta mengambil langkah-langkah pencegahan yang diperlukan guna menjaga keselamatan.
+ Kondisi diperkirakan dapat berlangsung hingga 04 October 2026, 01:00 WIB.</description>
+            <author>cuaca.ekstrem@bmkg.go.id (BMKG)</author>
+            <category>Met</category>
+            <guid isPermaLink="false">2.49.0.1.360.0.2026.10.03.15.17.005</guid>
+            <pubDate>Sat, 03 Oct 2026 20:55:00 +0700</pubDate>
+        </item>
+
+        <item>
+            <title>Hujan Lebat disertai Petir di Riau</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/CRU20261003007_alert.xml</link>
+            <description>Hujan lebat disertai petir akan terjadi pada 03 October 2026, 21:00 WIB di sebagian wilayah Riau, khususnya di BUKIT RAYA, BUNUT, DAYUN, KABUN, KAMPAR UTARA, KOTO KAMPAR HULU, KUOK, LIMA PULUH, MARPOYAN DAMAI, MINAS, PANGKALAN KERINCI, PAYUNG SEKAKI, PEKANBARU KOTA, PELALAWAN, RUMBAI, RUMBAI PESISIR, SAIL, SUKAJADI, TAMPAN, TAPUNG, TELUK MERANTI, TENAYAN RAYA, TUALANG, XIII KOTO KAMPAR.
+ Kondisi ini berpotensi menimbulkan dampak berupa jarak pandang berkurang, angin kencang, dan banjir lokal.
+ Masyarakat dihimbau untuk tetap waspada, mengurangi aktivitas di luar ruangan, serta mengambil langkah-langkah pencegahan yang diperlukan guna menjaga keselamatan.
+ Kondisi diperkirakan dapat berlangsung hingga 04 October 2026, 00:00 WIB.</description>
+            <author>cuaca.ekstrem@bmkg.go.id (BMKG)</author>
+            <category>Met</category>
+            <guid isPermaLink="false">2.49.0.1.360.0.2026.10.03.15.14.007</guid>
+            <pubDate>Sat, 03 Oct 2026 20:50:00 +0700</pubDate>
+        </item>
+
+        <item>
+            <title>Hujan Lebat disertai Petir di Sumatera Barat</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/CSB20261003005_alert.xml</link>
+            <description>Hujan lebat disertai petir akan terjadi pada 03 October 2026, 20:30 WIB di sebagian wilayah Sumatera Barat, khususnya di AKABILURU, BANUHAMPU, BATANG KAPAS, BAYANG, BUKIK BARISAN, BUNGUS TELUK KABUNG, GUGUAK, GUNUNG TALANG, HARAU, HILIRAN GUMANTI, IV JURAI, IV KOTO, KAPUR IX, KOTO TANGAH, KOTO XI TARUSAN, KUBUNG, KURANJI, LAMPOSI TIGO NAGORI, LAREH SAGO HALABAN, LEMBAH GUMANTI, LINTAU BUO UTARA, LUAK, LUBUK BEGALUNG, LUBUK KILANGAN, LUBUK SIKARAH, MALALAK, MAPAT TUNGGUL, MAPAT TUNGGUL SELATAN, MATUR, MUNGKA, NANGGALO, PADANG BARAT, PADANG SELATAN, PADANG TIMUR, PADANG UTARA, PANGKALAN KOTO BARU, PANTAI CERMIN, PATAMUAN, PAUH, PAYAKUMBUH, PAYAKUMBUH BARAT, PAYAKUMBUH SELATAN, PAYAKUMBUH TIMUR, PAYAKUMBUH UTARA, RAO SELATAN, RAO UTARA, SITUJUAH LIMO NAGARI, SULIKI, SUNGAI GARINGGING, SUNGAI PUA, SUNGAYANG, TANJUNG EMAS, TANJUNG RAYA, X KOTO, X KOTO SINGKARAK.
+ Kondisi ini berpotensi menimbulkan dampak berupa jarak pandang berkurang, angin kencang, dan banjir lokal.
+ Masyarakat dihimbau untuk tetap waspada, mengurangi aktivitas di luar ruangan, serta mengambil langkah-langkah pencegahan yang diperlukan guna menjaga keselamatan.
+ Kondisi diperkirakan dapat berlangsung hingga 03 October 2026, 22:30 WIB.</description>
+            <author>cuaca.ekstrem@bmkg.go.id (BMKG)</author>
+            <category>Met</category>
+            <guid isPermaLink="false">2.49.0.1.360.0.2026.10.03.15.13.005</guid>
+            <pubDate>Sat, 03 Oct 2026 20:20:00 +0700</pubDate>
+        </item>
+
+        <item>
+            <title>Hujan Lebat disertai Petir di Sumatera Selatan</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/CSS20261003007_alert.xml</link>
+            <description>Hujan lebat disertai petir akan terjadi pada 03 October 2026, 20:30 WIB di sebagian wilayah Sumatera Selatan, khususnya di BABAT TOMAN, KELUANG, LALAN, MUARA KELINGI, SUNGAI LILIN, TUNGKAL ILIR, TUNGKAL JAYA.
+ Kondisi ini berpotensi menimbulkan dampak berupa jarak pandang berkurang, angin kencang, dan banjir lokal.
+ Masyarakat dihimbau untuk tetap waspada, mengurangi aktivitas di luar ruangan, serta mengambil langkah-langkah pencegahan yang diperlukan guna menjaga keselamatan.
+ Kondisi diperkirakan dapat berlangsung hingga 03 October 2026, 23:00 WIB.</description>
+            <author>cuaca.ekstrem@bmkg.go.id (BMKG)</author>
+            <category>Met</category>
+            <guid isPermaLink="false">2.49.0.1.360.0.2026.10.03.15.16.007</guid>
+            <pubDate>Sat, 03 Oct 2026 20:10:00 +0700</pubDate>
+        </item>
+
+        <item>
+            <title>Hujan Lebat disertai Petir di Kalimantan Utara</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/CKU20261003003_alert.xml</link>
+            <description>Hujan lebat disertai petir akan terjadi pada 03 October 2026, 21:12 WITA di sebagian wilayah Kalimantan Utara, khususnya di BETAYAU, KAYAN HILIR, KRAYAN, KRAYAN TENGAH, MALINAU BARAT, MALINAU SELATAN, MALINAU SELATAN HILIR, MENTARANG, MENTARANG HULU, MURUK RIAN, PESO, PUJUNGAN, SEBUKU, SEKATAK, SEMBAKUNG, SEMBAKUNG ATULAI, SESAYAP, SESAYAP HILIR, SUNGAI TUBU, TULIN ONSOI.
+ Kondisi ini berpotensi menimbulkan dampak berupa jarak pandang berkurang, angin kencang, dan banjir lokal.
+ Masyarakat dihimbau untuk tetap waspada, mengurangi aktivitas di luar ruangan, serta mengambil langkah-langkah pencegahan yang diperlukan guna menjaga keselamatan.
+ Kondisi diperkirakan dapat berlangsung hingga 04 October 2026, 00:00 WITA.</description>
+            <author>cuaca.ekstrem@bmkg.go.id (BMKG)</author>
+            <category>Met</category>
+            <guid isPermaLink="false">2.49.0.1.360.0.2026.10.03.15.65.003</guid>
+            <pubDate>Sat, 03 Oct 2026 21:00:00 +0800</pubDate>
+        </item>
+
+        <item>
+            <title>Hujan Lebat disertai Petir di Aceh</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/CAH20261003007_alert.xml</link>
+            <description>Hujan lebat disertai petir akan terjadi pada 03 October 2026, 20:10 WIB di sebagian wilayah Aceh, khususnya di ARONGAN LAMBALEK, ATU LINTANG, BAKONGAN, BAKONGAN TIMUR, BANDAR, BANDAR PUSAKA, BEBESEN, BENER KELIPAH, BEUTONG, BEUTONG ATEUH BANGGALANG, BIES, BINTANG, BIREM BAYEUN, BLANGKEJEREN, BUBON, BUKIT, CELALA, DABUN GELANG, DANAU LAUT TAWAR, DANAU PARIS, DARUL HIKMAH, DARUL MAKMUR, GAJAH PUTIH, GEUMPANG, GEUREDONG PASE, GUNUNG MERIAH, INDRA JAYA, JAGONG JEGET, JAYA, JOHAN PAHWALAN, KAWAY XVI, KEBAYAKAN, KEJURUAN MUDA, KETOL, KOTA BAHAGIA, KOTA BAHARU, KRUENG SABEE, KUALA, KUALA BARU, KUALA PESISIR, KUTE PANANG, LAUT TAWAR, LINGE, LONGKIB, MANE, MANYAK PAYED, MESIDAH, MEUREUBO, PANGA, PANTAN CUACA, PANTE CEUREUMEN, PANTON REU, PASIE RAYA, PEGASING, PENANGGALAN, PERMATA, PINING, PINTU RIME GAYO, PULAU BANYAK, PULAU BANYAK BARAT, PUTERI BETUNG, RIKIT GAIB, RUNDENG, RUSIP ANTARA, SAMATIGA, SAMPOINIET, SEKERAK, SERBAJADI, SETIA BHAKTI, SEUNAGAN, SEUNAGAN TIMUR, SILIH NARA, SIMPANG JERNIH, SIMPANG KANAN, SIMPANG KIRI, SINGKIL, SINGKIL UTARA, SINGKOHOR, SUKA MAKMUE, SUNGAI MAS, SURO MAKMUR, SYIAH UTAMA, TADU RAYA, TAMIANG HULU, TANAH LUAS, TENGGULUN, TERIPE JAYA, TEUNOM, TIMANG GAJAH, TRIPA MAKMUR, TRUMON, TRUMON TENGAH, WIH PESAM, WOYLA, WOYLA BARAT, WOYLA TIMUR.
+ Kondisi ini berpotensi menimbulkan dampak berupa jarak pandang berkurang, angin kencang, dan banjir lokal.
+ Masyarakat dihimbau untuk tetap waspada, mengurangi aktivitas di luar ruangan, serta mengambil langkah-langkah pencegahan yang diperlukan guna menjaga keselamatan.
+ Kondisi diperkirakan dapat berlangsung hingga 04 October 2026, 00:00 WIB.</description>
+            <author>cuaca.ekstrem@bmkg.go.id (BMKG)</author>
+            <category>Met</category>
+            <guid isPermaLink="false">2.49.0.1.360.0.2026.10.03.15.11.007</guid>
+            <pubDate>Sat, 03 Oct 2026 20:00:00 +0700</pubDate>
+        </item>
+
+        <item>
+            <title>Hujan Lebat disertai Petir di Sumatera Utara</title>
+            <link>https://www.bmkg.go.id/alerts/nowcast/id/CSU20261003005_alert.xml</link>
+            <description>Hujan lebat disertai petir akan terjadi pada 03 October 2026, 20:30 WIB di sebagian wilayah Sumatera Utara, khususnya di ADIAN KOTING, AEK NATAS, ANDAM DEWI, BAHOROK, BARUS UTARA, BATANG SERANGAN, BESITANG, BORBOR, GAROGA, HABINSARAN, KOLANG, KOTAPINANG, MANDUAMAS, NASSAU, ONAN GANJANG, PAGINDAR, PAKKAT, PANGARIBUAN, PARMONANGAN, PASARIBU TOBING, SARUDIK, SEI LEPAN, SIBOLGA KOTA, SILANGKITANG, SIRANDORUNG, SITAHUIS, SORKAM, SORKAM BARAT, SOSOR GADONG, TAPIAN NAULI, TORGAMBA.
+ Kondisi ini berpotensi menimbulkan dampak berupa jarak pandang berkurang, angin kencang, dan banjir lokal.
+ Masyarakat dihimbau untuk tetap waspada, mengurangi aktivitas di luar ruangan, serta mengambil langkah-langkah pencegahan yang diperlukan guna menjaga keselamatan.
+ Kondisi diperkirakan dapat berlangsung hingga 03 October 2026, 23:30 WIB.</description>
+            <author>cuaca.ekstrem@bmkg.go.id (BMKG)</author>
+            <category>Met</category>
+            <guid isPermaLink="false">2.49.0.1.360.0.2026.10.03.15.12.005</guid>
+            <pubDate>Sat, 03 Oct 2026 20:00:00 +0700</pubDate>
+        </item>
+        </channel>
+    </rss>
