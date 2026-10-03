@@ -1,7 +1,9 @@
 import React from 'react'
 
 // Grafik hujan SVG ringan (tanpa recharts) — 24 jam, batang mm/jam.
-// Props: data = [{ time: 'HH:MM', rain: number }], labelRain, labelNow (index jam sekarang)
+// Tick marks tiap 4 jam; skala penuh (tanpa min-width → tidak ada horizontal
+// scroll di mobile). Warna mengikuti token: rain/ink.
+// Props: data = [{ time: 'HH:MM', rain: number }], labelRain
 export default function RainChart({ data = [], labelRain = 'Hujan' }) {
   if (!data.length) return null
   const W = 720
@@ -15,12 +17,12 @@ export default function RainChart({ data = [], labelRain = 'Hujan' }) {
   const y = (v) => H - padB - (v / maxRain) * (H - padB - padT)
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
         aria-label={`Grafik ${labelRain} 24 jam, maksimum ${maxRain.toFixed(1)} mm/jam`}
-        className="w-full min-w-[560px]"
+        className="w-full"
       >
         {/* gridlines 25/50/75/100% */}
         {[0.25, 0.5, 0.75, 1].map((f) => (
@@ -51,27 +53,36 @@ export default function RainChart({ data = [], labelRain = 'Hujan' }) {
               width={Math.max(1.5, bw - 2)}
               height={h}
               rx="1.5"
-              className={v >= 5 ? 'fill-cyan-400' : v > 0 ? 'fill-cyan-600' : 'fill-slate-700'}
+              className={v >= 5 ? 'fill-rain' : v > 0 ? 'fill-rain/70' : 'fill-ink/20'}
             >
               <title>{`${d.time} — ${v} mm`}</title>
             </rect>
           )
         })}
-        {/* sumbu x */}
+        {/* sumbu x + tick marks tiap 4 jam */}
         <line x1={padL} x2={W - 4} y1={y(0)} y2={y(0)} stroke="currentColor" strokeOpacity="0.3" />
         {data.map((d, i) =>
           i % 4 === 0 ? (
-            <text
-              key={i}
-              x={padL + i * bw + bw / 2}
-              y={H - 6}
-              textAnchor="middle"
-              fontSize="9"
-              fill="currentColor"
-              opacity="0.6"
-            >
-              {d.time}
-            </text>
+            <g key={i}>
+              <line
+                x1={padL + i * bw + bw / 2}
+                x2={padL + i * bw + bw / 2}
+                y1={y(0)}
+                y2={y(0) + 4}
+                stroke="currentColor"
+                strokeOpacity="0.4"
+              />
+              <text
+                x={padL + i * bw + bw / 2}
+                y={H - 6}
+                textAnchor="middle"
+                fontSize="9"
+                fill="currentColor"
+                opacity="0.6"
+              >
+                {d.time}
+              </text>
+            </g>
           ) : null
         )}
       </svg>

@@ -20,7 +20,7 @@ export default function LocationRail({ selectedLocation, onSelectLocation, tr })
                 type="button"
                 onClick={() => onSelectLocation(loc)}
                 aria-current={active ? 'true' : undefined}
-                className={`w-full text-left py-2.5 pr-2 flex items-baseline gap-2.5 rounded-md transition-colors ${
+                className={`w-full text-left py-3 pr-2 flex items-baseline gap-2.5 min-h-[44px] rounded-md transition-colors ${
                   active
                     ? 'text-leaf-deep dark:text-leaf-soft'
                     : 'text-ink/75 dark:text-mist/70 hover:text-ink dark:hover:text-mist'

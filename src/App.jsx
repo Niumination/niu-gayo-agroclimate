@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import Navbar from './components/Navbar'
-import DistrictSelector from './components/DistrictSelector'
-import MetricCard from './components/MetricCard'
+import AppBar from './components/AppBar'
+import DesktopHeader from './components/DesktopHeader'
+import BottomNav from './components/BottomNav'
+import MobileTabShell from './components/MobileTabShell'
+import LocationRail from './components/LocationRail'
+import InstrumentPanel from './components/InstrumentPanel'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
 import DisasterWarning from './components/DisasterWarning'
 import HourlyForecast from './components/HourlyForecast'
@@ -11,8 +14,11 @@ import { getAgroClimateData } from './services/weatherService'
 import { t } from './i18n/messages'
 import { prefs, applyTheme, effectiveTheme } from './lib/prefs'
 import { dataAge } from './lib/dataAge'
+import { useBreakpoint } from './lib/useBreakpoint'
 
 export default function App() {
+  const isDesktop = useBreakpoint()
+
   // Persistensi wilayah terpilih (localStorage)
   const [selectedLocation, setSelectedLocation] = useState(() => {
     const savedId = prefs.getLocationId()
@@ -33,6 +39,9 @@ export default function App() {
   const isAuto = prefs.getTheme() == null
   useEffect(() => {
     applyTheme(theme)
+    // meta theme-color dinamis mengikuti tema
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#1A1512' : '#FAF7F2')
   }, [theme])
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: light)')
@@ -65,6 +74,9 @@ export default function App() {
     }
   }, [])
 
+  // Tab mobile (state, bukan anchor)
+  const [tab, setTab] = useState('now')
+
   // Badge umur data
   const age = useMemo(
     () => dataAge(fetchedAt ? Date.now() - fetchedAt : null),
@@ -95,6 +107,7 @@ export default function App() {
   const onSelectLocation = (loc) => {
     prefs.setLocationId(loc.id)
     setSelectedLocation(loc)
+    if (!isDesktop) setTab('now')
   }
 
   // Data grafik hujan 24 jam (mm/jam)
@@ -103,116 +116,131 @@ export default function App() {
     return data.hourly.slice(0, 24).map((row) => ({ time: row.time, rain: row.rain }))
   }, [data])
 
-  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col">
-      <Navbar
-        lastUpdated={data?.timestamp}
-        onRefresh={() => loadData(selectedLocation)}
-        loading={loading}
-        lang={lang}
-        onLangChange={setLang}
-        theme={theme}
-        isAuto={isAuto}
-        onToggleTheme={cycleTheme}
-        onResetTheme={resetTheme}
-        age={age}
-        tr={tr}
-      />
+  const headerProps = {
+    lastUpdated: data?.timestamp,
+    onRefresh: () => loadData(selectedLocation),
+    loading,
+    lang,
+    onLangChange: setLang,
+    theme,
+    isAuto,
+    onToggleTheme: cycleTheme,
+    onResetTheme: resetTheme,
+    age,
+    offline,
+    tr,
+  }
 
-      {offline && (
+  const rainPanel = data && (
+    <section
+      aria-label={tr('rainChart')}
+      className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
+    >
+      <div className="pb-3">
+        <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">{tr('rainChart')}</h2>
+        <p className="text-[13px] text-ink/55 dark:text-mist/50 mt-0.5">{tr('rainChartSub')}</p>
+      </div>
+      <div className="pt-3 border-t border-ink/10 dark:border-mist/10">
+        <RainChart data={rainSeries} labelRain={tr('rain')} />
+      </div>
+    </section>
+  )
+
+  /* ---------- Konten per tab mobile ---------- */
+  const mobileNow = data && (
+    <>
+      <InstrumentPanel current={data.current} daily={data.daily} location={selectedLocation} tr={tr} />
+      <CoffeeAdvisory coffee={data.coffee} tr={tr} />
+    </>
+  )
+
+  const mobileForecast = data && (
+    <>
+      {rainPanel}
+      <HourlyForecast hourly={data.hourly} tr={tr} variant="mobile" />
+    </>
+  )
+
+  const mobileRisk = data && (
+    <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
+  )
+
+  const mobileLocations = (
+    <LocationRail selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} tr={tr} />
+  )
+
+  /* ---------- Layout desktop ---------- */
+  const desktopLayout = data && (
+    <div className="max-w-shell mx-auto px-8 py-6 anim-enter">
+      {/* Grid editorial asimetris 12 kolom */}
+      <div className="grid grid-cols-12 gap-8">
+        {/* Rail kiri: indeks 15 sentra */}
+        <aside className="col-span-3 min-w-0">
+          <LocationRail selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} tr={tr} />
+        </aside>
+
+        {/* Kolom tengah: instrumen besar + panduan kopi */}
+        <div className="col-span-6 min-w-0 space-y-6">
+          <InstrumentPanel current={data.current} daily={data.daily} location={selectedLocation} tr={tr} />
+          <CoffeeAdvisory coffee={data.coffee} tr={tr} />
+        </div>
+
+        {/* Kolom kanan: peringatan + keyakinan ensemble */}
+        <div className="col-span-3 min-w-0">
+          <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
+        </div>
+      </div>
+
+      {/* Baris bawah lebar penuh, dipisah hairline */}
+      <div className="mt-8 pt-6 border-t border-ink/10 dark:border-mist/10 grid grid-cols-12 gap-8">
+        <div className="col-span-7 min-w-0">{rainPanel}</div>
+        <div className="col-span-5 min-w-0">
+          <HourlyForecast hourly={data.hourly} tr={tr} variant="desktop" />
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {isDesktop ? (
+        <DesktopHeader {...headerProps} />
+      ) : (
+        <AppBar selectedLocation={selectedLocation} {...headerProps} />
+      )}
+
+      {error && (
         <div
-          role="status"
-          className="bg-amber-500/15 border-b border-amber-500/40 text-amber-700 dark:text-amber-300 px-4 py-2 text-xs text-center font-medium"
+          role="alert"
+          className="mx-4 mt-4 border border-cherry/30 bg-cherry/5 text-cherry-deep dark:text-cherry-soft p-4 rounded-card text-[13px]"
         >
-          {tr('offlineBanner')}
+          {error}
         </div>
       )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <DistrictSelector selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} tr={tr} />
+      {loading && !data && (
+        <p role="status" className="flex-1 grid place-items-center text-[13px] text-ink/50 dark:text-mist/50 py-16">
+          {tr('refreshing')}
+        </p>
+      )}
 
-        {error && (
-          <div
-            role="alert"
-            className="bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 p-4 rounded-xl text-sm"
-          >
-            {error}
-          </div>
-        )}
+      {isDesktop ? (
+        <main className="flex-1 w-full anim-enter">{desktopLayout}</main>
+      ) : (
+        <>
+          <main className="flex-1 w-full">
+            <MobileTabShell active={tab}>
+              {tab === 'now' && mobileNow}
+              {tab === 'forecast' && mobileForecast}
+              {tab === 'risk' && mobileRisk}
+              {tab === 'locations' && mobileLocations}
+            </MobileTabShell>
+          </main>
+          <BottomNav active={tab} onChange={setTab} tr={tr} />
+        </>
+      )}
 
-        {data && (
-          <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <MetricCard
-                title={tr('airTemp')}
-                value={data.current.temp}
-                unit="°C"
-                subtitle={`${tr('min')} ${data.daily.minTemp}°C / ${tr('max')} ${data.daily.maxTemp}°C`}
-                badge={data.coffee.tempBadge}
-                icon="🌡️"
-              />
-              <MetricCard
-                title={tr('humidity')}
-                value={data.current.rh}
-                unit="%"
-                subtitle={tr('humiditySub')}
-                statusColor={data.current.rh > 85 ? 'text-amber-500 dark:text-amber-400' : 'text-slate-900 dark:text-slate-100'}
-                icon="💧"
-              />
-              <MetricCard
-                title={tr('rainNow')}
-                value={data.current.rain}
-                unit="mm/jam"
-                subtitle={`${tr('rainProb')} ${data.daily.rainProb}%`}
-                statusColor={data.current.rain > 5 ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-900 dark:text-slate-100'}
-                icon="🌧️"
-              />
-              <MetricCard
-                title={tr('windSpeed')}
-                value={data.current.wind}
-                unit="km/jam"
-                subtitle={tr('windSub')}
-                statusColor={data.current.wind > 20 ? 'text-amber-500 dark:text-amber-400' : 'text-slate-900 dark:text-slate-100'}
-                icon="🌬️"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <CoffeeAdvisory coffee={data.coffee} />
-              <DisasterWarning
-                disaster={data.disaster}
-                dailyRainSum={data.daily.rainSum}
-                location={selectedLocation}
-                tr={tr}
-              />
-            </div>
-
-            <div className="bg-slate-900/5 dark:bg-slate-900/70 border border-slate-300 dark:border-slate-800 rounded-xl p-5 shadow-lg">
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 mb-4">
-                <div>
-                  <h2 className="text-base font-bold">{tr('rainChart')}</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{tr('rainChartSub')}</p>
-                </div>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
-                    age.stale
-                      ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40'
-                      : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40'
-                  }`}
-                  title={age.stale ? tr('dataAgeStale') : tr('dataAgeFresh')}
-                >
-                  {tr('dataAge')}: {age.label} {age.stale ? '⚠' : '✓'}
-                </span>
-              </div>
-              <RainChart data={rainSeries} labelRain={tr('rain')} />
-            </div>
-
-            <HourlyForecast hourly={data.hourly} tr={tr} />
-          </>
-        )}
-      </main>
-
-      <footer className="border-t border-slate-200 dark:border-slate-800/80 bg-slate-100 dark:bg-slate-950 py-4 text-center text-xs text-slate-500">
+      <footer className="border-t border-ink/10 dark:border-mist/10 py-4 text-center text-[11px] text-ink/45 dark:text-mist/40">
         Niu Gayo Agro-Climate &bull; {tr('footer')}
       </footer>
     </div>
