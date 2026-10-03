@@ -14,7 +14,7 @@ export function buildForecastUrl(location) {
     longitude: String(location.lon),
     elevation: String(location.elevation ?? 0),
     models: 'ecmwf_ifs025',
-    current: 'temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,time',
+    current: 'temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m',
     hourly: 'temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,direct_normal_irradiance,leaf_wetness_probability,soil_moisture_0_to_7cm',
     daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max',
     timezone: 'Asia/Jakarta',
