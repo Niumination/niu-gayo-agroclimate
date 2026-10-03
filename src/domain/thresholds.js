@@ -56,9 +56,11 @@ export const LANDSLIDE = {
   dailyRainBahaya: 50.0,
   hourlyRainWaspada: 5.0, // mm/jam
   hourlyRainBahaya: 15.0,
-  // Bobot skor M3 (total maksimum 100)
-  rain24Max: 75,   // mm — normalisasi kontribusi hujan 24 jam (bobot 35)
-  rain72Max: 150,  // mm — normalisasi hujan 72 jam (bobot 25)
+  // Bobot skor M3 (total maksimum 100) — F2/ADR-9: antecedent 72 jam dinaikkan ke 35
+  rain24Max: 75,   // mm — normalisasi kontribusi hujan 24 jam (bobot weightRain24)
+  rain72Max: 150,  // mm — normalisasi antecedent hujan 72 jam (bobot weightAntecedent72)
+  weightRain24: 25,        // F2: 35 → 25 (bobot dipindah ke antecedent)
+  weightAntecedent72: 35,  // F2: 25 → 35 (antecedent 3 hari = prediktor terkuat)
   soilSaturation: 0.45, // m³/m³ soil_moisture_0_to_7cm dianggap jenuh (bobot 20, proporsional)
   soilDry: 0.15,        // di bawah ini tanah relatif kering (kontribusi ~0)
   intensityMax: 15,     // mm/jam puncak — normalisasi intensitas (bobot 10)

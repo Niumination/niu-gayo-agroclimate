@@ -62,13 +62,17 @@ export async function getAgroClimateData(location) {
     .reduce((a, b) => a + (b ?? 0), 0)
   const peakHourly = Math.max(0, ...(hourly.precipitation || []).slice(Math.max(0, idx0 - 23), idx0 + 1))
   const soilNow = hourly.soil_moisture_0_to_7cm?.[idx0] ?? 0
+  // F2 (ADR-9): ARI antecedent dari model (upgrade satelit IMERG menunggu Earthdata).
+  const ari = { ari24: Math.round(rain24 * 10) / 10, ari72: Math.round(rain72 * 10) / 10, source: 'model-ecmwf' }
   const ls = landslideScore({
     rain24,
     rain72,
+    ari,
     soilMoisture: soilNow,
     peakHourly,
     slopeClass: location.slopeClass || 'berbukit',
   })
+  ls.ari = ari
 
   // --- M3: indeks hujan DAS (kartu per lokasi; agregat hulu berbobot ada di /api/alerts) ---
   const das = watershedIndex([{ id: location.id, rain24: dailyRainSum }])
@@ -89,6 +93,22 @@ export async function getAgroClimateData(location) {
     }
   } catch {
     confidence = null // jangan blokir dashboard jika ensemble gagal
+  }
+
+  // --- F1 konsensus + F5 nowcast BMKG via proxy server (best-effort, gagal = null) ---
+  let consensus = null
+  let bmkgNowcast = null
+  try {
+    const base = import.meta.env.BASE_URL || '/agroclimate/'
+    const api = (p) => `${base.replace(/\/$/, '')}/api/${p}`
+    const [cRes, bRes] = await Promise.allSettled([
+      fetch(api(`consensus?location=${encodeURIComponent(location.id)}`)),
+      fetch(api('bmkg-nowcast')),
+    ])
+    if (cRes.status === 'fulfilled' && cRes.value.ok) consensus = await cRes.value.json()
+    if (bRes.status === 'fulfilled' && bRes.value.ok) bmkgNowcast = await bRes.value.json()
+  } catch {
+    // jangan blokir dashboard
   }
 
   return {
@@ -122,6 +142,9 @@ export async function getAgroClimateData(location) {
       das,
       wind: { level: wr, gust },
       confidence,
+      // F1 (ADR-8) konsensus multi-model + F5 (ADR-10) nowcast resmi BMKG
+      consensus,
+      bmkgNowcast,
       // Kompatibilitas tampilan lama
       landslideRisk: ls.level,
       landslideColor: colorForLevel(ls.level),

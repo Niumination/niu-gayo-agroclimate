@@ -41,19 +41,26 @@ export function windRisk(windSpeed, windGust = 0) {
 // ---------- M3: longsor — skor gabungan 0-100 ----------
 
 /**
- * Skor longsor = hujan 24 jam (35) + hujan 72 jam (25) + kejenuhan tanah
+ * Skor longsor (F2 / ADR-9, upgrade ARI):
+ * hujan 24 jam (25) + ANTECEDENT 72 jam — ARI bila ada (35) + kejenuhan tanah
  * antecedent (20) + intensitas jam puncak (10) + faktor lereng (10).
+ * Antecedent 3 hari adalah prediktor longsor terkuat di literatur (I-D curve &
+ * antecedent threshold) → bobotnya dinaikkan dari 25 menjadi 35 (diambil dari
+ * bobot hujan 24 jam, 35→25).
  * @param {object} p
  * @param {number} p.rain24   akumulasi hujan 24 jam (mm)
- * @param {number} p.rain72   akumulasi hujan 72 jam (mm)
+ * @param {number} p.rain72   akumulasi hujan 72 jam (mm) — dipakai bila ari tidak ada
+ * @param {{ ari24?: number, ari72?: number, source?: string }} [p.ari] ARI (server /api/alerts)
  * @param {number} p.soilMoisture antecedent soil_moisture_0_to_7cm (m³/m³)
  * @param {number} p.peakHourly intensitas hujan maksimum per jam (mm)
  * @param {'landai'|'berbukit'|'curam'} [p.slopeClass]
- * @returns {{ level: string, score: number, detail: string }}
+ * @returns {{ level: string, score: number, detail: string, antecedentSource?: string }}
  */
-export function landslideScore({ rain24 = 0, rain72 = 0, soilMoisture = 0, peakHourly = 0, slopeClass = 'berbukit' }) {
-  const rain24Pts = clamp(rain24 / LANDSLIDE.rain24Max, 0, 1) * 35
-  const rain72Pts = clamp(rain72 / LANDSLIDE.rain72Max, 0, 1) * 25
+export function landslideScore({ rain24 = 0, rain72 = 0, ari = null, soilMoisture = 0, peakHourly = 0, slopeClass = 'berbukit' }) {
+  const ante72 = ari?.ari72 != null ? ari.ari72 : rain72
+  const antecedentSource = ari?.source ?? 'model-ecmwf'
+  const rain24Pts = clamp(rain24 / LANDSLIDE.rain24Max, 0, 1) * LANDSLIDE.weightRain24
+  const rain72Pts = clamp(ante72 / LANDSLIDE.rain72Max, 0, 1) * LANDSLIDE.weightAntecedent72
   const soilPts =
     soilMoisture <= LANDSLIDE.soilDry
       ? 0
@@ -63,10 +70,10 @@ export function landslideScore({ rain24 = 0, rain72 = 0, soilMoisture = 0, peakH
   const score = Math.round(rain24Pts + rain72Pts + soilPts + intensityPts + slopePts)
 
   let level = 'Rendah'
-  let detail = `Hujan 24/72 jam: ${rain24}/${rain72} mm, tanah ${soilMoisture.toFixed(2)} m³/m³, lereng ${slopeClass}.`
+  let detail = `Hujan 24 jam: ${rain24} mm, antecedent 72 jam (${antecedentSource}): ${ante72} mm, tanah ${soilMoisture.toFixed(2)} m³/m³, lereng ${slopeClass}.`
   if (score >= LANDSLIDE.levelTinggi) level = 'Bahaya Tinggi'
   else if (score >= LANDSLIDE.levelWaspada) level = 'Waspada'
-  return { level, score, detail }
+  return { level, score, detail, antecedentSource }
 }
 
 // ---------- M3: DAS — indeks hujan hulu berbobot ----------

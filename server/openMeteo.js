@@ -1,6 +1,9 @@
 // Fetcher Open-Meteo untuk proxy server (M5).
 import { OPEN_METEO, OPEN_METEO_ENSEMBLE, WATERSHED_LOCATIONS } from './config.js'
 import { LOCATIONS } from '../src/data/locations.js'
+import { parseEnsembleMembers, accumulate1hTo24h, accumulate6hTo24h, windowExceedance, consensusLevel } from './consensus.js'
+import { fetchEcmwfEnsemble, fetchWn2Ensemble } from './ensemble.js'
+import { antecedentIndex } from './antecedent.js'
 
 const baseParams =
   'timezone=Asia%2FJakarta&models=ecmwf_ifs025&cell_selection=nearest'
@@ -94,6 +97,8 @@ export async function fetchAllAlerts(cachedGet) {
         landslide: rain24 >= 50 ? 'tinggi' : rain24 >= 25 ? 'waspada' : 'rendah',
         wind: gustMax >= 35 ? 'tinggi' : gustMax >= 20 ? 'waspada' : 'normal',
         rust: rustWindow >= 6 ? 'tinggi' : rustWindow >= 3 ? 'waspada' : 'rendah',
+        // F2 (ADR-9): antecedent rainfall index (spike IMERG → model dulu).
+        antecedent: antecedentIndex(precip, precip.length - 1),
       }
     })
   )
@@ -113,4 +118,42 @@ export async function fetchAllAlerts(cachedGet) {
   }
 }
 
-export { WATERSHED_LOCATIONS }
+/**
+ * F1 (ADR-8): konsensus multi-model untuk satu lokasi.
+ * ECMWF 50 member (hourly) + WN2 64 member (6-hourly) + BMKG nowcast (bila aktif).
+ * Fallback: WN2 gagal → lanjut ECMWF saja + degraded:true. Tidak pernah throw.
+ */
+export async function computeConsensus(loc, { bmkgAlertActive = false } = {}) {
+  const ecmwfP = { probability: 0, members: 0 }
+  const wn2P = { probability: 0, members: 0 }
+  let degraded = false
+
+  const ecmwfTask = fetchEcmwfEnsemble(loc)
+    .then((raw) => windowExceedance(accumulate1hTo24h(parseEnsembleMembers(raw)), 25))
+    .catch(() => null)
+  const wn2Task = fetchWn2Ensemble(loc)
+    .then((raw) => windowExceedance(accumulate6hTo24h(parseEnsembleMembers(raw)), 25))
+    .catch(() => null)
+
+  const [ec, wn] = await Promise.all([ecmwfTask, wn2Task])
+  if (ec) Object.assign(ecmwfP, ec)
+  else degraded = true
+  if (wn) Object.assign(wn2P, wn)
+  else degraded = true
+
+  const consensus = consensusLevel({
+    ecmwf: ecmwfP.members > 0 ? ecmwfP : {},
+    wn2: wn2P.members > 0 ? wn2P : {},
+    bmkgAlertActive,
+  })
+  return {
+    level: consensus.level,
+    votes: consensus.votes,
+    sources: consensus.sources,
+    detail: consensus.detail,
+    models: { ecmwf: ecmwfP, wn2: wn2P },
+    degraded: degraded || consensus.sources === 0,
+  }
+}
+
+export { antecedentIndex, WATERSHED_LOCATIONS }
