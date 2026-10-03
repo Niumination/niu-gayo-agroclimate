@@ -1,0 +1,39 @@
+{
+  "high_risk_48h": {
+    "description": "Basah >=6 jam berturut dengan suhu 18-25°C -> Tinggi",
+    "rolling48h": [
+      { "hour": 0, "leafWetness": 20, "temp": 20 },
+      { "hour": 1, "leafWetness": 80, "temp": 20 },
+      { "hour": 2, "leafWetness": 90, "temp": 21 },
+      { "hour": 3, "leafWetness": 95, "temp": 22 },
+      { "hour": 4, "leafWetness": 95, "temp": 23 },
+      { "hour": 5, "leafWetness": 90, "temp": 24 },
+      { "hour": 6, "leafWetness": 85, "temp": 24 },
+      { "hour": 7, "leafWetness": 80, "temp": 22 },
+      { "hour": 8, "leafWetness": 60, "temp": 20 }
+    ],
+    "expectedLevel": "Tinggi"
+  },
+  "low_risk_dry": {
+    "description": "Kering sepanjang window -> Rendah",
+    "rolling48h": [
+      { "hour": 0, "leafWetness": 10, "temp": 21 },
+      { "hour": 1, "leafWetness": 15, "temp": 22 },
+      { "hour": 2, "leafWetness": 30, "temp": 20 },
+      { "hour": 3, "leafWetness": 20, "temp": 23 }
+    ],
+    "expectedLevel": "Rendah"
+  },
+  "medium_risk_short_wet": {
+    "description": "Basah 3-5 jam saja -> Sedang",
+    "rolling48h": [
+      { "hour": 0, "leafWetness": 85, "temp": 21 },
+      { "hour": 1, "leafWetness": 90, "temp": 22 },
+      { "hour": 2, "leafWetness": 95, "temp": 23 },
+      { "hour": 3, "leafWetness": 85, "temp": 22 },
+      { "hour": 4, "leafWetness": 40, "temp": 21 },
+      { "hour": 5, "leafWetness": 30, "temp": 20 }
+    ],
+    "expectedLevel": "Sedang"
+  }
+}
