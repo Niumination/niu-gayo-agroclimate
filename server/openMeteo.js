@@ -3,7 +3,7 @@ import { OPEN_METEO, OPEN_METEO_ENSEMBLE, WATERSHED_LOCATIONS } from './config.j
 import { LOCATIONS } from '../src/data/locations.js'
 import { parseEnsembleMembers, accumulate1hTo24h, accumulate6hTo24h, windowExceedance, consensusLevel } from './consensus.js'
 import { fetchEcmwfEnsemble, fetchWn2Ensemble } from './ensemble.js'
-import { antecedentIndex } from './antecedent.js'
+import { antecedentIndex, antecedentIndexWithFallback } from './antecedent.js'
 
 const baseParams =
   'timezone=Asia%2FJakarta&models=ecmwf_ifs025&cell_selection=nearest'
@@ -97,8 +97,8 @@ export async function fetchAllAlerts(cachedGet) {
         landslide: rain24 >= 50 ? 'tinggi' : rain24 >= 25 ? 'waspada' : 'rendah',
         wind: gustMax >= 35 ? 'tinggi' : gustMax >= 20 ? 'waspada' : 'normal',
         rust: rustWindow >= 6 ? 'tinggi' : rustWindow >= 3 ? 'waspada' : 'rendah',
-        // F2 (ADR-9): antecedent rainfall index (spike IMERG → model dulu).
-        antecedent: antecedentIndex(precip, precip.length - 1),
+        // F2 (ADR-9): ARI — primer IMERG (satelit), fallback model ECMWF.
+        antecedent: await antecedentIndexWithFallback(precip, precip.length - 1, loc),
       }
     })
   )
@@ -156,4 +156,4 @@ export async function computeConsensus(loc, { bmkgAlertActive = false } = {}) {
   }
 }
 
-export { antecedentIndex, WATERSHED_LOCATIONS }
+export { antecedentIndex, antecedentIndexWithFallback, WATERSHED_LOCATIONS }

@@ -36,7 +36,7 @@ Parameter: hujan 24 jam (mm), **antecedent** hujan 72 jam — ARI bila tersedia 
 | Intensitas puncak | `/ 15 mm/jam` | 10 |
 | Lereng (`slopeClass`) | landai 0 / berbukit 5 / curam 10 | 10 |
 
-Sumber antecedent (`source`): `model-ecmwf` (akumulasi ECMWF, default) — upgrade ke satelit IMERG menunggu registrasi Earthdata (spike 2026-10-03: OPeNDAP wajib auth).
+Sumber antecedent (`source`): **`imerg`** (satelit NASA GPM IMERG Late daily, primer sejak 2026-10-04 — ARI 24j = hari terakhir, 72j = sum 3 hari, 7d = sum 7 hari; granule D-1, recency ≤ 48 jam) dengan **fallback otomatis** ke `model-ecmwf` (akumulasi hourly ECMWF) bila IMERG gagal (token Earthdata 401/expired, network, data < 3 hari) — field `fallbackReason` disertakan saat fallback. `modelAri24`/`modelAri72` tetap dihitung sebagai cross-check saat IMERG sukses.
 
 Level: skor ≥ 70 → **Bahaya Tinggi**, ≥ 40 → **Waspada**, else **Rendah**.
 Threshold lama dipertahankan: ≥ 50 mm/hari atau ≥ 15 mm/jam → Bahaya Tinggi; ≥ 25 mm/hari atau ≥ 5 mm/jam → Waspada.
