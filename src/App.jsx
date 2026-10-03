@@ -183,6 +183,7 @@ export default function App() {
                 disaster={data.disaster}
                 dailyRainSum={data.daily.rainSum}
                 location={selectedLocation}
+                tr={tr}
               />
             </div>
 
@@ -206,7 +207,7 @@ export default function App() {
               <RainChart data={rainSeries} labelRain={tr('rain')} />
             </div>
 
-            <HourlyForecast hourly={data.hourly} />
+            <HourlyForecast hourly={data.hourly} tr={tr} />
           </>
         )}
       </main>
