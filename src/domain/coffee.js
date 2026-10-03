@@ -1,10 +1,41 @@
 /**
- * S5 — Model risiko karat daun berbasis leaf wetness (fungsi murni).
- * rolling48h: array { hour, leafWetness (%), temp (°C) } terurut, maks 48 entri.
+ * Fungsi murni analisis agro-klimat kopi (tanpa className/warna — mapping warna di komponen).
+ */
+import { TEMP, RUST, DRYING } from './thresholds.js'
+
+export function tempStatus(temp) {
+  if (temp < TEMP.optimalMin) return { level: 'Dingin', desc: 'Pertumbuhan vegetative melambat' }
+  if (temp > TEMP.optimalMax) return { level: 'Panas', desc: 'Waspada kematangan ceri prematur & hama PBKo' }
+  return { level: 'Optimal', desc: 'Suhu optimal (15-24°C)' }
+}
+
+export function rustRisk(rh, temp) {
+  if (rh >= RUST.rhHigh && temp >= RUST.tempMin && temp <= RUST.tempMax) {
+    return { level: 'Tinggi', desc: 'Kombinasi RH >85% dan suhu hangat sangat kondusif untuk spora karat daun. Periksa naungan dan sanitasi kebun.' }
+  }
+  if (rh >= RUST.rhMedium) {
+    return { level: 'Sedang', desc: 'Kelembapan cukup tinggi, pantau tanaman rentan di area cekungan.' }
+  }
+  return { level: 'Rendah', desc: 'Kelembapan udara aman, sirkulasi angin memadai.' }
+}
+
+export function dryingStatus(rain, solarRad, rh) {
+  if (rain > DRYING.rainStop) {
+    return { level: 'Hujan - Tutup Terpal', desc: 'Hujan sedang turun. Segera amankan kopi ke dalam solar dryer atau tutup kubah plastik.' }
+  }
+  if (solarRad < DRYING.solarLow || rh > DRYING.rhHigh) {
+    return { level: 'Kurang Optimal', desc: 'Matahari tertutup awan tebal. Balik gabah lebih sering untuk mencegah fermentasi berlebih.' }
+  }
+  return { level: 'Sangat Baik', desc: 'Radiasi matahari kuat, tidak ada curah hujan. Penjemuran optimal di para-para.' }
+}
+
+/**
+ * S5 — Model risiko karat daun berbasis leaf wetness rolling 48 jam.
+ * rolling48h: array { leafWetness (%), temp (°C) } terurut.
  */
 export function leafWetnessRustRisk(rolling48h) {
   if (!Array.isArray(rolling48h) || rolling48h.length === 0) {
-    return { level: 'Rendah', score: 0, wetHoursInWindow: 0, description: 'Data tidak tersedia.' }
+    return { level: 'Rendah', score: 0, wetHoursInWindow: 0, longestWetStreak: 0, optimalTempHours: 0, description: 'Data tidak tersedia.' }
   }
   const window = rolling48h.slice(-48)
   let wetHoursInWindow = 0
