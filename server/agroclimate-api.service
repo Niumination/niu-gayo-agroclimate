@@ -1,0 +1,16 @@
+[Unit]
+Description=Niu Gayo Agroclimate — API proxy Open-Meteo (7455)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node %h/niumination/niu-gayo-agroclimate/server/index.js
+Environment=PORT=7455
+Environment=PROXY_TTL_MIN=10
+Environment=ENSEMBLE_TTL_MIN=30
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
