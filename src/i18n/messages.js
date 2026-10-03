@@ -56,6 +56,10 @@ export const messages = {
     errorLoad: 'Gagal memuat data',
     footer: 'Niumination Ecosystem • Kabupaten Aceh Tengah',
     disclaimer: 'Peringatan bersifat prakiraan probabilistik — verifikasi dengan kondisi lapangan.',
+    tabNow: 'Kini',
+    tabForecast: 'Ramalan',
+    tabRisk: 'Risiko',
+    tabLocations: 'Sentra',
   },
   gayo: {
     appName: 'Niu Gayo Agro-Climate',
@@ -106,6 +110,10 @@ export const messages = {
     errorLoad: 'Ko lam data [?]',
     footer: 'Niumination Ecosystem • Aceh Tengah',
     disclaimer: 'Penyarining niu prakira — periksa kene kebun [?]',
+    tabNow: 'Kini',
+    tabForecast: 'Ramalan',
+    tabRisk: 'Risiko',
+    tabLocations: 'Sentra',
   },
 }
 
