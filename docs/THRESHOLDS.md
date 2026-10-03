@@ -24,17 +24,19 @@ Referensi: jendela infeksi karat daun kopi membutuhkan basah daun berkepanjangan
 
 Model lama (RH ≥ 85% & suhu 18–25°C → Tinggi; RH ≥ 75% → Sedang) dipertahankan sebagai cross-check.
 
-## 2. Longsor — skor gabungan (M3)
+## 2. Longsor — skor gabungan (M3, diupgrade F2/ADR-9)
 
-Parameter: hujan 24/72 jam (mm), `soil_moisture_0_to_7cm` antecedent (m³/m³), intensitas puncak per jam, `slopeClass` per lokasi.
+Parameter: hujan 24 jam (mm), **antecedent** hujan 72 jam — ARI bila tersedia (mm), `soil_moisture_0_to_7cm` antecedent (m³/m³), intensitas puncak per jam, `slopeClass` per lokasi.
 
 | Komponen | Normalisasi | Bobot maks |
 |---|---|---|
-| Hujan 24 jam | `/ 75 mm` | 35 |
-| Hujan 72 jam | `/ 150 mm` | 25 |
+| Hujan 24 jam | `/ 75 mm` | **25** (F2: 35→25) |
+| Antecedent 72 jam (ARI) | `/ 150 mm` | **35** (F2: 25→35 — antecedent 3 hari = prediktor terkuat di literatur I-D curve) |
 | Kejenuhan tanah | linier 0.15–0.45 m³/m³ | 20 |
 | Intensitas puncak | `/ 15 mm/jam` | 10 |
 | Lereng (`slopeClass`) | landai 0 / berbukit 5 / curam 10 | 10 |
+
+Sumber antecedent (`source`): `model-ecmwf` (akumulasi ECMWF, default) — upgrade ke satelit IMERG menunggu registrasi Earthdata (spike 2026-10-03: OPeNDAP wajib auth).
 
 Level: skor ≥ 70 → **Bahaya Tinggi**, ≥ 40 → **Waspada**, else **Rendah**.
 Threshold lama dipertahankan: ≥ 50 mm/hari atau ≥ 15 mm/jam → Bahaya Tinggi; ≥ 25 mm/hari atau ≥ 5 mm/jam → Waspada.
