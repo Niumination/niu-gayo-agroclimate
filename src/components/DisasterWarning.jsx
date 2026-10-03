@@ -154,6 +154,38 @@ export default function DisasterWarning({ disaster, dailyRainSum, location }) {
           )}
         </Row>
 
+        {/* F4 — riwayat kejadian terdokumentasi per sentra */}
+        {disaster.disasterHistory?.count > 0 && (
+          <div className="py-4">
+            <h3 className="text-[13px] font-medium text-ink/70 dark:text-mist/60">Riwayat kejadian</h3>
+            <p className="mt-1.5 text-[11px] text-ink/55 dark:text-mist/45">
+              {disaster.disasterHistory.count} kejadian tercatat · terakhir:{' '}
+              <span className="font-medium text-ink/75 dark:text-mist/70">
+                {disaster.disasterHistory.lastEvents[0].type}{' '}
+                {disaster.disasterHistory.lastEvents[0].date.slice(0, 4)}
+              </span>
+            </p>
+          </div>
+        )}
+
+        {/* F8 — laporan warga 7 hari terakhir */}
+        {disaster.communityReports?.count > 0 && (
+          <div className="py-4">
+            <h3 className="text-[13px] font-medium text-ink/70 dark:text-mist/60">Laporan warga</h3>
+            <p className="mt-1.5 text-[11px] text-ink/55 dark:text-mist/45">
+              {disaster.communityReports.count} laporan 7 hari terakhir
+              {disaster.communityReports.reports[0] && (
+                <>
+                  {' '}· terakhir:{' '}
+                  <span className="font-medium text-ink/75 dark:text-mist/70">
+                    {disaster.communityReports.reports[0].type}
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+        )}
+
         <Row label="Indeks Hujan DAS Peusangan" item={disaster.das}>
           <p className="mt-1.5 text-[11px] leading-relaxed text-ink/55 dark:text-mist/45">
             {disaster.das?.detail || 'Rata-rata berbobot lokasi hulu (Bintang, Lut Tawar, Kebayakan, Silih Nara)'}

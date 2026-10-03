@@ -98,15 +98,32 @@ export async function getAgroClimateData(location) {
   // --- F1 konsensus + F5 nowcast BMKG via proxy server (best-effort, gagal = null) ---
   let consensus = null
   let bmkgNowcast = null
+  let disasterHistory = null
+  let seasonal = null
+  let communityReports = null
   try {
     const base = import.meta.env.BASE_URL || '/agroclimate/'
     const api = (p) => `${base.replace(/\/$/, '')}/api/${p}`
-    const [cRes, bRes] = await Promise.allSettled([
+    const [cRes, bRes, hRes, sRes] = await Promise.allSettled([
       fetch(api(`consensus?location=${encodeURIComponent(location.id)}`)),
       fetch(api('bmkg-nowcast')),
+      fetch(api(`disaster-history?location=${encodeURIComponent(location.id)}`)),
+      fetch(api('seasonal')),
     ])
     if (cRes.status === 'fulfilled' && cRes.value.ok) consensus = await cRes.value.json()
     if (bRes.status === 'fulfilled' && bRes.value.ok) bmkgNowcast = await bRes.value.json()
+    // F4 — riwayat bencana per sentra (best-effort)
+    if (hRes.status === 'fulfilled' && hRes.value.ok) {
+      const hist = await hRes.value.json()
+      if (hist?.count > 0) disasterHistory = hist
+    }
+    // F7 — kalender musiman
+    if (sRes.status === 'fulfilled' && sRes.value.ok) seasonal = await sRes.value.json()
+    // F8 — laporan warga 7 hari terakhir (best-effort)
+    try {
+      const rRes = await fetch(api(`reports?location=${encodeURIComponent(location.id)}`))
+      if (rRes.ok) communityReports = await rRes.json()
+    } catch { /* abaikan */ }
   } catch {
     // jangan blokir dashboard
   }
@@ -145,6 +162,10 @@ export async function getAgroClimateData(location) {
       // F1 (ADR-8) konsensus multi-model + F5 (ADR-10) nowcast resmi BMKG
       consensus,
       bmkgNowcast,
+      // F4 riwayat bencana + F7 kalender musiman + F8 laporan warga
+      disasterHistory,
+      seasonal,
+      communityReports,
       // Kompatibilitas tampilan lama
       landslideRisk: ls.level,
       landslideColor: colorForLevel(ls.level),

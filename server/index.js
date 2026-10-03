@@ -12,6 +12,9 @@ import { PORT, PROXY_TTL_MIN, ENSEMBLE_TTL_MIN, ALERTS_TTL_MIN, WN2_TTL_MIN, BMK
 import { cached, clearCache, cacheStats } from './cache.js'
 import { getWeatherForLocation, fetchEnsemble, fetchAllAlerts, computeConsensus } from './openMeteo.js'
 import { fetchBmkgNowcast } from './bmkg.js'
+import { seasonalInfo } from '../src/domain/seasonal.js'
+import disasterHistory from '../src/data/disasterHistory.json' with { type: 'json' }
+import { validateReport, rateLimited, submitReport, recentReports } from './reports.js'
 
 const VALID_LOCATIONS = new Set([
   'bebesan', 'takengon', 'pegasing', 'kutepanang', 'atulintang',
@@ -27,6 +30,14 @@ function json(res, status, body) {
     'Access-Control-Allow-Origin': '*',
   })
   res.end(data)
+}
+
+function safeJson(s) {
+  try {
+    return JSON.parse(s)
+  } catch {
+    return null
+  }
 }
 
 const weatherGet = (id) => cached(`weather:${id}`, PROXY_TTL_MIN * 60_000, () => getWeatherForLocation(id))
@@ -78,6 +89,51 @@ const server = http.createServer(async (req, res) => {
     if (path === '/api/bmkg-nowcast') {
       const data = await bmkgGet()
       return json(res, 200, data)
+    }
+    // F7 — kalender musiman (bulan WIB saat ini)
+    if (path === '/api/seasonal') {
+      const month = Number(url.searchParams.get('month')) || Number(
+        new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', month: 'numeric' }).format(new Date())
+      )
+      if (!(month >= 1 && month <= 12)) return json(res, 400, { error: "parameter 'month' harus 1–12" })
+      return json(res, 200, seasonalInfo(month))
+    }
+    // F4 — riwayat bencana per sentra (statis terkurasi; upgrade DIBI API menunggu endpoint)
+    if (path === '/api/disaster-history') {
+      const id = url.searchParams.get('location')
+      if (!id || !VALID_LOCATIONS.has(id)) {
+        return json(res, 400, { error: "parameter 'location' wajib dan harus id lokasi yang valid" })
+      }
+      const events = disasterHistory.events
+        .filter((e) => e.locations.includes(id))
+        .sort((a, b) => b.date.localeCompare(a.date))
+      return json(res, 200, {
+        count: events.length,
+        lastEvents: events.slice(0, 5).map((e) => ({ type: e.type, date: e.date, year: e.year, title: e.title, source: e.source })),
+        source: 'curated-public-reports',
+      })
+    }
+    // F8 — laporan warga (POST simpan + relay Telegram #55; GET riwayat 7 hari)
+    if (path === '/api/reports') {
+      if (req.method === 'POST') {
+        const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '?').split(',')[0].trim()
+        if (rateLimited(ip)) return json(res, 429, { error: 'batas 5 laporan/jam terlampaui' })
+        let body = ''
+        for await (const chunk of req) {
+          body += chunk
+          if (body.length > 10_000) return json(res, 413, { error: 'payload terlalu besar' })
+        }
+        const parsed = validateReport(safeJson(body))
+        if (parsed.error) return json(res, 400, { error: parsed.error })
+        const result = await submitReport(parsed.report)
+        return json(res, 201, result)
+      }
+      const location = url.searchParams.get('location')
+      if (location && !VALID_LOCATIONS.has(location)) {
+        return json(res, 400, { error: "parameter 'location' harus id lokasi yang valid" })
+      }
+      const reports = recentReports(location)
+      return json(res, 200, { count: reports.length, reports })
     }
     if (path === '/api/cache/flush' && req.method === 'POST') {
       clearCache()

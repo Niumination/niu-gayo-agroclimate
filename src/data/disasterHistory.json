@@ -1,0 +1,76 @@
+{
+  "_meta": {
+    "description": "Riwayat kejadian bencana hidrometeorologi (longsor/banjir) terdokumentasi publik untuk Kabupaten Aceh Tengah, dipetakan ke id sentra di src/data/locations.js.",
+    "source": "Kompilasi terkurasi dari BNPB, BPBD Aceh Tengah, dan pemberitaan nasional.",
+    "upgradeNote": "DIBI BNPB (dibi.bnpb.go.id) saat ini hanya mengekspos dataset Posko Pengungsian via Superset REST; layanan kejadian (robust data) tidak dipublikasikan sebagai endpoint JSON. Endpoint ini diisi dari data statis terkurasi sampai endpoint resmi tersedia.",
+    "lastReviewed": "2026-10"
+  },
+  "events": [
+    {
+      "id": "2025-11-26-banjir-bandang",
+      "type": "banjir",
+      "date": "2025-11-26",
+      "year": 2025,
+      "district": "Aceh Tengah",
+      "title": "Banjir bandang & longsor susulan",
+      "summary": "Banjir bandang melanda sebagian besar Aceh Tengah; 12.638 ha lahan kopi arabika terdampak dan 295 desa di 14 kecamatan terisolasi.",
+      "locations": ["takengon", "bebesan", "kebayakan", "luttawar", "pegasing", "silihnara"],
+      "source": "https://www.merahputih.com/post/read/12-ribu-hektare-lahan-kopi-di-aceh-tengah-rusak-akibat-banjir"
+    },
+    {
+      "id": "2025-11-26-longsor-hulu",
+      "type": "longsor",
+      "date": "2025-11-26",
+      "year": 2025,
+      "district": "Aceh Tengah",
+      "title": "Longsor lereng Gayo pasca hujan ekstrem",
+      "summary": "Longsor di lereng-lereng hulu memutus jalur nasional Takengon–Blangkejeren dan menutup akses antar-kecamatan.",
+      "locations": ["celala", "silihnara", "kebayakan", "jagongjeget", "atulintang"],
+      "source": "https://www.bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/2025%20Buletin%20Info%20Bencana/2025%20Desember/Buletin%20Info%20Bencana%20Desember%202025.pdf"
+    },
+    {
+      "id": "2024-10-longsor",
+      "type": "longsor",
+      "date": "2024-10-01",
+      "year": 2024,
+      "district": "Aceh Tengah",
+      "title": "Longsor bulanan (BNPB)",
+      "summary": "BNPB mencatat kejadian tanah longsor di Aceh Tengah pada Oktober 2024 dalam rekap bencana nasional.",
+      "locations": ["bies", "kutepanang", "pegasing", "celala"],
+      "source": "https://www.metrotvnews.com/read/b7WCgXOX-bnpb-catat-2-107-bencana-sepanjang-2024"
+    },
+    {
+      "id": "2026-09-13-longsor-7kampung",
+      "type": "longsor",
+      "date": "2026-09-13",
+      "year": 2026,
+      "district": "Aceh Tengah",
+      "title": "Longsor 7 kampung di 4 kecamatan",
+      "summary": "Hujan deras memicu longsor di Jalan Takengon–Bintang (Pagar Merah) dan 7 kampung di Kebayakan, Lut Tawar, Celala, dan Silih Nara; 1 warga meninggal, 13 luka, 4 rumah rusak.",
+      "locations": ["kebayakan", "luttawar", "celala", "silihnara", "bintang"],
+      "source": "https://koran-jakarta.com/2026-09-14/longsor-melanda-7-kampung-di-aceh-tengah-satu-orang-meninggal-dunia"
+    },
+    {
+      "id": "2025-12-banjir-susulan",
+      "type": "banjir",
+      "date": "2025-12-03",
+      "year": 2025,
+      "district": "Aceh Tengah",
+      "title": "Banjir susulan & isolasi Takengon",
+      "summary": "Banjir bandang dan longsor kembali melanda Aceh Tengah; dua jembatan darurat ambruk dan Kota Takengon sempat terisolasi.",
+      "locations": ["takengon", "bebesan", "luttawar", "bintang"],
+      "source": "https://nu.or.id/daerah/banjir-bandang-kembali-terjang-aceh-tengah-jembatan-ambruk-dan-desa-terisolasi-O8auR"
+    },
+    {
+      "id": "2023-11-banjir-jalur-tengah",
+      "type": "banjir",
+      "date": "2023-11-15",
+      "year": 2023,
+      "district": "Aceh Tengah",
+      "title": "Banjir jalur tengah Aceh",
+      "summary": "Banjir berulang musiman di jalur tengah Aceh (Takengon–Kutacane) merusak badan jalan dan lahan pertanian di dataran Lembah Gayo.",
+      "locations": ["takengon", "bebesan", "kebayakan", "silihnara"],
+      "source": "https://www.bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/Buku%20Data%20Bencana%202024/20250613_Buku%20Data%202024.pdf"
+    }
+  ]
+}
