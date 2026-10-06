@@ -30,9 +30,11 @@ const NEEDED_DAYS = 7
 
 /** Indeks grid IMERG 0.1°: lon 3600 (idx=(lon+179.95)/0.1), lat 1800 (idx=(lat+89.95)/0.1). */
 export function gridIndices(lat, lon) {
+  // +1e-6 epsilon: hindari float error (mis. (4.60+89.95)/0.1 = 945.4999999999999
+  // yang Math.round-nya menjadi 945 padahal indeks benar 946 → IMERG null/404).
   return {
-    xi: Math.round((lon + 179.95) / 0.1),
-    yi: Math.round((lat + 89.95) / 0.1),
+    xi: Math.round((lon + 179.95 + 1e-6) / 0.1),
+    yi: Math.round((lat + 89.95 + 1e-6) / 0.1),
   }
 }
 
