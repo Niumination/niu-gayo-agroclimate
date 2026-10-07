@@ -22,7 +22,7 @@ export async function fetchWeather(location) {
     forecast_days: '3',
   })
   const url = `${OPEN_METEO}?${params}&${baseParams}`
-  const resp = await fetch(url)
+  const resp = await fetch(url, { signal: AbortSignal.timeout(15_000) })
   if (!resp.ok) throw new Error(`Open-Meteo HTTP ${resp.status}`)
   return resp.json()
 }
@@ -37,7 +37,7 @@ export async function fetchEnsemble(loc) {
     forecast_days: '3',
   })
   const url = `${OPEN_METEO_ENSEMBLE}?${params}&timezone=Asia%2FJakarta&models=ecmwf_ifs025`
-  const resp = await fetch(url)
+  const resp = await fetch(url, { signal: AbortSignal.timeout(15_000) })
   if (!resp.ok) throw new Error(`Open-Meteo ensemble HTTP ${resp.status}`)
   return resp.json()
 }

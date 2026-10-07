@@ -23,6 +23,13 @@ export async function cached(key, ttlMs, fetcher) {
       const value = await fetcher()
       store.set(key, { value, expiresAt: Date.now() + ttlMs })
       return value
+    } catch (err) {
+      // Stale-while-revalidate: jika fetch gagal tapi ada cached value, return stale
+      if (hit) {
+        console.warn(`[cache] ${key}: fetch gagal (${err.message}), pakai stale cache`)
+        return hit.value
+      }
+      throw err
     } finally {
       inflight.delete(key)
     }
