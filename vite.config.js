@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: '/agroclimate/',
+  base: '/',
   plugins: [
     react(),
     VitePWA({
@@ -16,8 +16,8 @@ export default defineConfig({
         theme_color: '#1A1512',
         background_color: '#1A1512',
         display: 'standalone',
-        start_url: '/agroclimate/',
-        scope: '/agroclimate/',
+        start_url: '/',
+        scope: '/',
         lang: 'id',
         icons: [
           { src: 'icons/pwa-192.png', sizes: '192x192', type: 'image/png' },
@@ -30,7 +30,7 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
-        navigateFallback: '/agroclimate/index.html',
+        navigateFallback: '/index.html',
         runtimeCaching: [
           {
             // Proxy API: network-first, fallback cache saat offline
