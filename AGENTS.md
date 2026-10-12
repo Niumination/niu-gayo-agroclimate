@@ -27,3 +27,5 @@ Niu Gayo Agro-Climate adalah dashboard web presisi tinggi untuk memantau mikrokl
 - Test: `npm test` (menjalankan unit test berbasis node test runner)
 - Build: `npm run build` (menghasilkan bundle production Vite di `dist/`)
 - Dev Server: `npm run dev` (berjalan di port 5188)
+- Production: `npm run build` → `dist/` di-serve `scripts/serve.py` (:7444); API `server/index.js` (:7455)
+- Akses publik: `https://cuaca.abstract.biz.id` (Cloudflare Tunnel) — `/api/*` + `/healthz` forward ke :7455
