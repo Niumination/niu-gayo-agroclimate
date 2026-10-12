@@ -21,8 +21,30 @@ test('cached: refetch setelah TTL kadaluarsa', async () => {
   await cached('t', 1, fetcher) // TTL 1 ms
   await new Promise((r) => setTimeout(r, 20))
   const v = await cached('t', 1, fetcher)
-  assert.strictEqual(v, 2)
+  // SWR non-blokir: nilai lama dikembalikan seketika, revalidate jalan di background.
+  assert.strictEqual(v, 1)
+  // Beri waktu background revalidate selesai.
+  await new Promise((r) => setTimeout(r, 50))
   assert.strictEqual(calls, 2)
+})
+
+test('cached: SWR tidak memblokir pemanggil saat upstream lambat', async () => {
+  clearCache()
+  let calls = 0
+  const fetcher = async () => {
+    calls++
+    await new Promise((r) => setTimeout(r, 200)) // simulasi IMERG down (~77s)
+    return 'fresh'
+  }
+  // Prime cache pertama (lambat, memang harus menunggu).
+  await cached('slow', 60_000, fetcher)
+  assert.strictEqual(calls, 1)
+  // Expire, lalu ambil lagi — harus kembali instan dengan nilai lama.
+  await new Promise((r) => setTimeout(r, 10))
+  const t0 = Date.now()
+  const v = await cached('slow', 1, fetcher)
+  const elapsed = Date.now() - t0
+  assert.ok(elapsed < 100, `pemanggil terblokir ${elapsed}ms, seharusnya non-blokir`)
 })
 
 test('cached: dedupe request in-flight', async () => {

@@ -18,6 +18,33 @@ export async function cached(key, ttlMs, fetcher) {
   const pending = inflight.get(key)
   if (pending) return pending
 
+  // SWR: bila entry ada tapi expired, langsung kembalikan nilai lama dan
+  // revalidate di background tanpa memblokir pemanggil. Saat upstream
+  // lambat (IMERG down → refresh ~77s) pemanggil masih seketika menerima
+  // data; refresh menggantikan cache begitu selesai.
+  if (hit) {
+    if (!inflight.has(key)) {
+      const p = (async () => {
+        try {
+          const value = await fetcher()
+          store.set(key, { value, expiresAt: Date.now() + ttlMs })
+          return value
+        } catch (err) {
+          // Upstream gagal: biarkan cache lama tersimpan (sudah dikembalikan
+          // ke pemanggil). Log saja, jangan throw ke background void.
+          console.warn(`[cache] ${key}: revalidate background gagal (${err.message}), cache lama dipertahankan`)
+          return hit.value
+        } finally {
+          inflight.delete(key)
+        }
+      })()
+      inflight.set(key, p)
+      // Jangan di-await — dedupe pemanggil lain, tapi tetap non-blokir.
+      p.catch(() => {})
+    }
+    return hit.value
+  }
+
   const p = (async () => {
     try {
       const value = await fetcher()
