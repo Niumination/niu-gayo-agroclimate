@@ -9,7 +9,7 @@ import {
   consensusLevel,
 } from '../server/consensus.js'
 import { parseBmkgRss, affectedLocations, fetchBmkgNowcast } from '../server/bmkg.js'
-import { antecedentIndex, accumulatedRain } from '../server/antecedent.js'
+import { antecedentIndex, accumulatedRain, antecedentAgeDays } from '../server/antecedent.js'
 
 // ---------- F1: konsensus ----------
 
@@ -150,4 +150,20 @@ test('antecedentIndex: nilai desimal dibulatkan 1 angka', () => {
   const ari = antecedentIndex(hourly, 71)
   assert.equal(ari.ari24, 8)
   assert.equal(ari.ari72, 24)
+})
+
+test('antecedentAgeDays: umur data antecedent sejak asOf', () => {
+  const now = new Date(Date.UTC(2026, 9, 12)) // 2026-10-12 UTC
+  // asOf D-1 (data IMERG segar)
+  assert.equal(antecedentAgeDays({ asOf: '2026-10-11' }, now), 1)
+  // asOf 3 hari lalu — GES DISC down, stale cache
+  assert.equal(antecedentAgeDays({ asOf: '2026-10-09' }, now), 3)
+  // fallback ECMWF: asOf hari ini
+  assert.equal(antecedentAgeDays({ asOf: '2026-10-12' }, now), 0)
+})
+
+test('antecedentAgeDays: null aman untuk input tanpa asOf', () => {
+  assert.equal(antecedentAgeDays(null), null)
+  assert.equal(antecedentAgeDays({ source: 'model-ecmwf' }), null)
+  assert.equal(antecedentAgeDays({ asOf: 'bukan-tanggal' }), null)
 })

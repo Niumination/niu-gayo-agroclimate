@@ -3,7 +3,7 @@ import { OPEN_METEO, OPEN_METEO_ENSEMBLE, WATERSHED_LOCATIONS } from './config.j
 import { LOCATIONS } from '../src/data/locations.js'
 import { parseEnsembleMembers, accumulate1hTo24h, accumulate6hTo24h, windowExceedance, consensusLevel } from './consensus.js'
 import { fetchEcmwfEnsemble, fetchWn2Ensemble } from './ensemble.js'
-import { antecedentIndex, antecedentIndexWithFallback } from './antecedent.js'
+import { antecedentIndex, antecedentIndexWithFallback, antecedentAgeDays } from './antecedent.js'
 
 const baseParams =
   'timezone=Asia%2FJakarta&models=ecmwf_ifs025&cell_selection=nearest'
@@ -86,6 +86,7 @@ export async function fetchAllAlerts(cachedGet) {
       const rustWindow = lw
         .slice(-48)
         .filter((v, i) => v >= 70 && temp[i] >= 18 && temp[i] <= 25).length
+      const antecedent = await antecedentIndexWithFallback(precip, precip.length - 1, loc)
       return {
         id: loc.id,
         name: loc.name,
@@ -98,10 +99,21 @@ export async function fetchAllAlerts(cachedGet) {
         wind: gustMax >= 35 ? 'tinggi' : gustMax >= 20 ? 'waspada' : 'normal',
         rust: rustWindow >= 6 ? 'tinggi' : rustWindow >= 3 ? 'waspada' : 'rendah',
         // F2 (ADR-9): ARI — primer IMERG (satelit), fallback model ECMWF.
-        antecedent: await antecedentIndexWithFallback(precip, precip.length - 1, loc),
+        antecedent,
       }
     })
   )
+
+  // Sinyal degradasi data: hitung dari sumber & umur antecedent per lokasi.
+  // IMERG (primer) gagal saat NASA GES DISC down → fallback ECMWF.
+  // fallbackCount = jumlah lokasi yg tidak pakai data satelit; maxAgeDays =
+  // umur data tertua (hanya bermakna untuk lokasi imerg/stale-cache).
+  const sources = results.map((r) => r.antecedent?.source)
+  const fallbackCount = sources.filter((s) => s && s !== 'imerg' && s !== 'imerg+model').length
+  const ages = results
+    .map((r) => antecedentAgeDays(r.antecedent))
+    .filter((a) => a != null)
+  const maxAgeDays = ages.length ? Math.max(...ages) : null
 
   // Indeks hujan DAS Peusangan: rata-rata berbobot lokasi hulu.
   let das = 0
@@ -115,6 +127,15 @@ export async function fetchAllAlerts(cachedGet) {
     generatedAt: new Date().toISOString(),
     watershedRainIndex24h: das,
     locations: results,
+    // Sinyal degradasi untuk cron & UI: saat NASA GES DISC down, IMERG gagal
+    // massal → fallbackCount naik ke 15 dan ARI jadi model-ecmwf (asOf kosong,
+    // maxAgeDays null). Bila IMERG sehat tapi data basi, maxAgeDays membesar.
+    staleness: {
+      imergCount: sources.filter((s) => s === 'imerg' || s === 'imerg+model').length,
+      fallbackCount,
+      maxAgeDays,
+      total: results.length,
+    },
   }
 }
 

@@ -54,3 +54,19 @@ export async function antecedentIndexWithFallback(hourlyPrecip, idx, location, o
     return { ...model, source: 'model-ecmwf', fallbackReason: err.message }
   }
 }
+
+/**
+ * Umur data antecedent dalam hari kalender (0 = hari ini).
+ * asOf adalah tanggal data terbaru (biasanya D-1 UTC), jadi selisih ke "hari ini"
+ * adalah indikasi keaktualan sumber. Dipakai server (staleness) + cron (footer).
+ * @param {{ asOf?: string }|null} antecedent
+ * @param {Date} now default new Date()
+ * @returns {number|null} null bila asOf tidak ada/invalid
+ */
+export function antecedentAgeDays(antecedent, now = new Date()) {
+  if (!antecedent?.asOf) return null
+  const as = Date.parse(antecedent.asOf)
+  if (!Number.isFinite(as)) return null
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  return Math.round((today - as) / 86_400_000)
+}
