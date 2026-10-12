@@ -18,7 +18,17 @@ Dataran Tinggi Gayo (Kabupaten Aceh Tengah) merupakan produsen kopi Arabika orga
 - Konsensus multi-model (F1), antecedent rainfall index (F2), PWA offline + i18n id-ID/Gayo + mode terang-gelap (F3), riwayat bencana per sentra (F4), nowcast resmi BMKG (F5), diseminasi Telegram (F6), kalender risiko musiman (F7), lapor warga dengan relay Telegram (F8).
 - Detail status & desain: repo `niu-gayo-agroclimate-docs` (DISASTER-DATA-RESEARCH.md, PLAN.md).
 
+## 🌐 Live Site
+
+**[cuaca.abstract.biz.id](https://cuaca.abstract.biz.id)** — dashboard produksi, di-serve dari
+server LightVela cloud via Cloudflare Tunnel (domain `abstract.biz.id`).
+
+- Frontend (`dist/`) di-serve `scripts/serve.py` di port 7444
+- API `server/index.js` di port 7455 — di-forward tunnel di path `/api/*` dan `/healthz`
+- Subdomain API terpisah: `cuaca-api.abstract.biz.id`
+
 ## Menjalankan Proyek
+
 ```bash
 # Install dependencies
 npm install
