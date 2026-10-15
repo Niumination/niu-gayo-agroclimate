@@ -69,7 +69,7 @@ Kedua jalur memakai **modul domain yang sama** (ESM dibagi, seperti `seasonal.js
 
 ## 3. ADR
 
-> **Status implementasi (Sprint 3, 15 Okt 2026):** ADR-12 ✅ (`src/domain/hazards/index.js`, 7 modul, `evaluateAll`), ADR-13 ✅, ADR-14 ✅, ADR-15 ✅ (degraded tanpa MAP_KEY), ADR-16 ✅ (`levels.js`), ADR-22 ✅ (lihat catatan), ADR-24 tahap 1 ✅ (`SchematicMap.jsx`), ADR-25 sebagian (`scripts/check-bundle.mjs`; CI belum), ADR-26 sebagian (atribusi & privasi di `AboutData.jsx`; arsip harian belum).
+> **Status implementasi (Sprint 3, 15 Okt 2026):** ADR-12 ✅ (`src/domain/hazards/index.js`, 7 modul, `evaluateAll`), ADR-13 ✅, ADR-14 ✅, ADR-15 ✅ (degraded tanpa MAP_KEY), ADR-16 ✅ (`levels.js`), ADR-22 ✅ (lihat catatan), ADR-24 tahap 1 ✅ (`SchematicMap.jsx`), ADR-25 sebagian (`scripts/check-bundle.mjs`; CI belum), ADR-26 sebagian (atribusi & privasi di `AboutData.jsx`; arsip harian `server/data/hazard-archive/` ✅; skrip validasi musiman belum).
 
 ### ADR-12 — Hazard Registry sebagai titik ekstensi tunggal
 - **Konteks:** 9 hazard baru akan masuk bertahap; UI & service saat ini hard-coded.
