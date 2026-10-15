@@ -1,6 +1,27 @@
 # Changelog
 
-## [Unreleased] — v2.0-dev "Asap & Kebakaran" Sprint 1 (Fase 1: 1.1, 1.2, 1.3, 1.5b + rilis cepat kartu)
+## [Unreleased] — v2.0-dev "Asap & Kebakaran" Sprint 2 (Fase 1: 1.4, 1.5, 1.6, 1.7, 1.9, 1.9b)
+
+### Fitur
+- **Arsip cuaca 90 hari** `server/archive.js`: Open-Meteo Archive (ERA5) harian + jam-an per sentra, 92 hari s.d. kemarin WIB, celah ≤ 7 hari diisi prakiraan ECMWF `past_days=7&forecast_days=3`, deret gabungan diberi `source[]` = `archive | model | forecast`; TTL 12 jam (`ARCHIVE_TTL_MIN`), salinan file `server/data/archive-<id>.json` sebagai cadangan saat upstream gagal; degraded bila lag arsip > 7 hari.
+- **H-API** `GET /api/fire-danger?location=<id>|all` (`server/fireWeather.js`): FWI operasional — pengamatan 12.00 WIB, hujan 24 jam hingga jam pengamatan, spin-up 90 hari, hari ini dihitung bila sudah ≥ 12.00 WIB, riwayat 7 hari, proyeksi D+1–D+2 dari ECMWF, titik awal cadangan `server/data/fwi-state.json`; penilaian gabungan FWI × hotspot × HTH (`assessFireDanger`: level, kelas tampilan dengan gerbang FFMC ekstrem, **Siaga Kebakaran Lokal** = FFMC ≥ 78 & hotspot ≤ 25 km, ekstrem = FWI > 13 & hotspot ≤ 25 km), kelas Drought Code BMKG (`FWI.dc` 140/260/350).
+- **Hotspot FIRMS** `GET /api/hotspots?location=<id>` (`server/firms.js`, `src/domain/hazards/hotspots.js`): 4 sumber NRT (VIIRS S-NPP/NOAA-20/NOAA-21, MODIS), bbox Aceh Tengah–Bener Meriah, 2 hari, TTL 30 menit; parser CSV, saringan keyakinan (VIIRS n/h, MODIS ≥ 50), jendela 24/48 jam, haversine ke 15 sentra (≤ 10/25/50 km), FRP intens ≥ 20 MW, level per sentra; **degraded tanpa `FIRMS_MAP_KEY`** (kartu tetap tampil dengan catatan) dan bila FIRMS membalas "Invalid MAP_KEY"/kuota.
+- **H-KERING** `GET /api/drought?location=<id>|all` (`src/domain/hazards/drought.js`): Hari Tanpa Hujan berturut-turut (kelas BMKG HH/1–5/6–10/11–20/21–30/31–60/> 60, mundur dari hari terakhir berdata), proyeksi HTH hari ini…D+2 dari prakiraan, neraca air 30 hari Σ(P − ET0), deret 30 hari untuk grafik, anjuran kopi.
+- Kartu **"Bahaya Kebakaran"** (`FireDangerCard.jsx`): FWI + kelas FDRS, status, peringatan Siaga Kebakaran Lokal, kode FFMC/DC/ISI, baris pengamatan siang, blok hotspot 24/48 jam per radius + titik terdekat/FRP (atau catatan degraded), HTH, proyeksi D+1–D+2, anjuran (tampilkan lebih), tautan BMKG DC & SiPongi. Kartu **"Kekeringan"** (`DroughtCard.jsx`): HTH + kelas, grafik batang hujan 30 hari, hujan terakhir & proyeksi, metrik hujan/ET0/neraca, anjuran, tautan BMKG Iklim. Mobile: tab Risiko; desktop: kolom kanan (kebakaran) & kolom tengah (kekeringan).
+- **Laporan warga** tipe `asap` (skala jarak pandang `>5km | 1-5km | <1km` wajib + centang "bau asap") dan `kebakaran` (centang "api masih menyala", pengingat Damkar 113) — validasi server (`server/reports.js`), relay Telegram menyertakan detail; `ReportButton.jsx` menampilkan isian khusus per tipe.
+- **Kopi × asap** (FR-ASAP-5): `dryingStatus(rain, solarRad, rh, haze)` mengembalikan **"Tunda (asap)"** bila `coffeeHazeRule` menahan penjemuran (ISPU ≥ 101 atau AOD ≥ 1 & DNI < 300); hujan tetap diprioritaskan; `weatherService` meneruskan ISPU/AOD/DNI dari kartu udara dan menambahkan `fireDanger`, `drought` ke payload.
+- Konstanta baru `thresholds.HOTSPOT / FWI_OPS / HTH / WATER_BALANCE / FWI.dc` (docs/THRESHOLDS.md §10–12); i18n `fireDanger*`, `drought*` (Gayo `[?]`); `.env.example` + `FIRMS_SOURCES`, `FIRMS_DAYS`, `ARCHIVE_DAYS`.
+
+### Test
+- +54 test (`tests/drought.test.js`, `hotspots.test.js`, `archive.test.js`, `fireWeatherServer.test.js`, `firmsServer.test.js`, `dryingHaze.test.js`, tambahan di `reports.test.js` & `fireWeather.test.js`) → total **198** lulus. Semua fetch upstream di-mock (`fetchImpl`) dan file state ditulis ke direktori sementara.
+
+### Sinkronisasi upstream (575c4d3)
+- Dipulihkan dari paket Sprint 1 yang tidak ikut terpasang di upstream d05bd0e: `tests/ispu.test.js`, `tests/hazardData.test.js`, 6 fixture `tests/fixtures/hazards/*` (arsip 90 hari, konvektif, banjir Peusangan, GFS CAPE/LI, PetaBencana, USGS), `magma-tingkat-aktivitas.html` (sebelumnya 0 byte), proxy dev Vite `/api` → `127.0.0.1:7455`.
+
+### Catatan lapangan (15 Okt 2026)
+- Takengon berada di musim basah: HTH 0, hujan 30 hari ≈ 380 mm, FWI 0 (FFMC ≈ 35, DC ≈ 5). Kabut asap yang terasa di Aceh Tengah berasal dari karhutla **jauh** (transport regional), bukan kebakaran lokal — konsisten dengan kartu udara (AOD tinggi, PM2,5 sedang) dan kartu kebakaran (rendah).
+
+## v2.0-dev Sprint 1 (Fase 1: 1.1, 1.2, 1.3, 1.5b + rilis cepat kartu)
 
 ### Fitur
 - **H-ASAP** `GET /api/air-quality?location=<id>` (`server/airQuality.js`): Open-Meteo Air Quality (CAMS global ~40 km, `past_days=1`) + jarak pandang/RH/DNI `best_match`; TTL 60 menit (`AQ_TTL_MIN`); degraded tanpa throw; `?location=all` ringkasan 15 sentra + lokasi terburuk.

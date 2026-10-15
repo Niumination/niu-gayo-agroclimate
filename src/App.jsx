@@ -8,6 +8,8 @@ import InstrumentPanel from './components/InstrumentPanel'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
 import DisasterWarning from './components/DisasterWarning'
 import AirQualityCard from './components/AirQualityCard'
+import FireDangerCard from './components/FireDangerCard'
+import DroughtCard from './components/DroughtCard'
 import SeasonalBanner from './components/SeasonalBanner'
 import ReportButton from './components/ReportButton'
 import HourlyForecast from './components/HourlyForecast'
@@ -171,7 +173,12 @@ export default function App() {
   )
 
   const mobileRisk = data && (
-    <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
+    <>
+      <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
+      {/* H-API (v2 Fase 1, Sprint 2) — bahaya kebakaran: FWI + hotspot + HTH; H-KERING — kekeringan ringkas */}
+      <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
+      <DroughtCard drought={data.drought} tr={tr} />
+    </>
   )
 
   const mobileLocations = (
@@ -188,10 +195,12 @@ export default function App() {
           <LocationRail selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} tr={tr} />
         </aside>
 
-        {/* Kolom tengah: instrumen besar + panduan kopi */}
+        {/* Kolom tengah: instrumen besar + panduan kopi + kekeringan/air kebun */}
         <div className="col-span-6 min-w-0 space-y-6">
           <InstrumentPanel current={data.current} daily={data.daily} location={selectedLocation} tr={tr} />
           <CoffeeAdvisory coffee={data.coffee} tr={tr} />
+          {/* H-KERING (v2 Fase 1, Sprint 2) — HTH kelas BMKG + neraca air 30 hari */}
+          <DroughtCard drought={data.drought} tr={tr} />
         </div>
 
         {/* Kolom kanan: peringatan + keyakinan ensemble */}
@@ -199,6 +208,8 @@ export default function App() {
           {/* H-ASAP (v2 Fase 1) — kabut asap & kualitas udara */}
           <AirQualityCard airQuality={data.airQuality} tr={tr} />
           <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
+          {/* H-API (v2 Fase 1, Sprint 2) — bahaya kebakaran & hotspot */}
+          <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
           {/* F7 — kalender musiman (rail bawah desktop) */}
           <SeasonalBanner seasonal={data.disaster?.seasonal} />
           {/* F8 — tombol lapor kejadian */}

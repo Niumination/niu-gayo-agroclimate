@@ -96,3 +96,77 @@ test('fireDangerClass: "ekstrem" FFMC diturunkan ke "tinggi" tanpa hotspot ≤10
   assert.equal(fireDangerClass({ ffmc: 90, fwi: 3, hthDays: 21 }), 'ekstrem')
   assert.equal(fireDangerClass({ ffmc: 60, fwi: 0.5 }), 'rendah')
 })
+
+// ---- Sprint 2: riwayat deret, kelas DC, penilaian bahaya kebakaran ----
+import { dcClass, fdrsClassToLevel, assessFireDanger } from '../src/domain/hazards/fireWeather.js'
+import { FWI_OPS } from '../src/domain/thresholds.js'
+
+test('runFwiSeries keepHistory: satu entri per hari valid, state akhir = entri terakhir', () => {
+  const days = [
+    { date: '2026-10-01', temp: 24, rh: 60, wind: 8, rain: 0 },
+    { date: '2026-10-02', temp: null, rh: 60, wind: 8, rain: 0 }, // dilewati
+    { date: '2026-10-03', temp: 25, rh: 55, wind: 10, rain: 0, basis: 'model' },
+  ]
+  const r = runFwiSeries(days, { keepHistory: true })
+  assert.equal(r.history.length, 2)
+  assert.equal(r.computedDays, 2)
+  assert.equal(r.history[1].date, '2026-10-03')
+  assert.equal(r.history[1].basis, 'model')
+  assert.equal(r.history[1].fwi, r.fwi)
+  assert.deepEqual(r.history[0].obs, { temp: 24, rh: 60, wind: 8, rain: 0 })
+  assert.equal(runFwiSeries(days).history, undefined)
+})
+
+test('dcClass: BMKG 0–140 / 141–260 / 261–350 / > 350', () => {
+  assert.equal(dcClass(140), 'rendah')
+  assert.equal(dcClass(140.5), 'sedang')
+  assert.equal(dcClass(260), 'sedang')
+  assert.equal(dcClass(261), 'tinggi')
+  assert.equal(dcClass(350), 'tinggi')
+  assert.equal(dcClass(351), 'ekstrem')
+  assert.equal(dcClass(null), null)
+})
+
+test('fdrsClassToLevel: rendah/sedang → rendah, tinggi → waspada, ekstrem → bahaya', () => {
+  assert.equal(fdrsClassToLevel('rendah'), 'rendah')
+  assert.equal(fdrsClassToLevel('sedang'), 'rendah')
+  assert.equal(fdrsClassToLevel('tinggi'), 'waspada')
+  assert.equal(fdrsClassToLevel('ekstrem'), 'bahaya')
+})
+
+test('assessFireDanger: gerbang FFMC ekstrem, hotspot menaikkan level, ekstrem & siaga lokal', () => {
+  const dry = { ffmc: 88, dmc: 30, dc: 200, isi: 7, bui: 40, fwi: 9 } // FFMC ekstrem, FWI tinggi
+  const a = assessFireDanger({ fwi: dry })
+  assert.equal(a.displayClass, 'tinggi') // ekstrem diturunkan: tanpa hotspot/HTH
+  assert.equal(a.level, 'waspada')
+  assert.equal(a.drivers.ffmcExtremeGated, true)
+  assert.equal(a.siagaLokal, false)
+  assert.match(a.headline, /FWI 9\.0 — Tinggi · FFMC 88 \(Ekstrem\)/)
+  // HTH ≥ 21 membuka gerbang → bahaya
+  const b = assessFireDanger({ fwi: dry, hthDays: 25 })
+  assert.equal(b.displayClass, 'ekstrem')
+  assert.equal(b.level, 'bahaya')
+  // hotspot ≤ 25 km → siaga lokal (FFMC ≥ 78), level minimal waspada
+  const c = assessFireDanger({ fwi: dry, hotspots: { within10km24h: 0, within25km24h: 1 } })
+  assert.equal(c.siagaLokal, true)
+  assert.equal(c.level, 'waspada')
+  // hotspot ≤ 10 km → bahaya
+  const d = assessFireDanger({ fwi: dry, hotspots: { within10km24h: 1, within25km24h: 1 } })
+  assert.equal(d.level, 'bahaya')
+  // FWI > 13 dan hotspot ≤ 25 km → ekstrem
+  const e = assessFireDanger({ fwi: { ...dry, fwi: 15 }, hotspots: { within10km24h: 0, within25km24h: 1 } })
+  assert.equal(e.extreme, true)
+  assert.equal(e.level, 'ekstrem')
+  assert.equal(e.advice.length, 3)
+  // FWI > 13 tanpa hotspot → bukan ekstrem
+  assert.equal(assessFireDanger({ fwi: { ...dry, fwi: 15 } }).extreme, false)
+  // hotspot ≤ 10 km tanpa kode FWI → tetap bahaya (hotspot aktif)
+  const f = assessFireDanger({ fwi: null, hotspots: { within10km24h: 2, within25km24h: 2 } })
+  assert.equal(f.level, 'bahaya')
+  assert.equal(f.displayClass, null)
+  assert.equal(f.headline, 'Kode FWI belum tersedia')
+  // basah → rendah
+  const wet = assessFireDanger({ fwi: { ffmc: 40, dmc: 1, dc: 10, isi: 0.1, bui: 1, fwi: 0 } })
+  assert.equal(wet.level, 'rendah')
+  assert.equal(FWI_OPS.siagaFfmc, 78)
+})

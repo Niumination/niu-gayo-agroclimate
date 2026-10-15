@@ -2,6 +2,7 @@
  * Fungsi murni analisis agro-klimat kopi (tanpa className/warna — mapping warna di komponen).
  */
 import { TEMP, RUST, DRYING } from './thresholds.js'
+import { coffeeHazeRule } from './hazards/airQuality.js'
 
 export function tempStatus(temp) {
   if (temp < TEMP.optimalMin) return { level: 'Dingin', desc: 'Pertumbuhan vegetative melambat' }
@@ -19,9 +20,24 @@ export function rustRisk(rh, temp) {
   return { level: 'Rendah', desc: 'Kelembapan udara aman, sirkulasi angin memadai.' }
 }
 
-export function dryingStatus(rain, solarRad, rh) {
+/**
+ * Jendela penjemuran. Parameter ke-4 (opsional, FR-ASAP-5 / v2 Fase 1): dampak kabut asap —
+ * { ispu, aod, dni } → "Tunda (asap)" bila ISPU ≥ 101 atau (AOD ≥ 1,0 dan DNI maks siang < 300 W/m²).
+ * Hujan tetap diprioritaskan (tindakan segera); aturan asap ada di domain/hazards/airQuality.js (coffeeHazeRule).
+ */
+export function dryingStatus(rain, solarRad, rh, haze = null) {
   if (rain > DRYING.rainStop) {
     return { level: 'Hujan - Tutup Terpal', desc: 'Hujan sedang turun. Segera amankan kopi ke dalam solar dryer atau tutup kubah plastik.' }
+  }
+  if (haze && (haze.ispu != null || haze.aod != null)) {
+    const rule = coffeeHazeRule({ ispuIndex: haze.ispu ?? null, aod: haze.aod ?? null, dniDayMax: haze.dni ?? null })
+    if (rule.dryingHold) {
+      return {
+        level: 'Tunda (asap)',
+        desc: `${rule.reason ?? 'Kabut asap tebal.'} Gunakan pengering tertutup/solar dryer; bila terpaksa menjemur, tutup para-para dengan plastik UV dan angkat gabah ke ruang tertutup saat asap pekat.`,
+        haze: true,
+      }
+    }
   }
   if (solarRad < DRYING.solarLow || rh > DRYING.rhHigh) {
     return { level: 'Kurang Optimal', desc: 'Matahari tertutup awan tebal. Balik gabah lebih sering untuk mencegah fermentasi berlebih.' }

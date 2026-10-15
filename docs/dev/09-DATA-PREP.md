@@ -25,7 +25,7 @@ Hasil `npm test`: **98 lulus** (91 lama + 7 test aset baru). Tidak ada kode prod
 
 | # | Tugas | Siapa | Kapan | Catatan |
 |---|---|---|---|---|
-| H-1 | **Daftar FIRMS MAP_KEY** (gratis, email) → isi `FIRMS_MAP_KEY` di env server; jalankan `node scripts/fetch-hazard-fixtures.mjs` untuk fixture hotspot nyata | Maintainer | Sebelum Fase 1 modul hotspot | Tanpa ini: FWI tetap jalan, hotspot "tak tersedia" |
+| H-1 | **Daftar FIRMS MAP_KEY** (gratis, email) → isi `FIRMS_MAP_KEY` di env server; jalankan `node scripts/fetch-hazard-fixtures.mjs` untuk fixture hotspot nyata | Maintainer | **Sekarang** — modul hotspot sudah terpasang (Sprint 2) dan berjalan *degraded* | Tanpa ini: FWI/HTH tetap jalan, blok hotspot di kartu "Bahaya Kebakaran" menampilkan catatan "kunci belum diatur"; verifikasi setelah diisi: `curl -s 'http://127.0.0.1:7455/api/hotspots?location=takengon' \| head -c 400` harus `"degraded":false` |
 | H-2 | **Verifikasi 4 koordinat sentra** yang jatuh di luar kecamatan nominal (§3) → perbarui `src/data/locations.js` | Maintainer + warga lokal | Sebelum peta & radius FIRMS | Pakai lokasi kampung/ibu kota kecamatan, bukan centroid |
 | H-3 | **Isi & verifikasi nomor Puskesmas/posko per kecamatan** dan IGD RSUD Datu Beru, Damkar, Manggala Agni, Pos PGA | Maintainer (telepon/situs Dinkes) | Fase 1 (kartu asap) | UI sudah dirancang hanya menampilkan `verified: true` |
 | H-4 | **Terjemahan Gayo** untuk `healthAdvice.json`, `climateOutlook.json` (`gay: null`) | Penutur asli | Sebelum rilis Fase 1 | R-06 di risk register |

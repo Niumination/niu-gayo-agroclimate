@@ -114,7 +114,7 @@ Data: Open-Meteo Air Quality (**CAMS global, ~40 km**) → **estimasi model, buk
 
 Level kartu = maksimum(level kategori ISPU, level kabut asap).
 
-## 9. Bahaya kebakaran — FWI System (v2 Fase 1, H-API; kartu menyusul 1.5/1.6)
+## 9. Bahaya kebakaran — FWI System (v2 Fase 1, H-API)
 
 `src/domain/hazards/fireWeather.js` (Van Wagner 1987), konstanta `thresholds.FWI`. Diverifikasi terhadap dataset uji resmi 48 hari (`cffdrs`): selisih ≤ 0,005 pada 6 indeks dengan konstanta FFMC **147,27723**.
 
@@ -126,7 +126,56 @@ Level kartu = maksimum(level kategori ISPU, level kabut asap).
 
 - Opsi ekuator (default Gayo, 4–5° LU): panjang hari DMC 9 jam, faktor DC 1,4 sepanjang tahun (Lawson & Armitage 2008).
 - Kalibrasi lokal: kelas **"ekstrem" FFMC hanya ditampilkan bila hotspot ≤ 10 km atau HTH ≥ 21 hari**; selain itu diturunkan ke "tinggi" (`fireDangerClass`).
-- Nilai awal spin-up: FFMC 85 / DMC 6 / DC 15 (standar), dijalankan dari arsip ≥ 60 hari (item 1.9b).
+- Nilai awal spin-up: FFMC 85 / DMC 6 / DC 15 (standar), dijalankan dari arsip 90 hari (§10).
+- **Drought Code (DC)** — kelas operasional BMKG (`FWI.dc`, halaman bmkg.go.id/cuaca/karhutla/dc; sama dengan FDRS Indonesia–Malaysia, de Groot dkk. 2007): **0–140 Rendah/basah · 141–260 Sedang/lembap · 261–350 Tinggi/kering** (pengawasan pembakaran diperketat) · **> 350 Ekstrem/sangat kering** (larangan pembakaran; episode kabut asap parah historis berada di rentang ini).
+
+## 10. Operasional FWI harian — arsip, pengamatan siang, proyeksi (Sprint 2, item 1.5/1.9b)
+
+`server/archive.js` + `server/fireWeather.js`, konstanta `thresholds.FWI_OPS`, dataset uji `tests/fireWeatherServer.test.js`.
+
+| Parameter | Nilai | Alasan |
+|---|---|---|
+| Jam pengamatan | **12.00 WIB** (`obsHourWib`) | standar FWI = 12.00 waktu setempat; matahari tertinggi Takengon ≈ 12.32 WIB |
+| Hujan harian | Σ presipitasi jam-an **24 jam hingga pukul 12.00** | definisi Van Wagner (hujan sejak pengamatan kemarin), bukan hujan kalender |
+| Spin-up | **90 hari** arsip ERA5/Open-Meteo (`spinUpDays`); < 20 hari ditandai *spin-up pendek* (`minSpinUpDays`) | DC punya "memori" ±52 hari; tanpa spin-up kode bergantung nilai awal |
+| Hari ini | dihitung sebagai **observasi hanya bila jam server ≥ 12.00 WIB** (basis "model" = prakiraan ECMWF jam berjalan) | sebelum itu kode terakhir = kemarin, hari ini masuk proyeksi |
+| Proyeksi | **D+1, D+2** dari prakiraan ECMWF (`forecastDays`), dilanjutkan dari kode terakhir | horizon sama dengan proyeksi HTH; ditandai basis "forecast" |
+| Riwayat kartu | 7 hari (`historyDays`) | tren mingguan |
+| Celah arsip | arsip tertinggal **≤ 7 hari** diisi prakiraan `past_days=7`; lag > 7 hari → payload *degraded* | arsip Open-Meteo biasanya tertinggal 1–2 hari |
+| Titik awal cadangan | file `server/data/fwi-state.json` (kode terakhir per sentra) bila arsip tidak tersedia; terakhir: nilai standar | server dapat restart tanpa kehilangan DC |
+
+**Level kartu "Bahaya Kebakaran"** (`assessFireDanger`): kelas FDRS tampilan → rendah/sedang = **rendah**, tinggi = **waspada**, ekstrem = **bahaya**; hotspot ≤ 10 km (24 jam) → minimal **bahaya**; hotspot ≤ 25 km → minimal **waspada**; **ekstrem** bila FWI > 13 DAN hotspot ≤ 25 km. Gerbang FFMC "ekstrem" (§9) tetap berlaku.
+**Siaga Kebakaran Lokal** (FR-API-5): FFMC ≥ **78** (`siagaFfmc`) DAN ≥ 1 hotspot ≤ 25 km dalam 24 jam.
+
+## 11. Hotspot FIRMS (Sprint 2, item 1.4)
+
+`server/firms.js` + `src/domain/hazards/hotspots.js`, konstanta `thresholds.HOTSPOT`. Sumber NRT: VIIRS S-NPP/NOAA-20/NOAA-21 (375 m) dan MODIS (1 km); bbox Aceh Tengah–Bener Meriah `96.1,3.9,97.5,5.2`; 2 hari; TTL 30 menit. Tanpa `FIRMS_MAP_KEY` layanan berjalan *degraded* (kartu tetap tampil dengan catatan).
+
+| Parameter | Nilai | Alasan |
+|---|---|---|
+| Keyakinan | VIIRS **nominal/high** (`n`,`h`); MODIS **≥ 50 %** (`modisMinConfidence`) | keyakinan *low* VIIRS didominasi pantulan matahari/permukaan panas |
+| Jendela utama / tren | **24 jam** / **48 jam** | NRT FIRMS tersedia ±3 jam setelah lintasan; 48 jam untuk tren |
+| Radius bahaya | **≤ 10 km** dari sentra | asap tiba < 1 jam pada angin 10 km/j; resolusi lokasi FIRMS 375 m–1 km |
+| Radius waspada | **≤ 25 km** | setara satu–dua kecamatan |
+| Radius informasi | **≤ 50 km** | daftar "titik api terdekat" |
+| FRP intens | **≥ 20 MW** (`frpIntenseMw`) | ambang kebakaran lahan intens (bukan pembakaran kecil) |
+
+Level hotspot per sentra: ≤ 10 km → **bahaya**, ≤ 25 km → **waspada**, lainnya **rendah**; digabungkan dengan FWI di §10. Catatan: hotspot = anomali termal, **bukan konfirmasi kebakaran** (validasi SiPongi/Manggala Agni).
+
+## 12. Kekeringan — Hari Tanpa Hujan & neraca air (Sprint 2, item 1.9b)
+
+`src/domain/hazards/drought.js`, konstanta `thresholds.HTH`, `thresholds.WATER_BALANCE`; data dari arsip §10 (harian `precipitation_sum`, `et0_fao_evapotranspiration`).
+
+| Parameter | Nilai | Alasan |
+|---|---|---|
+| Hari hujan | **≥ 1 mm** (`rainDayMm`) | definisi BMKG (hari < 1 mm dihitung tanpa hujan) |
+| Perhitungan | mundur dari **hari terakhir berdata** (hari ini tidak dihitung karena belum lengkap) | konsisten dengan buletin HTH BMKG (dasarian) |
+| Kelas BMKG | HH (hari hujan) · Sangat Pendek **1–5** · Pendek **6–10** · Menengah **11–20** · Panjang **21–30** · Sangat Panjang **31–60** · Ekstrem **> 60** | standar monitoring HTH BMKG |
+| Level UI | **rendah ≤ 10 · waspada 11–20 · bahaya 21–60 · ekstrem > 60** (`waspada/bahaya/ekstrem`) | kopi arabika Gayo mulai stres air setelah ±3 minggu kering (docs/dev/06 §3) |
+| Proyeksi | lanjutkan hitungan dengan prakiraan **hari ini … D+2** (`projectionDays`), berhenti di hari prakiraan ≥ 1 mm | peringatan dini "akan mencapai Panjang" |
+| Neraca air 30 hari | Σ(P − ET0): **≤ −60 mm waspada**, **≤ −120 mm bahaya** (`WATER_BALANCE`) | indikatif; ET0 FAO-56 Open-Meteo; kalibrasi lokal menyusul (FR-KER-3) |
+
+Level kartu "Kekeringan" = maksimum(level HTH, level neraca air).
 
 ## Disclaimer
 

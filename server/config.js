@@ -21,3 +21,15 @@ export const AQ_TTL_MIN = Number(process.env.AQ_TTL_MIN || 60)
 export const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast'
 export const OPEN_METEO_ENSEMBLE = 'https://ensemble-api.open-meteo.com/v1/ensemble'
 export const OPEN_METEO_AIR_QUALITY = process.env.OPEN_METEO_AIR_QUALITY || 'https://air-quality-api.open-meteo.com/v1/air-quality'
+// H-KERING / H-API: arsip ERA5 (Open-Meteo) diperbarui harian → cache 12 jam; prakiraan past_days memakai PROXY_TTL_MIN.
+export const ARCHIVE_TTL_MIN = Number(process.env.ARCHIVE_TTL_MIN || 720)
+export const ARCHIVE_DAYS = Number(process.env.ARCHIVE_DAYS || 92)          // ≥ 61 agar kelas HTH "Ekstrem" (> 60 hari) terdeteksi
+export const ARCHIVE_MAX_LAG_DAYS = Number(process.env.ARCHIVE_MAX_LAG_DAYS || 7)
+export const OPEN_METEO_ARCHIVE = process.env.OPEN_METEO_ARCHIVE || 'https://archive-api.open-meteo.com/v1/archive'
+// H-API hotspot NASA FIRMS (kunci gratis: https://firms.modaps.eosdis.nasa.gov/api/map_key/; tugas manusia H-1).
+export const FIRMS_MAP_KEY = process.env.FIRMS_MAP_KEY || ''
+export const FIRMS_TTL_MIN = Number(process.env.FIRMS_TTL_MIN || 30)
+export const FIRMS_BBOX = process.env.FIRMS_BBOX || '96.1,3.9,97.5,5.2'    // Aceh Tengah + buffer ~50 km (W,S,E,N)
+export const FIRMS_SOURCES = (process.env.FIRMS_SOURCES || 'VIIRS_SNPP_NRT,VIIRS_NOAA20_NRT,VIIRS_NOAA21_NRT,MODIS_NRT').split(',').map((s) => s.trim()).filter(Boolean)
+export const FIRMS_DAYS = Number(process.env.FIRMS_DAYS || 2)
+export const FIRMS_API = process.env.FIRMS_API || 'https://firms.modaps.eosdis.nasa.gov/api/area/csv'

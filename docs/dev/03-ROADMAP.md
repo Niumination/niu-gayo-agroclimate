@@ -35,25 +35,25 @@ Okt 2026        Nov 2026        Des 2026        Jan 2027        Feb 2027        
 | 1.1 ✅ | `server/airQuality.js` (Open-Meteo AQ, CAMS global) + `GET /api/air-quality` (+ `?location=all`) — **selesai Sprint 1 (15 Okt 2026)** | FR-ASAP-1 | — |
 | 1.2 ✅ | `domain/hazards/airQuality.js`: ISPU P.14/2020, kategori, rata-rata bergerak 24 jam, anjuran 4 kelompok — **selesai Sprint 1** | FR-ASAP-2/4 | 1.1 |
 | 1.3 ✅ | Fetch `visibility` (best_match) → proksi kabut (jendela 10–17 WIB, saring RH ≥ 90 %, persistensi 2 jam); gabung ke kartu — **selesai Sprint 1** | FR-ASAP-3 | 1.1 |
-| 1.4 | `server/firms.js` (FIRMS Area API CSV → JSON) + `GET /api/hotspots` + haversine ke sentra | FR-API-1/2 | MAP_KEY |
-| 1.5 ◐ | `domain/hazards/fireWeather.js`: FWI System + kelas FDRS (**selesai Sprint 1**, termasuk `runFwiSeries`/`fireDangerClass`) + state harian + spin-up ERA5 (server, Sprint 2) | FR-API-3 | — |
-| 1.6 ◐ | Kartu "Kabut Asap & Udara" (**versi rilis cepat selesai Sprint 1**: `AirQualityCard.jsx`, mobile tab Kini + desktop kolom kanan) + kartu "Bahaya Kebakaran" (Sprint 2) | FR-ASAP-3, FR-API-4 | 1.2–1.5 |
+| 1.4 ◐ | `server/firms.js` (FIRMS Area API CSV → JSON, 4 sumber NRT) + `GET /api/hotspots` + haversine ke sentra — **kode selesai Sprint 2**; berjalan *degraded* sampai `FIRMS_MAP_KEY` diisi (H-1) | FR-API-1/2 | MAP_KEY |
+| 1.5 ✅ | `domain/hazards/fireWeather.js`: FWI System + kelas FDRS (Sprint 1) + `server/fireWeather.js` state harian, pengamatan 12.00 WIB, spin-up ERA5 90 hari, proyeksi D+1–2, `GET /api/fire-danger` — **selesai Sprint 2** | FR-API-3 | — |
+| 1.6 ✅ | Kartu "Kabut Asap & Udara" (Sprint 1) + kartu "Bahaya Kebakaran" `FireDangerCard.jsx` (FWI/FDRS, siaga lokal, hotspot, HTH, proyeksi) — **selesai Sprint 2** | FR-ASAP-3, FR-API-4/5 | 1.2–1.5 |
 | 1.6b | `SchematicMap.jsx` SVG (batas kecamatan GADM ≤ 50 kB, sentra, hotspot, angin) | FR-API-6 | 1.4 |
 | 1.5b ✅ | Pindahkan prototipe `docs/dev/prototypes/{ispu,fwi}.mjs` → `src/domain/hazards/` + test dari `check.mjs` + dataset `cffdrs` — **selesai Sprint 1** (`tests/ispu.test.js`, `tests/fireWeather.test.js`; prototipe tetap ada sebagai referensi) | FR-ASAP-2, FR-API-3 | — |
-| 1.7 | Laporan warga: tipe `asap` (skala jarak pandang) & `kebakaran` | FR-ASAP-6 | 0.2 |
+| 1.7 ✅ | Laporan warga: tipe `asap` (skala jarak pandang + bau) & `kebakaran` (api aktif) — **selesai Sprint 2** | FR-ASAP-6 | 0.2 |
 | 1.8 | `/api/alerts` + cron Telegram "Status Asap Gayo" | FR-ASAP-7/8 | 1.2 |
 | 1.8b | Skema `Alert` bergaya CAP + renderer Telegram/WhatsApp-teks/SMS + anti-kebisingan + tombol "Bagikan ke WhatsApp" | FR-DIS-1/2/3/6, FR-X-7 | 1.2 |
-| 1.9 | Integrasi dampak asap ke `dryingStatus` kopi + konten "Ruang bersih" + faskes per kecamatan | FR-ASAP-5/9 | 1.2 |
-| 1.9b | `server/archive.js` (Open-Meteo Archive 90 hari) + `hthDays()` kelas BMKG + kartu ringkas HTH | FR-KER-1/2/4 | — |
+| 1.9 ◐ | Integrasi dampak asap ke `dryingStatus` kopi (**selesai Sprint 2**: status "Tunda (asap)") + konten "Ruang bersih" (Sprint 1) · faskes per kecamatan (Sprint 3) | FR-ASAP-5/9 | 1.2 |
+| 1.9b ✅ | `server/archive.js` (Open-Meteo Archive 90 hari + celah ECMWF) + `hthDays()` kelas BMKG + neraca air + `GET /api/drought` + kartu `DroughtCard.jsx` — **selesai Sprint 2** | FR-KER-1/2/3/4 | — |
 | 1.9c | Banner konteks iklim (`climateOutlook.json`: El Niño sangat kuat + IOD positif, musim hujan terlambat, puncak Des–Feb) | FR-KER-5 | — |
 | 1.9d | Riwayat F4 diperluas (skema `hazard`, `emergencyStatus`, +6 kejadian 2013–2026) + halaman "Tentang data & batasan" | FR-X-8/9 | — |
 | 1.10b | Arsip harian hazard + `scripts/validate-season.mjs`; surat pengantar ke BPBD Aceh Tengah | FR-X-10, ADR-26 | 1.8 |
-| 1.10 ◐ | Dokumen: THRESHOLDS (ISPU ✅, FWI ✅, visibility ✅, HTH), CHANGELOG 2.0.0 | — | — |
+| 1.10 ◐ | Dokumen: THRESHOLDS (ISPU ✅, FWI ✅, visibility ✅, FWI ops ✅, hotspot ✅, HTH ✅), CHANGELOG 2.0.0 (saat rilis) | — | — |
 
 **Gate G1:** episode asap berikutnya tampil di dashboard dalam ≤ 30 menit; cron berjalan; ≥ 25 test baru.
 **Rilis cepat (hotfix opsional, minggu 3):** kartu ISPU + jarak pandang saja (1.1–1.3) agar warga segera terbantu. → **Dikerjakan di Sprint 1 (15 Okt 2026): 1.5b, 1.1, 1.2, 1.3 + kartu; +46 test (144 total).**
-**Sprint 2 (berikutnya):** 1.5 (server FWI + spin-up arsip) & 1.9b, 1.4 FIRMS (butuh MAP_KEY, H-1), 1.6 kartu kebakaran, 1.7 tipe laporan asap/kebakaran, 1.9 integrasi `dryingStatus` (aturan `coffeeHazeRule` sudah tersedia di domain).
-**Sprint 3:** 1.8/1.8b peringatan CAP + cron Telegram, 1.6b peta SVG, 1.9/1.9c/1.9d, 1.10 → Gate G1.
+**Sprint 2 (15 Okt 2026, selesai):** 1.5 server FWI + arsip 90 hari, 1.9b HTH/neraca air + kartu, 1.4 FIRMS (kode siap; degraded sampai MAP_KEY H-1), 1.6 kartu "Bahaya Kebakaran", 1.7 laporan asap/kebakaran, 1.9 `dryingStatus` × asap; +54 test (**198 total**). Gate G1 "≥ 25 test baru" terpenuhi; "cron berjalan" & "episode ≤ 30 menit" menunggu Sprint 3.
+**Sprint 3 (berikutnya):** 1.8/1.8b peringatan CAP + cron Telegram (termasuk ringkasan `/api/fire-danger?location=all`), 1.6b peta SVG hotspot, 1.9 faskes per kecamatan, 1.9c banner iklim, 1.9d riwayat + halaman batasan, 1.10b arsip harian → Gate G1.
 
 ## Fase 2 — v2.1 "Gempa, Vulkanik, Konvektif, Banjir+" (Des 2026)
 | # | Pekerjaan | Keluaran |

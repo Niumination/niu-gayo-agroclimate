@@ -22,7 +22,10 @@ export function readToken(name) {
   }
 }
 
-const VALID_TYPES = new Set(['longsor', 'banjir', 'angin', 'karat'])
+// v2 Fase 1 (FR-ASAP-6): tipe `asap` (wajib skala jarak pandang) & `kebakaran`.
+const VALID_TYPES = new Set(['longsor', 'banjir', 'angin', 'karat', 'asap', 'kebakaran'])
+export const VISIBILITY_SCALE = new Set(['>5km', '1-5km', '<1km'])
+export const VISIBILITY_LABEL = { '>5km': 'jarak pandang > 5 km', '1-5km': 'jarak pandang 1–5 km', '<1km': 'jarak pandang < 1 km' }
 const VALID_LOCATIONS = new Set([
   'bebesan', 'takengon', 'pegasing', 'kutepanang', 'atulintang',
   'jagongjeget', 'luttawar', 'bintang', 'kebayakan', 'bies',
@@ -63,11 +66,18 @@ export function rateLimited(ip) {
 
 /** Validasi body laporan. Return {error} atau laporan bersih. */
 export function validateReport(body) {
-  const { location, type, note } = body || {}
+  const { location, type, note, visibility, smell, active } = body || {}
   if (!VALID_LOCATIONS.has(location)) return { error: "field 'location' harus id sentra yang valid" }
-  if (!VALID_TYPES.has(type)) return { error: "field 'type' harus salah satu: longsor, banjir, angin, karat" }
+  if (!VALID_TYPES.has(type)) return { error: "field 'type' harus salah satu: longsor, banjir, angin, karat, asap, kebakaran" }
   const cleanNote = String(note || '').slice(0, 500) // bukan PII, batasi panjang
-  return { report: { location, type, note: cleanNote } }
+  const report = { location, type, note: cleanNote }
+  if (type === 'asap') {
+    if (!VISIBILITY_SCALE.has(visibility)) return { error: "laporan 'asap' wajib menyertakan 'visibility': >5km | 1-5km | <1km" }
+    report.visibility = visibility
+    report.smell = Boolean(smell)
+  }
+  if (type === 'kebakaran') report.active = active == null ? null : Boolean(active)
+  return { report }
 }
 
 function appendTimestamp(report) {
@@ -89,7 +99,7 @@ async function relayTelegram(report) {
   const chatId = readToken('TELEGRAM_HOME_CHANNEL')
   const topicId = readToken('TELEGRAM_CRON_THREAD_ID') || '55'
   if (!token || !chatId) return { ok: false, error: 'TELEGRAM_BOT_TOKEN/TELEGRAM_HOME_CHANNEL tidak tersedia' }
-  const text = `📍 *Laporan warga* — ${report.location}\nJenis: ${report.type}${report.note ? `\nCatatan: ${report.note}` : ''}\nWaktu: ${report.timestamp}`
+  const text = `📍 *Laporan warga* — ${report.location}\nJenis: ${report.type}${reportDetail(report)}${report.note ? `\nCatatan: ${report.note}` : ''}\nWaktu: ${report.timestamp}`
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
@@ -102,6 +112,13 @@ async function relayTelegram(report) {
   } catch (err) {
     return { ok: false, error: err.message }
   }
+}
+
+/** Baris detail tipe khusus untuk pesan relay. */
+export function reportDetail(report) {
+  if (report.type === 'asap') return `\nSkala: ${VISIBILITY_LABEL[report.visibility] ?? report.visibility}${report.smell ? ', bau asap menyengat' : ''}`
+  if (report.type === 'kebakaran' && report.active != null) return `\nApi: ${report.active ? 'masih menyala' : 'sudah padam/tidak terlihat'}`
+  return ''
 }
 
 /** Laporan 7 hari terakhir untuk satu lokasi (atau semua bila location kosong). */

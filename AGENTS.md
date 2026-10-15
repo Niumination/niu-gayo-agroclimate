@@ -31,3 +31,6 @@ Niu Gayo Agro-Climate adalah dashboard web presisi tinggi untuk memantau mikrokl
 - Akses publik: `https://cuaca.abstract.biz.id` (Cloudflare Tunnel) — `/api/*` + `/healthz` forward ke :7455
 - Dev: `npm run dev` mem-proxy `/api` ke `127.0.0.1:7455` — jalankan `node server/index.js` bersamaan agar kartu konsensus/BMKG/kualitas udara tampil
 - Cek cepat H-ASAP: `curl -s 'http://127.0.0.1:7455/api/air-quality?location=takengon' | head -c 600` (lihat `docs/THRESHOLDS.md` §7–9)
+- Cek cepat H-API/H-KERING (Sprint 2): `curl -s 'http://127.0.0.1:7455/api/fire-danger?location=takengon'`, `.../api/hotspots?location=takengon`, `.../api/drought?location=takengon` (`docs/THRESHOLDS.md` §10–12). Panggilan pertama ±5–10 detik (arsip 90 hari × 15 sentra diambil per lokasi, TTL 12 jam); file runtime `server/data/archive-<id>.json` & `fwi-state.json` (gitignored) boleh dihapus kapan saja.
+- Hotspot berjalan *degraded* (kartu tetap tampil) sampai `FIRMS_MAP_KEY` diisi di `.env` — tugas manusia H-1 (`docs/dev/09-DATA-PREP.md` §2). Jangan commit kunci.
+- Ambang (`src/domain/thresholds.js`) dan `docs/THRESHOLDS.md` harus diubah bersamaan; test server memakai `fetchImpl` mock + `dataDir` sementara — jangan menulis ke `server/data/` dari test.

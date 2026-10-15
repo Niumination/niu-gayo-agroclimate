@@ -7,7 +7,7 @@
  * dengan konstanta FFMC 147.27723 (tests/fixtures/hazards/fwi-cffdrs-test_fwi-expected.csv).
  * Dipindahkan dari docs/dev/prototypes/fwi.mjs (iterasi 9).
  */
-import { FWI as T } from '../thresholds.js'
+import { FWI as T, FWI_OPS } from '../thresholds.js'
 
 // Panjang hari efektif DMC (Le) & faktor pengeringan DC (Lf) — tabel standar 46° LU.
 const DAY_LENGTH_DMC = [6.5, 7.5, 9.0, 12.8, 13.9, 13.9, 12.4, 10.9, 9.4, 8.0, 7.0, 6.0]
@@ -134,18 +134,20 @@ export function stepFwi({ temp, rh, wind, rain, month, prev = T.defaultStart, eq
  * days: [{ date, temp, rh, wind, rain, month? }] terurut naik. Baris dengan input null dilewati (state dipertahankan).
  * Mengembalikan state terakhir + jumlah hari yang dihitung.
  */
-export function runFwiSeries(days, { start = T.defaultStart, equator = T.equator } = {}) {
+export function runFwiSeries(days, { start = T.defaultStart, equator = T.equator, keepHistory = false } = {}) {
   let state = { ...start }
   let computed = 0
   let lastDate = null
+  const history = keepHistory ? [] : null
   for (const d of days || []) {
     if ([d.temp, d.rh, d.wind, d.rain].some((v) => v == null || Number.isNaN(v))) continue
     const month = d.month ?? (d.date ? Number(String(d.date).slice(5, 7)) : 1)
     state = stepFwi({ temp: d.temp, rh: d.rh, wind: d.wind, rain: d.rain, month, prev: state, equator })
     computed++
     lastDate = d.date ?? lastDate
+    if (history) history.push({ date: d.date ?? null, ...state, obs: { temp: d.temp, rh: d.rh, wind: d.wind, rain: d.rain }, basis: d.basis ?? 'archive' })
   }
-  return { ...state, computedDays: computed, lastDate }
+  return history ? { ...state, computedDays: computed, lastDate, history } : { ...state, computedDays: computed, lastDate }
 }
 
 // ---- Kelas FDRS Indonesia ----
@@ -181,4 +183,88 @@ export function fireDangerClass({ ffmc: f, fwi: w, hotspotWithin10km = 0, hthDay
   let best = cls.filter(Boolean).sort((a, b) => rank[b] - rank[a])[0] ?? 'rendah'
   if (best === 'ekstrem' && !(hotspotWithin10km > 0 || hthDays >= 21)) best = 'tinggi'
   return best
+}
+
+/** Kelas FDRS (rendah/sedang/tinggi/ekstrem) → level UI 4 tingkat (docs/dev/06 §2.1: rendah/rendah/waspada/bahaya). */
+export function fdrsClassToLevel(cls) {
+  if (cls === 'ekstrem') return 'bahaya'
+  if (cls === 'tinggi') return 'waspada'
+  return 'rendah'
+}
+
+/** Kelas DC "potensi asap" bahan organik dalam — BMKG karhutla/dc & de Groot et al. 2007: 0–140 · 141–260 · 261–350 · > 350. */
+export function dcClass(v) {
+  if (v == null) return null
+  if (v > T.dc.ekstrem) return 'ekstrem'
+  if (v > T.dc.tinggi) return 'tinggi'
+  if (v > T.dc.sedang) return 'sedang'
+  return 'rendah'
+}
+
+const FIRE_ADVICE = {
+  rendah: [
+    'Bahan bakar permukaan masih lembap; tetap hindari membakar serasah dekat kebun saat angin kencang.',
+    'Saat membersihkan kebun, kumpulkan serasah untuk kompos/mulsa — bukan dibakar.',
+  ],
+  waspada: [
+    'Serasah dan rumput kering mudah menyala: TIDAK membakar lahan/serasah; padamkan puntung dan bara sepenuhnya.',
+    'Siapkan sekat bakar (jalur bersih 2–3 m) di tepi kebun yang berbatasan dengan semak/ilalang.',
+    'Simpan nomor Damkar/BPBD dan sepakati titik kumpul kampung bila ada kebakaran.',
+  ],
+  bahaya: [
+    'Potensi penyalaan tinggi dan api sulit dikendalikan: larangan total aktivitas api di kebun dan ladang.',
+    'Pantau hotspot terdekat; bila melihat asap/api, lapor ke Damkar/BPBD dan tombol "Lapor kejadian" (jenis kebakaran).',
+    'Siapkan jalur evakuasi ternak & keluarga, masker, dan cadangan air; jauhkan BBM/gas dari area rawan.',
+  ],
+  ekstrem: [
+    'Siaga kebakaran: hotspot aktif di sekitar sentra dengan cuaca sangat mendukung penjalaran api.',
+    'Ikuti arahan BPBD/Manggala Agni; utamakan keselamatan jiwa — jangan memadamkan api besar sendirian.',
+    'Lindungi kelompok rentan dari asap (ruang bersih, masker) dan siapkan evakuasi bila api mendekat.',
+  ],
+}
+
+/**
+ * Penilaian bahaya kebakaran per sentra (FR-API-4/5) menggabungkan kode FWI hari ini, hotspot, dan HTH.
+ * @param {{ fwi?: {ffmc,dmc,dc,isi,bui,fwi}|null, hotspots?: object|null, hthDays?: number|null }} input
+ *   hotspots = ringkasan per sentra dari mapHotspots().perLocation[id]
+ */
+export function assessFireDanger({ fwi: codes = null, hotspots = null, hthDays: hth = null } = {}) {
+  const hs10 = hotspots?.within10km24h ?? 0
+  const hs25 = hotspots?.within25km24h ?? 0
+  const classes = codes
+    ? { ffmc: ffmcClass(codes.ffmc), fwi: fwiClass(codes.fwi), isi: isiClass(codes.isi), dc: dcClass(codes.dc) }
+    : { ffmc: null, fwi: null, isi: null, dc: null }
+  const display = codes ? fireDangerClass({ ffmc: codes.ffmc, fwi: codes.fwi, hotspotWithin10km: hs10, hthDays: hth ?? 0 }) : null
+  let level = display ? fdrsClassToLevel(display) : 'rendah'
+  // Hotspot aktif menaikkan level (≤ 10 km bahaya, ≤ 25 km waspada).
+  const rank = { rendah: 0, waspada: 1, bahaya: 2, ekstrem: 3 }
+  const hsLevel = hs10 > 0 ? 'bahaya' : hs25 > 0 ? 'waspada' : 'rendah'
+  if (rank[hsLevel] > rank[level]) level = hsLevel
+  // Ekstrem: FWI > 13 DAN hotspot ≤ 25 km dalam 24 jam (docs/dev/06 §2.1).
+  const extreme = !!codes && codes.fwi > T.fwi.ekstrem && hs25 > 0
+  if (extreme) level = 'ekstrem'
+  // FR-API-5: Siaga Kebakaran Lokal = FFMC ≥ 78 DAN hotspot ≤ 25 km (24 jam).
+  const siagaLokal = !!codes && codes.ffmc >= FWI_OPS.siagaFfmc && hs25 > 0
+  const headline = codes
+    ? `FWI ${codes.fwi.toFixed(1)} — ${capital(classes.fwi)} · FFMC ${codes.ffmc.toFixed(0)} (${capital(classes.ffmc)})`
+    : 'Kode FWI belum tersedia'
+  return {
+    level,
+    displayClass: display,
+    classes,
+    extreme,
+    siagaLokal,
+    headline,
+    advice: FIRE_ADVICE[level] ?? FIRE_ADVICE.rendah,
+    drivers: {
+      ffmcExtremeGated: display === 'tinggi' && classes.ffmc === 'ekstrem', // ekstrem diturunkan karena tanpa hotspot/HTH
+      hotspotWithin10km24h: hs10,
+      hotspotWithin25km24h: hs25,
+      hthDays: hth,
+    },
+  }
+}
+
+function capital(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'
 }

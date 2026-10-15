@@ -11,7 +11,7 @@ import { sliceHourlyFromCurrent, currentSolarRad, apiTimestamp } from '../domain
 
 function colorForLevel(level) {
   const l = String(level)
-  if (l.includes('Bahaya') || l === 'Tinggi') return 'text-rose-500 dark:text-rose-400'
+  if (l.includes('Bahaya') || l === 'Tinggi' || l.startsWith('Tunda')) return 'text-rose-500 dark:text-rose-400'
   if (l.includes('Waspada') || l === 'Sedang') return 'text-amber-500 dark:text-amber-400'
   return 'text-emerald-500 dark:text-emerald-400'
 }
@@ -34,7 +34,7 @@ export async function getAgroClimateData(location) {
   // --- Agro-kopi (threshold sederhana) ---
   const ts = tempStatus(temp)
   const rr = rustRisk(rh, temp)
-  const ds = dryingStatus(rain, solarRad, rh)
+  let ds = dryingStatus(rain, solarRad, rh)
 
   // --- M3: karat daun berbasis leaf wetness rolling 48 jam (skor 0-100) ---
   const nowIdx = hourly.time.indexOf(curr.time)
@@ -102,16 +102,21 @@ export async function getAgroClimateData(location) {
   let seasonal = null
   let communityReports = null
   let airQuality = null
+  let fireDanger = null
+  let drought = null
   try {
     const base = import.meta.env.BASE_URL || '/agroclimate/'
     const api = (p) => `${base.replace(/\/$/, '')}/api/${p}`
-    const [cRes, bRes, hRes, sRes, aRes] = await Promise.allSettled([
+    const [cRes, bRes, hRes, sRes, aRes, fRes, dRes] = await Promise.allSettled([
       fetch(api(`consensus?location=${encodeURIComponent(location.id)}`)),
       fetch(api('bmkg-nowcast')),
       fetch(api(`disaster-history?location=${encodeURIComponent(location.id)}`)),
       fetch(api('seasonal')),
       // H-ASAP (v2 Fase 1) — ISPU estimasi CAMS + proksi kabut asap (best-effort)
       fetch(api(`air-quality?location=${encodeURIComponent(location.id)}`)),
+      // H-API (Sprint 2) — FWI harian + hotspot FIRMS + HTH; H-KERING — HTH & neraca air (best-effort)
+      fetch(api(`fire-danger?location=${encodeURIComponent(location.id)}`)),
+      fetch(api(`drought?location=${encodeURIComponent(location.id)}`)),
     ])
     if (cRes.status === 'fulfilled' && cRes.value.ok) consensus = await cRes.value.json()
     if (bRes.status === 'fulfilled' && bRes.value.ok) bmkgNowcast = await bRes.value.json()
@@ -124,6 +129,13 @@ export async function getAgroClimateData(location) {
     if (sRes.status === 'fulfilled' && sRes.value.ok) seasonal = await sRes.value.json()
     // H-ASAP — payload degraded tetap diteruskan agar kartu bisa menampilkan "tidak tersedia"
     if (aRes.status === 'fulfilled' && aRes.value.ok) airQuality = await aRes.value.json()
+    if (fRes.status === 'fulfilled' && fRes.value.ok) fireDanger = await fRes.value.json()
+    if (dRes.status === 'fulfilled' && dRes.value.ok) drought = await dRes.value.json()
+    // FR-ASAP-5 — dampak asap ke jendela penjemuran (ISPU ≥ 101 atau AOD ≥ 1 & DNI < 300 → "Tunda (asap)")
+    const aq = airQuality?.assessment
+    if (aq?.ispu) {
+      ds = dryingStatus(rain, solarRad, rh, { ispu: aq.ispu.index, aod: aq.measurements?.aod ?? null, dni: solarRad })
+    }
     // F8 — laporan warga 7 hari terakhir (best-effort)
     try {
       const rRes = await fetch(api(`reports?location=${encodeURIComponent(location.id)}`))
@@ -179,5 +191,8 @@ export async function getAgroClimateData(location) {
     },
     // H-ASAP — kualitas udara & kabut asap (null bila API proxy tidak tersedia)
     airQuality,
+    // H-API — bahaya kebakaran (FWI + hotspot + HTH) & H-KERING — kekeringan (null bila API proxy tidak tersedia)
+    fireDanger,
+    drought,
   }
 }

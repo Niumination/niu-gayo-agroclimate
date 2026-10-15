@@ -148,5 +148,58 @@ export const FWI = {
   ffmc: { sedang: 73, tinggi: 78, ekstrem: 83 },   // ≥
   fwi: { sedang: 1, tinggi: 6, ekstrem: 13 },       // >
   isi: { sedang: 2, tinggi: 5, ekstrem: 6 },        // ≥
+  dc: { sedang: 140, tinggi: 260, ekstrem: 350 },   // > — potensi asap bahan organik dalam (BMKG karhutla/dc; de Groot dkk. 2007)
   equator: true,                                    // Gayo 4–5° LU → panjang hari DMC 9 jam, faktor DC 1,4 (Lawson & Armitage 2008)
+}
+
+/**
+ * H-API — hotspot NASA FIRMS (docs/dev/06 §2.2). Radius ke sentra: ≤ 10 km bahaya · ≤ 25 km waspada · ≤ 50 km informasi.
+ * Saringan keyakinan: VIIRS `confidence` n/h (nominal/high); MODIS `confidence` ≥ 50 %. FRP ≥ 20 MW ditandai "intens".
+ * Hotspot = indikasi anomali panas, belum tentu kebakaran (SiPongi/KLHK).
+ */
+export const HOTSPOT = {
+  radiusBahayaKm: 10,
+  radiusWaspadaKm: 25,
+  radiusInfoKm: 50,
+  frpIntenseMw: 20,
+  modisMinConfidence: 50,
+  viirsConfidence: ['n', 'h', 'nominal', 'high'],
+  windowHours: 24,      // jendela utama
+  trendHours: 48,       // jendela tren
+}
+
+/**
+ * H-API — operasional FWI harian (docs/THRESHOLDS.md §10): pengamatan "siang" diambil dari jam `obsHourWib`
+ * (standar FWI: 12.00 waktu setempat; matahari tertinggi Takengon ≈ 12.32 WIB), hujan = akumulasi 24 jam hingga jam itu.
+ * Spin-up dari arsip ERA5 (`spinUpDays`) agar DMC/DC tidak bergantung nilai awal; proyeksi `forecastDays` hari dari prakiraan ECMWF.
+ * Status "Siaga Kebakaran Lokal" (FR-API-5): FFMC ≥ `siagaFfmc` DAN hotspot ≤ 25 km dalam 24 jam.
+ */
+export const FWI_OPS = {
+  obsHourWib: 12,
+  spinUpDays: 90,
+  minSpinUpDays: 20,    // di bawah ini hasil ditandai "spin-up pendek"
+  forecastDays: 2,
+  historyDays: 7,
+  siagaFfmc: 78,
+}
+
+/**
+ * H-KERING — Hari Tanpa Hujan berturut-turut (HTH) kelas BMKG (hari dengan hujan < `rainDayMm` dihitung mundur
+ * dari hari terakhir berdata; hari terakhir ≥ 1 mm → "HH", hari hujan). Level UI (docs/dev/06 §3):
+ * 0–10 rendah · 11–20 waspada · 21–60 bahaya · > 60 ekstrem.
+ */
+export const HTH = {
+  rainDayMm: 1,
+  classes: { sangatPendek: 5, pendek: 10, menengah: 20, panjang: 30, sangatPanjang: 60 }, // batas atas (≤)
+  waspada: 11,
+  bahaya: 21,
+  ekstrem: 61,
+  projectionDays: 3,    // prakiraan harian yang digabung untuk "HTH proyeksi"
+}
+
+/** H-KERING — neraca air 30 hari Σ(P − ET0) mm (indikatif, kalibrasi lokal menyusul; FR-KER-3). */
+export const WATER_BALANCE = {
+  days: 30,
+  waspada: -60,
+  bahaya: -120,
 }

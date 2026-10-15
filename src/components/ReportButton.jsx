@@ -7,12 +7,27 @@ const TYPES = [
   { value: 'banjir', label: 'Banjir / banjir bandang' },
   { value: 'angin', label: 'Angin kencang' },
   { value: 'karat', label: 'Karat daun kopi' },
+  // v2 Fase 1 (FR-ASAP-6): kabut asap (skala jarak pandang + bau) & kebakaran lahan/hutan
+  { value: 'asap', label: 'Kabut asap' },
+  { value: 'kebakaran', label: 'Kebakaran lahan / hutan' },
 ]
+const VISIBILITY = [
+  { value: '>5km', label: 'Jarak pandang > 5 km (tipis)' },
+  { value: '1-5km', label: 'Jarak pandang 1–5 km (sedang)' },
+  { value: '<1km', label: 'Jarak pandang < 1 km (pekat)' },
+]
+const PLACEHOLDER = {
+  asap: 'cth: asap sejak pagi, bau menyengat, anak-anak batuk',
+  kebakaran: 'cth: api di semak dekat kebun, arah angin ke kampung',
+}
 
 export default function ReportButton({ location, onSubmitted, className = '' }) {
   const [open, setOpen] = useState(false)
   const [type, setType] = useState('longsor')
   const [note, setNote] = useState('')
+  const [visibility, setVisibility] = useState('1-5km')
+  const [smell, setSmell] = useState(false)
+  const [active, setActive] = useState(true)
   const [status, setStatus] = useState(null) // 'sending' | 'ok' | 'error'
   const dialogRef = useRef(null)
 
@@ -45,7 +60,13 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
       const res = await fetch(`${base}/api/reports`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: location.id, type, note }),
+        body: JSON.stringify({
+          location: location.id,
+          type,
+          note,
+          ...(type === 'asap' ? { visibility, smell } : {}),
+          ...(type === 'kebakaran' ? { active } : {}),
+        }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setStatus('ok')
@@ -87,6 +108,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
             </h2>
             <p className="mt-1 text-[11px] text-ink/50 dark:text-mist/45">
               Laporan diteruskan ke koordinator BPBD. Tidak ada data pribadi yang dikumpulkan.
+              {type === 'kebakaran' && <strong className="block mt-1 text-cherry-deep dark:text-cherry-soft">Api besar/mengancam rumah: hubungi Damkar 113 / BPBD lebih dulu.</strong>}
             </p>
             <form onSubmit={submit} className="mt-4 space-y-3">
               <div>
@@ -104,6 +126,38 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                   ))}
                 </select>
               </div>
+              {type === 'asap' && (
+                <>
+                  <div>
+                    <label htmlFor="report-visibility" className="block text-[13px] font-medium text-ink/70 dark:text-mist/60">
+                      Seberapa pekat asapnya?
+                    </label>
+                    <select
+                      id="report-visibility"
+                      value={visibility}
+                      onChange={(e) => setVisibility(e.target.value)}
+                      className="mt-1 w-full min-h-[44px] rounded-md border border-ink/15 dark:border-mist/15 bg-transparent px-3 text-[13px] text-ink dark:text-mist"
+                    >
+                      {VISIBILITY.map((v) => (
+                        <option key={v.value} value={v.value}>{v.label}</option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-[11px] text-ink/50 dark:text-mist/45">
+                      Patokan: bukit/menara yang biasanya terlihat jelas tidak tampak = &lt; 1 km.
+                    </p>
+                  </div>
+                  <label className="flex items-center gap-2 min-h-[44px] text-[13px] text-ink/75 dark:text-mist/70">
+                    <input type="checkbox" checked={smell} onChange={(e) => setSmell(e.target.checked)} className="w-4 h-4" />
+                    Bau asap menyengat / mata perih
+                  </label>
+                </>
+              )}
+              {type === 'kebakaran' && (
+                <label className="flex items-center gap-2 min-h-[44px] text-[13px] text-ink/75 dark:text-mist/70">
+                  <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="w-4 h-4" />
+                  Api masih menyala saat ini
+                </label>
+              )}
               <div>
                 <label htmlFor="report-note" className="block text-[13px] font-medium text-ink/70 dark:text-mist/60">
                   Catatan (opsional)
@@ -114,7 +168,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                   maxLength={500}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="cth: longsor kecil di jalur kebun, hujan deras sejak sore"
+                  placeholder={PLACEHOLDER[type] || 'cth: longsor kecil di jalur kebun, hujan deras sejak sore'}
                   className="mt-1 w-full rounded-md border border-ink/15 dark:border-mist/15 bg-transparent px-3 py-2 text-[13px] text-ink dark:text-mist"
                 />
               </div>
