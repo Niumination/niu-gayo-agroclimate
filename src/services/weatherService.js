@@ -107,6 +107,7 @@ export async function getAgroClimateData(location) {
   let airQuality = null
   let fireDanger = null
   let drought = null
+  let hazardsAll = null
   try {
     const base = import.meta.env.BASE_URL || '/agroclimate/'
     const api = (p) => `${base.replace(/\/$/, '')}/api/${p}`
@@ -121,6 +122,8 @@ export async function getAgroClimateData(location) {
       fetch(api(`fire-danger?location=${encodeURIComponent(location.id)}`)),
       fetch(api(`drought?location=${encodeURIComponent(location.id)}`)),
     ])
+    // 1.6b — ringkasan level 15 sentra untuk peta skematik (best-effort)
+    const hzAllP = fetch(api('hazards?location=all')).then((r) => (r.ok ? r.json() : null)).catch(() => null)
     if (cRes.status === 'fulfilled' && cRes.value.ok) consensus = await cRes.value.json()
     if (bRes.status === 'fulfilled' && bRes.value.ok) bmkgNowcast = await bRes.value.json()
     // F4 — riwayat bencana per sentra (best-effort)
@@ -144,6 +147,7 @@ export async function getAgroClimateData(location) {
       const rRes = await fetch(api(`reports?location=${encodeURIComponent(location.id)}`))
       if (rRes.ok) communityReports = await rRes.json()
     } catch { /* abaikan */ }
+    hazardsAll = await hzAllP
   } catch {
     // jangan blokir dashboard
   }
@@ -221,5 +225,7 @@ export async function getAgroClimateData(location) {
     drought,
     // v2 Fase 0 — hasil registry multi-bahaya { results[], worst, active[], counts } (null bila evaluasi gagal)
     hazards,
+    // 1.6b — ringkasan level 15 sentra dari server (/api/hazards?location=all) untuk peta skematik
+    hazardsAll,
   }
 }

@@ -15,6 +15,7 @@ import ClimateBanner from './components/ClimateBanner'
 import DisasterHistoryCard from './components/DisasterHistoryCard'
 import EmergencyContacts from './components/EmergencyContacts'
 import AboutData from './components/AboutData'
+import SchematicMap from './components/SchematicMap'
 import SeasonalBanner from './components/SeasonalBanner'
 import ReportButton from './components/ReportButton'
 import HourlyForecast from './components/HourlyForecast'
@@ -195,7 +196,11 @@ export default function App() {
   )
 
   const mobileLocations = (
-    <LocationRail selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} tr={tr} />
+    <>
+      {/* 1.6b — peta skematik level 15 sentra (klik → pilih) */}
+      {data && <SchematicMap hazardsAll={data.hazardsAll} selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} hotspots={data.fireDanger?.hotspots?.nearest ?? []} compact />}
+      <LocationRail selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} tr={tr} />
+    </>
   )
 
   /* ---------- Layout desktop ---------- */
@@ -243,12 +248,13 @@ export default function App() {
         </div>
       </div>
 
-      {/* 1.9d riwayat multi-bahaya + FR-X-4 kontak darurat */}
+      {/* 1.6b peta skematik + 1.9d riwayat multi-bahaya + FR-X-4 kontak darurat */}
       <div className="mt-8 pt-6 border-t border-ink/10 dark:border-mist/10 grid grid-cols-12 gap-8">
         <div className="col-span-7 min-w-0">
-          <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} />
+          <SchematicMap hazardsAll={data.hazardsAll} selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} hotspots={data.fireDanger?.hotspots?.nearest ?? []} />
         </div>
-        <div className="col-span-5 min-w-0">
+        <div className="col-span-5 min-w-0 space-y-6">
+          <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} />
           <EmergencyContacts location={selectedLocation} hazard={data.hazards?.active?.[0]?.id ?? '*'} />
         </div>
       </div>
