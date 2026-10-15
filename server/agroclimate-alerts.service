@@ -1,0 +1,11 @@
+[Unit]
+Description=Niu Gayo Agroclimate — siklus peringatan multi-bahaya (Telegram topik cron)
+After=agroclimate-api.service
+Requires=agroclimate-api.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/node %h/niumination/niu-gayo-agroclimate/scripts/alerts-cron.mjs
+Environment=API_BASE=http://127.0.0.1:7455
+# Samakan dengan ALERTS_CRON_TOKEN pada agroclimate-api.service bila diaktifkan
+# Environment=ALERTS_CRON_TOKEN=ganti-dengan-token

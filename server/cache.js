@@ -78,3 +78,9 @@ export function cacheStats() {
   for (const entry of store.values()) if (entry.expiresAt > now) fresh++
   return { entries: store.size, fresh }
 }
+
+/** Nilai cache tanpa memicu fetch (null bila tidak ada) — untuk /healthz status per sumber. */
+export function peek(key) {
+  const hit = store.get(key)
+  return hit ? { value: hit.value, fresh: hit.expiresAt > Date.now(), expiresAt: new Date(hit.expiresAt).toISOString() } : null
+}

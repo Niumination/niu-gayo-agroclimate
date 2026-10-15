@@ -10,10 +10,14 @@
 //   /api/air-quality   — H-ASAP ISPU estimasi (CAMS) + proksi kabut asap per lokasi / ?location=all (TTL 60 menit)
 //   /api/hotspots      — H-API hotspot NASA FIRMS 48 jam (bbox Aceh Tengah+50 km) + ringkasan per sentra / ?location=<id> (TTL 30 menit)
 //   /api/fire-danger   — H-API FWI harian (spin-up arsip ERA5) + hotspot + HTH per lokasi / ?location=all
+//   /api/hazards       — v2 registry bahaya (ADR-12): 7 bahaya per lokasi terurut level / ?location=all ringkasan 15 sentra (TTL HAZARDS_TTL_MIN)
+//   /api/alerts/feed   — 1.8b feed peringatan CAP-JSON 24 jam terakhir (?hours, ?location, ?hazard; ?format=cap&id=<identifier> → CAP 1.2 XML)
+//   /api/alerts/run    — 1.8 POST siklus peringatan (anti-bising 6 jam, Telegram topik cron); ?dryRun=1 tanpa kirim/simpan; header x-cron-token bila ALERTS_CRON_TOKEN diset
 //   /api/drought       — H-KERING HTH kelas BMKG + neraca air 30 hari per lokasi (arsip ERA5 TTL 12 jam)
 import http from 'node:http'
-import { PORT, PROXY_TTL_MIN, ENSEMBLE_TTL_MIN, ALERTS_TTL_MIN, WN2_TTL_MIN, BMKG_TTL_MIN, AQ_TTL_MIN, ARCHIVE_TTL_MIN, FIRMS_TTL_MIN, FIRMS_MAP_KEY } from './config.js'
-import { cached, clearCache, cacheStats } from './cache.js'
+import fs from 'node:fs'
+import { PORT, PROXY_TTL_MIN, ENSEMBLE_TTL_MIN, ALERTS_TTL_MIN, WN2_TTL_MIN, BMKG_TTL_MIN, AQ_TTL_MIN, ARCHIVE_TTL_MIN, FIRMS_TTL_MIN, FIRMS_MAP_KEY, HAZARDS_TTL_MIN, HAZARDS_ENABLED } from './config.js'
+import { cached, clearCache, cacheStats, peek } from './cache.js'
 import { getWeatherForLocation, fetchEnsemble, fetchAllAlerts, computeConsensus } from './openMeteo.js'
 import { fetchBmkgNowcast } from './bmkg.js'
 import { getAirQualityForLocation, getAirQualitySummary } from './airQuality.js'
@@ -23,7 +27,11 @@ import { getFireDanger, getFireDangerSummary } from './fireWeather.js'
 import { assessDrought } from '../src/domain/hazards/drought.js'
 import { seasonalInfo } from '../src/domain/seasonal.js'
 import disasterHistory from '../src/data/disasterHistory.json' with { type: 'json' }
-import { validateReport, rateLimited, submitReport, recentReports } from './reports.js'
+import { validateReport, rateLimited, submitReport, recentReports, readToken } from './reports.js'
+import { getHazardsForLocation, getHazardsAll, archiveSnapshot } from './hazards.js'
+import { runAlertCycle, readFeed } from './alerts.js'
+import { toCapXml } from '../src/domain/alert.js'
+import { parseEnabled } from '../src/domain/hazards/index.js'
 import { LOCATIONS } from '../src/data/locations.js'
 
 const VALID_LOCATIONS = new Set(LOCATIONS.map((l) => l.id)) // Fase 0.2: satu sumber kebenaran (src/data/locations.js)
@@ -74,6 +82,29 @@ const hotspotsGet = () =>
   })
 const fireGet = (id) => getFireDanger(id, { archiveGet, hotspotsGet })
 const fireSummaryGet = () => cached('fire:all', PROXY_TTL_MIN * 60_000, () => getFireDangerSummary(fireGet))
+// v2 registry bahaya (ADR-12) — satu evaluasi per sentra (TTL 10 menit), ringkasan 15 sentra + arsip harian (1.10b, best-effort).
+const HAZARDS_ON = parseEnabled(HAZARDS_ENABLED)
+const PKG_VERSION = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
+  } catch {
+    return null
+  }
+})()
+const hazardsGet = (id) =>
+  cached(`hazards:${id}`, HAZARDS_TTL_MIN * 60_000, () =>
+    getHazardsForLocation(id, { weatherGet, aqGet, fireGet, archiveGet, reportsGet: async (l) => ({ reports: recentReports(l) }), enabled: HAZARDS_ON })
+  )
+const hazardsAllGet = () =>
+  cached('hazards:all', HAZARDS_TTL_MIN * 60_000, async () => {
+    const all = await getHazardsAll(hazardsGet)
+    try {
+      archiveSnapshot(all)
+    } catch (err) {
+      console.warn('[api] arsip bahaya gagal:', err.message)
+    }
+    return all
+  })
 // F1: consensus per lokasi — cache 30 menit (termasuk WN2 yang kuotanya ketat).
 const consensusGet = (id) =>
   cached(`consensus:${id}`, WN2_TTL_MIN * 60_000, async () => {
@@ -86,14 +117,28 @@ const server = http.createServer(async (req, res) => {
   const path = url.pathname
   try {
     if (path === '/healthz') {
-      return json(res, 200, { ok: true, uptime: process.uptime(), cache: cacheStats() })
+      // NFR: status per sumber dari cache (tanpa memicu fetch) + fitur aktif
+      const src = (key) => {
+        const p = peek(key)
+        if (!p) return { state: 'belum-dimuat' }
+        const v = p.value ?? {}
+        return { state: v.degraded ? 'degraded' : 'ok', fresh: p.fresh, retrievedAt: v.retrievedAt ?? v.generatedAt ?? null, error: v.error ?? v.reason ?? undefined }
+      }
+      return json(res, 200, {
+        ok: true,
+        version: PKG_VERSION,
+        uptime: process.uptime(),
+        cache: cacheStats(),
+        features: { hazardsEnabled: HAZARDS_ON, firmsKey: !!FIRMS_MAP_KEY, telegram: !!readToken('TELEGRAM_BOT_TOKEN'), cronToken: !!process.env.ALERTS_CRON_TOKEN },
+        sources: { alerts: src('alerts:all'), bmkgNowcast: src('bmkg:nowcast'), airQuality: src('aq:all'), hotspots: src('firms:all'), fireDanger: src('fire:all'), hazards: src('hazards:all') },
+      })
     }
     if (path === '/api/weather') {
       const id = url.searchParams.get('location')
       if (!id || !VALID_LOCATIONS.has(id)) {
         return json(res, 400, { error: "parameter 'location' wajib dan harus id lokasi yang valid" })
       }
-      const data = await weatherGet(id)
+      const { raw, ...data } = await weatherGet(id)
       return json(res, 200, data)
     }
     if (path === '/api/ensemble') {
@@ -105,8 +150,50 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, data)
     }
     if (path === '/api/alerts') {
-      const data = await alertsGet()
+      // 1.8: agregat lama + ringkasan ISPU (H-ASAP) + level registry per sentra (best-effort, tidak memblokir bila gagal)
+      const [base, aq, hz] = await Promise.allSettled([alertsGet(), aqSummaryGet(), hazardsAllGet()])
+      if (base.status !== 'fulfilled') throw base.reason
+      const data = { ...base.value }
+      data.airQuality = aq.status === 'fulfilled' ? { retrievedAt: aq.value.retrievedAt, worst: aq.value.worst ?? null, degradedCount: aq.value.degradedCount ?? null, locations: (aq.value.locations ?? []).map((l) => ({ id: l.id, level: l.level, ispu: l.ispu, category: l.category ?? null, haze: l.haze ?? null })) } : { degraded: true, error: aq.reason?.message }
+      data.hazards = hz.status === 'fulfilled' ? { retrievedAt: hz.value.retrievedAt, worst: hz.value.worst, activeByHazard: hz.value.activeByHazard, locations: hz.value.locations.map((l) => ({ id: l.id, worst: l.worst, active: l.active, levels: l.levels })) } : { degraded: true, error: hz.reason?.message }
       return json(res, 200, data)
+    }
+    // v2 — registry bahaya per lokasi / ringkasan semua sentra
+    if (path === '/api/hazards') {
+      const id = url.searchParams.get('location')
+      if (id === 'all') {
+        const { _full, ...all } = await hazardsAllGet()
+        return json(res, 200, all)
+      }
+      if (!id || !VALID_LOCATIONS.has(id)) {
+        return json(res, 400, { error: "parameter 'location' wajib: id lokasi yang valid atau 'all'" })
+      }
+      return json(res, 200, await hazardsGet(id))
+    }
+    // 1.8b — feed peringatan (JSON) / satu peringatan sebagai CAP 1.2 XML
+    if (path === '/api/alerts/feed') {
+      const hours = Math.min(24 * 14, Math.max(1, Number(url.searchParams.get('hours')) || 24))
+      const location = url.searchParams.get('location')
+      const hazard = url.searchParams.get('hazard')
+      const feed = readFeed({ hours, location: location && VALID_LOCATIONS.has(location) ? location : null, hazard })
+      if (url.searchParams.get('format') === 'cap') {
+        const wanted = url.searchParams.get('id')
+        const alert = wanted ? feed.find((a) => a.identifier === wanted) : feed[0]
+        if (!alert) return json(res, 404, { error: 'peringatan tidak ditemukan dalam jendela feed' })
+        res.writeHead(200, { 'Content-Type': 'application/cap+xml; charset=utf-8', 'Access-Control-Allow-Origin': '*' })
+        return res.end(toCapXml(alert))
+      }
+      return json(res, 200, { generatedAt: new Date().toISOString(), hours, count: feed.length, alerts: feed })
+    }
+    // 1.8 — siklus peringatan (dipanggil scripts/alerts-cron.mjs). Server hanya mendengar 127.0.0.1; token opsional.
+    if (path === '/api/alerts/run') {
+      if (req.method !== 'POST') return json(res, 405, { error: 'gunakan POST' })
+      const token = process.env.ALERTS_CRON_TOKEN
+      if (token && req.headers['x-cron-token'] !== token) return json(res, 403, { error: 'token cron tidak cocok' })
+      const dryRun = ['1', 'true'].includes(url.searchParams.get('dryRun'))
+      const all = await hazardsAllGet()
+      const result = await runAlertCycle(all, { dryRun })
+      return json(res, 200, result)
     }
     if (path === '/api/consensus') {
       const id = url.searchParams.get('location')

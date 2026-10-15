@@ -1,0 +1,12 @@
+[Unit]
+Description=Niu Gayo Agroclimate — jalankan siklus peringatan tiap 30 menit
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=30min
+RandomizedDelaySec=60
+Persistent=true
+Unit=agroclimate-alerts.service
+
+[Install]
+WantedBy=timers.target

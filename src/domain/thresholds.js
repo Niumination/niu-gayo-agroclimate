@@ -94,7 +94,8 @@ export const WIND = {
 export const WIND_GUST = {
   waspada: 40.0,  // km/jam
   bahaya: 60.0,
-  ekstrem: 45.0,  // FR-KONV-4: hembusan ≥ 45 km/jam = kriteria cuaca ekstrem BMKG (penanda, docs/THRESHOLDS.md §13)
+  ekstrem: 75.0,      // skala seragam registry: ≈ Beaufort 9 (strong gale 75–88 km/jam, kerusakan struktur ringan) — docs/THRESHOLDS.md §13
+  bmkgEkstrem: 45.0,  // FR-KONV-4: hembusan ≥ 45 km/jam (≥ 25 knot) = kriteria cuaca ekstrem BMKG → penanda `flags.bmkgExtreme`, bukan level
 }
 
 /** Ensemble (S3/M3): keyakinan probabilistik pada kartu peringatan. */

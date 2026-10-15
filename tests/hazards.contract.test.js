@@ -138,9 +138,9 @@ test('longsor/banjir/angin/karat: skenario basah-berangin aktif, skenario tenang
   const calm = evaluateAll({ location: LOC, now: '2026-10-15T12:00:00Z', weather: weatherFeatures(syntheticRaw()) })
   for (const id of ['longsor', 'banjir', 'angin', 'karat']) assert.equal(calm.results.find((r) => r.id === id).level, 'rendah', id)
 
-  const storm = evaluateAll({ location: LOC, now: '2026-10-15T12:00:00Z', weather: weatherFeatures(syntheticRaw({ rainPerHour: 6, nextRain: 8, gust: 65, soil: 0.45, leafWet: 95, temp: 21, daily: 120 })) })
+  const storm = evaluateAll({ location: LOC, now: '2026-10-15T12:00:00Z', weather: weatherFeatures(syntheticRaw({ rainPerHour: 6, nextRain: 8, gust: 80, soil: 0.45, leafWet: 95, temp: 21, daily: 120 })) })
   const by = Object.fromEntries(storm.results.map((r) => [r.id, r]))
-  assert.equal(by.angin.level, 'ekstrem') // ≥ 60 bahaya & ≥ 45 ekstrem (BMKG) → ekstrem
+  assert.equal(by.angin.level, 'ekstrem') // ≥ 75 km/jam
   assert.ok(LEVEL_ORDER[by.longsor.level] >= LEVEL_ORDER.bahaya, by.longsor.headline)
   assert.ok(LEVEL_ORDER[by.banjir.level] >= LEVEL_ORDER.waspada, by.banjir.headline)
   assert.equal(by.karat.level, 'bahaya')
@@ -151,12 +151,18 @@ test('longsor/banjir/angin/karat: skenario basah-berangin aktif, skenario tenang
   assert.equal(s.levels.angin, 'ekstrem')
 })
 
-test('angin: ekstrem hanya bila hembusan ≥ WIND_GUST.ekstrem (45) — 44 km/jam tetap waspada', () => {
-  assert.equal(WIND_GUST.ekstrem, 45)
-  const w44 = evaluateAll({ location: LOC, now: 'x', weather: weatherFeatures(syntheticRaw({ gust: 44 })) }).results.find((r) => r.id === 'angin')
-  assert.equal(w44.level, 'waspada')
-  const w45 = evaluateAll({ location: LOC, now: 'x', weather: weatherFeatures(syntheticRaw({ gust: 45 })) }).results.find((r) => r.id === 'angin')
-  assert.equal(w45.level, 'ekstrem')
+test('angin: tangga 40/60/75 monoton; ≥ 45 hanya penanda cuaca ekstrem BMKG (flags.bmkgExtreme)', () => {
+  assert.equal(WIND_GUST.ekstrem, 75)
+  assert.equal(WIND_GUST.bmkgEkstrem, 45)
+  const at = (gust) => evaluateAll({ location: LOC, now: 'x', weather: weatherFeatures(syntheticRaw({ gust })) }).results.find((r) => r.id === 'angin')
+  assert.equal(at(44).level, 'waspada')
+  assert.equal(at(44).flags.bmkgExtreme, false)
+  assert.equal(at(45).level, 'waspada')
+  assert.equal(at(45).flags.bmkgExtreme, true)
+  assert.match(at(45).headline, /kriteria cuaca ekstrem BMKG/)
+  assert.equal(at(65).level, 'bahaya')
+  assert.equal(at(75).level, 'ekstrem')
+  assert.equal(at(10).level, 'rendah')
 })
 
 test('banjir: n/a untuk sentra di luar DAS terpantau (misal Pegasing)', () => {

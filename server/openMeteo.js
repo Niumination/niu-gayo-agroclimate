@@ -64,7 +64,9 @@ export async function getWeatherForLocation(id) {
   const loc = findLocation(id)
   if (!loc) throw new Error(`Lokasi tidak dikenal: ${id}`)
   const data = await fetchWeather(loc)
-  return { location: loc, ...parseHourly(data), current: data.current }
+  // `raw` = JSON Open-Meteo apa adanya (hourly/daily/current) untuk registry bahaya server (weatherFeatures);
+  // dibuang oleh route /api/weather agar payload publik tidak berubah.
+  return { location: loc, ...parseHourly(data), current: data.current, raw: { hourly: data.hourly, daily: data.daily, current: data.current } }
 }
 
 /**
