@@ -16,6 +16,7 @@ Dataran Tinggi Gayo (Kabupaten Aceh Tengah) merupakan produsen kopi Arabika orga
 
 ## Fitur (PRD F1–F8)
 - Konsensus multi-model (F1), antecedent rainfall index (F2), PWA offline + i18n id-ID/Gayo + mode terang-gelap (F3), riwayat bencana per sentra (F4), nowcast resmi BMKG (F5), diseminasi Telegram (F6), kalender risiko musiman (F7), lapor warga dengan relay Telegram (F8).
+- **v2 (Fase 1, dalam pengembangan):** kartu **Kabut Asap & Kualitas Udara** — ISPU estimasi (Permen LHK P.14/2020) dari CAMS global via `GET /api/air-quality`, proksi kabut asap dari jarak pandang siang, anjuran kesehatan 4 kelompok; mesin FWI System untuk bahaya kebakaran (kartu menyusul). Lihat [`docs/THRESHOLDS.md`](docs/THRESHOLDS.md) §7–9.
 - Detail status & desain: repo `niu-gayo-agroclimate-docs` (DISASTER-DATA-RESEARCH.md, PLAN.md).
 
 ## 🌐 Live Site
@@ -42,3 +43,6 @@ npm test
 # Build production
 npm run build
 ```
+
+## Rencana pengembangan multi-bahaya
+Dokumen perencanaan perluasan ke semua jenis mitigasi bencana (kabut asap karhutla, kebakaran, gempa, vulkanik, kekeringan, suhu ekstrem, banjir, konvektif, kesehatan) ada di [`docs/dev/README.md`](docs/dev/README.md) — PRD, roadmap, sumber data, arsitektur/ADR, ambang, risk register, tata kelola.

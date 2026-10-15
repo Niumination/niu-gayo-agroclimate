@@ -1,4 +1,4 @@
-// Verifikasi prototipe FWI terhadap dataset uji resmi 49 hari (Van Wagner & Pickett 1985)
+// Verifikasi prototipe FWI terhadap dataset uji resmi 48 hari (Van Wagner & Pickett 1985)
 // dengan nilai harapan dari paket R cffdrs (tests/testthat/data/fwi_01.csv).
 import { readFileSync } from 'node:fs'
 import { stepFwi, setFfmcConstant, FFMC_CONST } from './fwi.mjs'
@@ -15,5 +15,5 @@ for (const [label, K] of Object.entries(FFMC_CONST)) {
     for (const k of Object.keys(exp)) maxDiff[k] = Math.max(maxDiff[k], Math.abs(out[k] - exp[k]))
     prev = out
   }
-  console.log(`Konstanta ${label} (${K}): selisih maksimum 49 hari →`, Object.fromEntries(Object.entries(maxDiff).map(([k, v]) => [k, +v.toFixed(3)])))
+  console.log(`Konstanta ${label} (${K}): selisih maksimum 48 hari →`, Object.fromEntries(Object.entries(maxDiff).map(([k, v]) => [k, +v.toFixed(3)])))
 }

@@ -1,0 +1,133 @@
+{
+  "_meta": {
+    "description": "Kejadian tambahan (multi-bahaya) untuk digabung ke src/data/disasterHistory.json. BELUM digabung karena tests/seasonal.test.js masih membatasi type ∈ {longsor, banjir} dan UI riwayat belum punya ikon/filter per hazard.",
+    "mergeSteps": [
+      "Perluas assert type di tests/seasonal.test.js → {longsor, banjir, kebakaran, gempa, vulkanik, angin, asap}",
+      "Tambahkan field opsional `hazard` (= type), `emergencyStatus`, `district` lintas-kabupaten",
+      "Gabungkan events di bawah ke disasterHistory.events, urutkan tanggal menurun",
+      "Perbarui _meta.description file utama (bukan hanya hidrometeorologi)"
+    ],
+    "schemaAdditions": {
+      "hazard": "string (sama dengan type; disediakan untuk filter)",
+      "emergencyStatus": "null | 'siaga darurat' | 'tanggap darurat' | 'transisi darurat ke pemulihan'",
+      "areaHa": "number (opsional, karhutla)",
+      "volcanoLevel": "'I'|'II'|'III'|'IV' (opsional, vulkanik)",
+      "magnitude": "number (opsional, gempa)"
+    },
+    "lastReviewed": "2026-10-14"
+  },
+  "events": [
+    {
+      "id": "2026-07-19-karhutla-celala",
+      "type": "kebakaran",
+      "hazard": "kebakaran",
+      "date": "2026-07-19",
+      "year": 2026,
+      "district": "Aceh Tengah",
+      "title": "Kebakaran lahan Kampung Kuyun Uken, Celala",
+      "summary": "Laporan masyarakat masuk ke Posko Kecamatan Celala pukul 01.15 WIB; ±1 ha lahan terbakar, tanpa korban; BPBD Aceh Tengah koordinasi & asesmen; api padam.",
+      "locations": [
+        "celala"
+      ],
+      "areaHa": 1,
+      "emergencyStatus": null,
+      "source": "https://www.bnpb.go.id/berita/perkembangan-situasi-dan-penanganan-bencana-di-tanah-air-20-juli-2026"
+    },
+    {
+      "id": "2026-06-01-karhutla-ketol",
+      "type": "kebakaran",
+      "hazard": "kebakaran",
+      "date": "2026-06-01",
+      "year": 2026,
+      "district": "Aceh Tengah",
+      "title": "Kebakaran lahan Desa Simpang 4 Rajawali, Ketol",
+      "summary": "Awal kemarau; 1 ha lahan terbakar, padam oleh personel gabungan BPBD Aceh Tengah, Damkar, TNI, Polri.",
+      "locations": [
+        "ketol"
+      ],
+      "areaHa": 1,
+      "emergencyStatus": null,
+      "source": "https://www.bnpb.go.id/berita/perkembangan-situasi-dan-penanganan-bencana-di-tanah-air-tanggal-2-juni-2026"
+    },
+    {
+      "id": "2026-06-01-karhutla-wihpesam",
+      "type": "kebakaran",
+      "hazard": "kebakaran",
+      "date": "2026-06-01",
+      "year": 2026,
+      "district": "Bener Meriah",
+      "title": "Kebakaran lahan Kampung Simpang Balek, Wih Pesam (Bener Meriah)",
+      "summary": "1 ha lahan terbakar pukul 13.15 WIB; dipadamkan BPBD Bener Meriah & Pos Damkar Utama. Kabupaten tetangga, ±10 km dari sentra Ketol/Kute Panang (relevan untuk asap lokal).",
+      "locations": [
+        "ketol",
+        "kutepanang"
+      ],
+      "areaHa": 1,
+      "emergencyStatus": null,
+      "source": "https://www.bnpb.go.id/berita/perkembangan-situasi-dan-penanganan-bencana-di-tanah-air-tanggal-2-juni-2026"
+    },
+    {
+      "id": "2025-12-30-status-tanggap-darurat-banjir",
+      "type": "banjir",
+      "hazard": "banjir",
+      "date": "2025-12-30",
+      "year": 2025,
+      "district": "Aceh Tengah",
+      "title": "Perpanjangan status tanggap darurat pasca-banjir bandang",
+      "summary": "Aceh Tengah termasuk 11 kabupaten/kota yang memperpanjang status tanggap darurat; status provinsi berakhir 8 Jan 2026 (Pospenas BNPB).",
+      "locations": [
+        "takengon",
+        "bebesan",
+        "kebayakan",
+        "luttawar",
+        "bintang",
+        "silihnara"
+      ],
+      "emergencyStatus": "tanggap darurat",
+      "source": "https://www.bnpb.go.id/berita/enam-wilayah-administrasi-aceh-berstatus-transisi-darurat-ke-pemulihan"
+    },
+    {
+      "id": "2026-01-03-burni-telong-level-ii",
+      "type": "vulkanik",
+      "hazard": "vulkanik",
+      "date": "2026-01-03",
+      "year": 2026,
+      "district": "Bener Meriah",
+      "title": "Burni Telong diturunkan ke Level II (Waspada) dari Level III (Siaga)",
+      "summary": "Unrest Okt 2025 → Normal 1 Nov 2025 → naik hingga Level III (Siaga) → Level II pada 3 Jan 2026; per 1 Jun & 14 Okt 2026 masih Level II (MAGMA), radius rekomendasi 3 km → 2 km. Jarak ke sentra: Ketol 8 km, Kute Panang 10,5 km, Kebayakan 13,6 km, Takengon 15,7 km.",
+      "locations": [
+        "ketol",
+        "kutepanang",
+        "kebayakan",
+        "takengon",
+        "bebesan"
+      ],
+      "volcanoLevel": "II",
+      "emergencyStatus": null,
+      "source": "https://www.tempo.co/lingkungan/pvmbg-turunkan-radius-zona-rekomendasi-gunung-burni-telong-2217739",
+      "sourceLive": "https://magma.esdm.go.id/v1/gunung-api/tingkat-aktivitas"
+    },
+    {
+      "id": "2013-07-02-gempa-gayo-m6.1",
+      "type": "gempa",
+      "hazard": "gempa",
+      "date": "2013-07-02",
+      "year": 2013,
+      "district": "Aceh Tengah & Bener Meriah",
+      "title": "Gempa Gayo M6,1 (Sesar Sumatra segmen Aceh–Tripa)",
+      "summary": "Gempa dangkal MMI VII: 43 tewas, 2.532 luka, > 3.000 rumah hancur; longsor memusnahkan Kampung Bah & Serempah (Ketol); Bener Meriah & Aceh Tengah terdampak paling parah.",
+      "locations": [
+        "ketol",
+        "kutepanang",
+        "kebayakan",
+        "takengon",
+        "bebesan",
+        "silihnara",
+        "bies"
+      ],
+      "magnitude": 6.1,
+      "emergencyStatus": "tanggap darurat",
+      "source": "https://id.wikipedia.org/wiki/Gempa_bumi_Aceh_2013"
+    }
+  ]
+}

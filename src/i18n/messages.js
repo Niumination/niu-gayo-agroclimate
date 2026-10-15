@@ -60,6 +60,13 @@ export const messages = {
     tabForecast: 'Ramalan',
     tabRisk: 'Risiko',
     tabLocations: 'Sentra',
+    // H-ASAP (v2 Fase 1)
+    airQuality: 'Kabut Asap & Kualitas Udara',
+    airQualitySub: 'ISPU estimasi model CAMS global (~40 km) — bukan ISPU resmi',
+    airQualityUnavailable: 'Data kualitas udara belum tersedia saat ini.',
+    haze: 'Kabut asap',
+    outlook24h: 'Prospek 24 jam',
+    advice: 'Anjuran',
   },
   gayo: {
     appName: 'Niu Gayo Agro-Climate',
@@ -114,6 +121,13 @@ export const messages = {
     tabForecast: 'Ramalan',
     tabRisk: 'Risiko',
     tabLocations: 'Sentra',
+    // H-ASAP (v2 Fase 1) — terjemahan Gayo belum ditinjau penutur asli (H-4)
+    airQuality: 'Asap & Udara [?]',
+    airQualitySub: 'ISPU kira-kira model CAMS (~40 km) — bukan ISPU resmi [?]',
+    airQualityUnavailable: 'Data udara gere ara [?]',
+    haze: 'Asap [?]',
+    outlook24h: 'Prospek 24 jam [?]',
+    advice: 'Nasihat [?]',
   },
 }
 

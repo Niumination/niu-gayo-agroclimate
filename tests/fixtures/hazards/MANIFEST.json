@@ -1,0 +1,71 @@
+{
+  "fetchedAt": "2026-10-14T16:05:06.626Z",
+  "note": "Fixture respons nyata untuk test offline modul multi-bahaya. Perbarui dengan: node scripts/fetch-hazard-fixtures.mjs",
+  "results": [
+    {
+      "file": "openmeteo-airquality-takengon.json",
+      "ok": true,
+      "bytes": 9219
+    },
+    {
+      "file": "openmeteo-forecast-bestmatch-visibility.json",
+      "ok": true,
+      "bytes": 2745
+    },
+    {
+      "file": "openmeteo-gfs-cape-li.json",
+      "ok": true,
+      "bytes": 3143
+    },
+    {
+      "file": "openmeteo-ecmwf-convective.json",
+      "ok": true,
+      "bytes": 7721
+    },
+    {
+      "file": "openmeteo-archive-90d.json",
+      "ok": true,
+      "bytes": 7600
+    },
+    {
+      "file": "openmeteo-flood-peusangan-4cells.json",
+      "ok": true,
+      "bytes": 6369
+    },
+    {
+      "file": "bmkg-autogempa.json",
+      "ok": true,
+      "bytes": 497
+    },
+    {
+      "file": "bmkg-gempadirasakan.json",
+      "ok": true,
+      "bytes": 5863
+    },
+    {
+      "file": "bmkg-gempaterkini.json",
+      "ok": true,
+      "bytes": 5189
+    },
+    {
+      "file": "usgs-300km-12mo.geojson",
+      "ok": true,
+      "bytes": 63127
+    },
+    {
+      "file": "magma-tingkat-aktivitas.html",
+      "ok": true,
+      "bytes": 48765
+    },
+    {
+      "file": "petabencana-aceh-7d.geojson",
+      "ok": true,
+      "bytes": 4886
+    },
+    {
+      "file": "bmkg-nowcast-cap.rss",
+      "ok": true,
+      "bytes": 5927
+    }
+  ]
+}

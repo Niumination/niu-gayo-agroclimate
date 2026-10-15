@@ -29,3 +29,5 @@ Niu Gayo Agro-Climate adalah dashboard web presisi tinggi untuk memantau mikrokl
 - Dev Server: `npm run dev` (berjalan di port 5188)
 - Production: `npm run build` → `dist/` di-serve `scripts/serve.py` (:7444); API `server/index.js` (:7455)
 - Akses publik: `https://cuaca.abstract.biz.id` (Cloudflare Tunnel) — `/api/*` + `/healthz` forward ke :7455
+- Dev: `npm run dev` mem-proxy `/api` ke `127.0.0.1:7455` — jalankan `node server/index.js` bersamaan agar kartu konsensus/BMKG/kualitas udara tampil
+- Cek cepat H-ASAP: `curl -s 'http://127.0.0.1:7455/api/air-quality?location=takengon' | head -c 600` (lihat `docs/THRESHOLDS.md` §7–9)

@@ -26,7 +26,7 @@ const SOURCES = [
   },
   {
     file: 'openmeteo-forecast-bestmatch-visibility.json',
-    url: `https://api.open-meteo.com/v1/forecast?latitude=${TAKENGON.lat}&longitude=${TAKENGON.lon}&hourly=visibility,cape,direct_normal_irradiance&forecast_days=2&timezone=${TZ}`,
+    url: `https://api.open-meteo.com/v1/forecast?latitude=${TAKENGON.lat}&longitude=${TAKENGON.lon}&hourly=visibility,relative_humidity_2m,cape,direct_normal_irradiance&forecast_days=2&timezone=${TZ}`,
   },
   {
     file: 'openmeteo-gfs-cape-li.json',

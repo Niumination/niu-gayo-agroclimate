@@ -101,14 +101,17 @@ export async function getAgroClimateData(location) {
   let disasterHistory = null
   let seasonal = null
   let communityReports = null
+  let airQuality = null
   try {
     const base = import.meta.env.BASE_URL || '/agroclimate/'
     const api = (p) => `${base.replace(/\/$/, '')}/api/${p}`
-    const [cRes, bRes, hRes, sRes] = await Promise.allSettled([
+    const [cRes, bRes, hRes, sRes, aRes] = await Promise.allSettled([
       fetch(api(`consensus?location=${encodeURIComponent(location.id)}`)),
       fetch(api('bmkg-nowcast')),
       fetch(api(`disaster-history?location=${encodeURIComponent(location.id)}`)),
       fetch(api('seasonal')),
+      // H-ASAP (v2 Fase 1) — ISPU estimasi CAMS + proksi kabut asap (best-effort)
+      fetch(api(`air-quality?location=${encodeURIComponent(location.id)}`)),
     ])
     if (cRes.status === 'fulfilled' && cRes.value.ok) consensus = await cRes.value.json()
     if (bRes.status === 'fulfilled' && bRes.value.ok) bmkgNowcast = await bRes.value.json()
@@ -119,6 +122,8 @@ export async function getAgroClimateData(location) {
     }
     // F7 — kalender musiman
     if (sRes.status === 'fulfilled' && sRes.value.ok) seasonal = await sRes.value.json()
+    // H-ASAP — payload degraded tetap diteruskan agar kartu bisa menampilkan "tidak tersedia"
+    if (aRes.status === 'fulfilled' && aRes.value.ok) airQuality = await aRes.value.json()
     // F8 — laporan warga 7 hari terakhir (best-effort)
     try {
       const rRes = await fetch(api(`reports?location=${encodeURIComponent(location.id)}`))
@@ -172,5 +177,7 @@ export async function getAgroClimateData(location) {
       lakeRisk: das.level,
       windRisk: wr,
     },
+    // H-ASAP — kualitas udara & kabut asap (null bila API proxy tidak tersedia)
+    airQuality,
   }
 }

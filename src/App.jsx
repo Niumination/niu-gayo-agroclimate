@@ -7,6 +7,7 @@ import LocationRail from './components/LocationRail'
 import InstrumentPanel from './components/InstrumentPanel'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
 import DisasterWarning from './components/DisasterWarning'
+import AirQualityCard from './components/AirQualityCard'
 import SeasonalBanner from './components/SeasonalBanner'
 import ReportButton from './components/ReportButton'
 import HourlyForecast from './components/HourlyForecast'
@@ -152,6 +153,8 @@ export default function App() {
   const mobileNow = data && (
     <>
       <InstrumentPanel current={data.current} daily={data.daily} location={selectedLocation} tr={tr} />
+      {/* H-ASAP (v2 Fase 1) — kabut asap & kualitas udara, tampil di tab utama selama episode karhutla */}
+      <AirQualityCard airQuality={data.airQuality} tr={tr} />
       <CoffeeAdvisory coffee={data.coffee} tr={tr} />
       <SeasonalBanner seasonal={data.disaster?.seasonal} />
       <div className="flex justify-center">
@@ -193,6 +196,8 @@ export default function App() {
 
         {/* Kolom kanan: peringatan + keyakinan ensemble */}
         <div className="col-span-3 min-w-0 space-y-4">
+          {/* H-ASAP (v2 Fase 1) — kabut asap & kualitas udara */}
+          <AirQualityCard airQuality={data.airQuality} tr={tr} />
           <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
           {/* F7 — kalender musiman (rail bawah desktop) */}
           <SeasonalBanner seasonal={data.disaster?.seasonal} />

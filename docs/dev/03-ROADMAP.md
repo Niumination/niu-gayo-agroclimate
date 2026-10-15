@@ -32,14 +32,14 @@ Okt 2026        Nov 2026        Des 2026        Jan 2027        Feb 2027        
 
 | # | Pekerjaan | Keluaran | Dependensi |
 |---|---|---|---|
-| 1.1 | `server/airQuality.js` (Open-Meteo AQ, CAMS global) + `GET /api/air-quality` | FR-ASAP-1 | — |
-| 1.2 | `domain/hazards/airQuality.js`: ISPU P.14/2020, kategori, rata-rata bergerak 24 jam, anjuran 4 kelompok | FR-ASAP-2/4 | 1.1 |
-| 1.3 | Fetch `visibility` (best_match) → proksi kabut; gabung ke kartu | FR-ASAP-3 | 1.1 |
+| 1.1 ✅ | `server/airQuality.js` (Open-Meteo AQ, CAMS global) + `GET /api/air-quality` (+ `?location=all`) — **selesai Sprint 1 (15 Okt 2026)** | FR-ASAP-1 | — |
+| 1.2 ✅ | `domain/hazards/airQuality.js`: ISPU P.14/2020, kategori, rata-rata bergerak 24 jam, anjuran 4 kelompok — **selesai Sprint 1** | FR-ASAP-2/4 | 1.1 |
+| 1.3 ✅ | Fetch `visibility` (best_match) → proksi kabut (jendela 10–17 WIB, saring RH ≥ 90 %, persistensi 2 jam); gabung ke kartu — **selesai Sprint 1** | FR-ASAP-3 | 1.1 |
 | 1.4 | `server/firms.js` (FIRMS Area API CSV → JSON) + `GET /api/hotspots` + haversine ke sentra | FR-API-1/2 | MAP_KEY |
-| 1.5 | `domain/hazards/fireWeather.js`: FWI System + kelas FDRS + state harian + spin-up ERA5 | FR-API-3 | — |
-| 1.6 | Kartu "Kabut Asap & Udara" + kartu "Bahaya Kebakaran" (mobile & desktop) | FR-ASAP-3, FR-API-4 | 1.2–1.5 |
+| 1.5 ◐ | `domain/hazards/fireWeather.js`: FWI System + kelas FDRS (**selesai Sprint 1**, termasuk `runFwiSeries`/`fireDangerClass`) + state harian + spin-up ERA5 (server, Sprint 2) | FR-API-3 | — |
+| 1.6 ◐ | Kartu "Kabut Asap & Udara" (**versi rilis cepat selesai Sprint 1**: `AirQualityCard.jsx`, mobile tab Kini + desktop kolom kanan) + kartu "Bahaya Kebakaran" (Sprint 2) | FR-ASAP-3, FR-API-4 | 1.2–1.5 |
 | 1.6b | `SchematicMap.jsx` SVG (batas kecamatan GADM ≤ 50 kB, sentra, hotspot, angin) | FR-API-6 | 1.4 |
-| 1.5b | Pindahkan prototipe `docs/dev/prototypes/{ispu,fwi}.mjs` → `src/domain/hazards/` + test dari `check.mjs` + dataset `cffdrs` | FR-ASAP-2, FR-API-3 | — |
+| 1.5b ✅ | Pindahkan prototipe `docs/dev/prototypes/{ispu,fwi}.mjs` → `src/domain/hazards/` + test dari `check.mjs` + dataset `cffdrs` — **selesai Sprint 1** (`tests/ispu.test.js`, `tests/fireWeather.test.js`; prototipe tetap ada sebagai referensi) | FR-ASAP-2, FR-API-3 | — |
 | 1.7 | Laporan warga: tipe `asap` (skala jarak pandang) & `kebakaran` | FR-ASAP-6 | 0.2 |
 | 1.8 | `/api/alerts` + cron Telegram "Status Asap Gayo" | FR-ASAP-7/8 | 1.2 |
 | 1.8b | Skema `Alert` bergaya CAP + renderer Telegram/WhatsApp-teks/SMS + anti-kebisingan + tombol "Bagikan ke WhatsApp" | FR-DIS-1/2/3/6, FR-X-7 | 1.2 |
@@ -48,10 +48,12 @@ Okt 2026        Nov 2026        Des 2026        Jan 2027        Feb 2027        
 | 1.9c | Banner konteks iklim (`climateOutlook.json`: El Niño sangat kuat + IOD positif, musim hujan terlambat, puncak Des–Feb) | FR-KER-5 | — |
 | 1.9d | Riwayat F4 diperluas (skema `hazard`, `emergencyStatus`, +6 kejadian 2013–2026) + halaman "Tentang data & batasan" | FR-X-8/9 | — |
 | 1.10b | Arsip harian hazard + `scripts/validate-season.mjs`; surat pengantar ke BPBD Aceh Tengah | FR-X-10, ADR-26 | 1.8 |
-| 1.10 | Dokumen: THRESHOLDS (ISPU, FWI, visibility, HTH), CHANGELOG 2.0.0 | — | — |
+| 1.10 ◐ | Dokumen: THRESHOLDS (ISPU ✅, FWI ✅, visibility ✅, HTH), CHANGELOG 2.0.0 | — | — |
 
 **Gate G1:** episode asap berikutnya tampil di dashboard dalam ≤ 30 menit; cron berjalan; ≥ 25 test baru.
-**Rilis cepat (hotfix opsional, minggu 3):** kartu ISPU + jarak pandang saja (1.1–1.3) agar warga segera terbantu.
+**Rilis cepat (hotfix opsional, minggu 3):** kartu ISPU + jarak pandang saja (1.1–1.3) agar warga segera terbantu. → **Dikerjakan di Sprint 1 (15 Okt 2026): 1.5b, 1.1, 1.2, 1.3 + kartu; +46 test (144 total).**
+**Sprint 2 (berikutnya):** 1.5 (server FWI + spin-up arsip) & 1.9b, 1.4 FIRMS (butuh MAP_KEY, H-1), 1.6 kartu kebakaran, 1.7 tipe laporan asap/kebakaran, 1.9 integrasi `dryingStatus` (aturan `coffeeHazeRule` sudah tersedia di domain).
+**Sprint 3:** 1.8/1.8b peringatan CAP + cron Telegram, 1.6b peta SVG, 1.9/1.9c/1.9d, 1.10 → Gate G1.
 
 ## Fase 2 — v2.1 "Gempa, Vulkanik, Konvektif, Banjir+" (Des 2026)
 | # | Pekerjaan | Keluaran |

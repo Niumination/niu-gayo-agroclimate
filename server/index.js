@@ -7,11 +7,13 @@
 //   /api/alerts        — agregat skor 15 lokasi + indeks hujan DAS + ARI
 //   /api/consensus     — F1 konsensus multi-model per lokasi (ADR-8)
 //   /api/bmkg-nowcast  — F5 peringatan dini resmi BMKG (ADR-10, TTL 10 menit)
+//   /api/air-quality   — H-ASAP ISPU estimasi (CAMS) + proksi kabut asap per lokasi / ?location=all (TTL 60 menit)
 import http from 'node:http'
-import { PORT, PROXY_TTL_MIN, ENSEMBLE_TTL_MIN, ALERTS_TTL_MIN, WN2_TTL_MIN, BMKG_TTL_MIN } from './config.js'
+import { PORT, PROXY_TTL_MIN, ENSEMBLE_TTL_MIN, ALERTS_TTL_MIN, WN2_TTL_MIN, BMKG_TTL_MIN, AQ_TTL_MIN } from './config.js'
 import { cached, clearCache, cacheStats } from './cache.js'
 import { getWeatherForLocation, fetchEnsemble, fetchAllAlerts, computeConsensus } from './openMeteo.js'
 import { fetchBmkgNowcast } from './bmkg.js'
+import { getAirQualityForLocation, getAirQualitySummary } from './airQuality.js'
 import { seasonalInfo } from '../src/domain/seasonal.js'
 import disasterHistory from '../src/data/disasterHistory.json' with { type: 'json' }
 import { validateReport, rateLimited, submitReport, recentReports } from './reports.js'
@@ -44,6 +46,14 @@ const weatherGet = (id) => cached(`weather:${id}`, PROXY_TTL_MIN * 60_000, () =>
 const ensembleGet = (id) => cached(`ensemble:${id}`, ENSEMBLE_TTL_MIN * 60_000, () => fetchEnsemble(id))
 const alertsGet = () => cached('alerts:all', ALERTS_TTL_MIN * 60_000, () => fetchAllAlerts(weatherGet))
 const bmkgGet = () => cached('bmkg:nowcast', BMKG_TTL_MIN * 60_000, () => fetchBmkgNowcast())
+// H-ASAP — payload degraded (fetch gagal) tidak di-cache lama agar pulih cepat.
+const aqGet = (id) =>
+  cached(`aq:${id}`, AQ_TTL_MIN * 60_000, async () => {
+    const data = await getAirQualityForLocation(id)
+    if (data.degraded) throw new Error(data.error || 'air-quality degraded')
+    return data
+  }).catch((err) => ({ location: { id }, retrievedAt: new Date().toISOString(), degraded: true, error: err.message, assessment: null }))
+const aqSummaryGet = () => cached('aq:all', AQ_TTL_MIN * 60_000, () => getAirQualitySummary(aqGet))
 // F1: consensus per lokasi — cache 30 menit (termasuk WN2 yang kuotanya ketat).
 const consensusGet = (id) =>
   cached(`consensus:${id}`, WN2_TTL_MIN * 60_000, async () => {
@@ -88,6 +98,16 @@ const server = http.createServer(async (req, res) => {
     }
     if (path === '/api/bmkg-nowcast') {
       const data = await bmkgGet()
+      return json(res, 200, data)
+    }
+    // H-ASAP — ISPU estimasi + proksi kabut asap (Fase 1)
+    if (path === '/api/air-quality') {
+      const id = url.searchParams.get('location')
+      if (id === 'all') return json(res, 200, await aqSummaryGet())
+      if (!id || !VALID_LOCATIONS.has(id)) {
+        return json(res, 400, { error: "parameter 'location' wajib dan harus id lokasi yang valid (atau 'all')" })
+      }
+      const data = await aqGet(id)
       return json(res, 200, data)
     }
     // F7 — kalender musiman (bulan WIB saat ini)
@@ -147,7 +167,7 @@ const server = http.createServer(async (req, res) => {
 })
 
 server.listen(PORT, '127.0.0.1', () => {
-  console.log(`[api] agroclimate-api listening on 127.0.0.1:${PORT} (ttl weather=${PROXY_TTL_MIN}m ensemble=${ENSEMBLE_TTL_MIN}m wn2=${WN2_TTL_MIN}m bmkg=${BMKG_TTL_MIN}m)`)
+  console.log(`[api] agroclimate-api listening on 127.0.0.1:${PORT} (ttl weather=${PROXY_TTL_MIN}m ensemble=${ENSEMBLE_TTL_MIN}m wn2=${WN2_TTL_MIN}m bmkg=${BMKG_TTL_MIN}m aq=${AQ_TTL_MIN}m)`)
 })
 
 for (const sig of ['SIGINT', 'SIGTERM']) {

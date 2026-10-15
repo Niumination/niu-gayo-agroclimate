@@ -8,7 +8,7 @@
 |---|---|---|---|
 | **Fixture respons nyata** (13 sumber) | `tests/fixtures/hazards/*` + `MANIFEST.json` | CAMS AQ Takengon (PM2,5 20,2 · AOD 1,16), `best_match` visibility/CAPE/DNI, GFS `cape`/`lifted_index`/CIN/freezing level (LI min −4,5), ECMWF konvektif (CAPE maks 2.250, kode 51–81), Archive 91 hari, GloFAS 4 sel Peusangan, BMKG autogempa/dirasakan/terkini, USGS 67 kejadian, MAGMA HTML (Bur Ni Telong Level II), PetaBencana Aceh 7 hari (5 laporan), BMKG nowcast CAP RSS | Diunduh & divalidasi JSON oleh `scripts/fetch-hazard-fixtures.mjs`; test `tests/hazardData.test.js` |
 | Skrip pembaru fixture | `scripts/fetch-hazard-fixtures.mjs` | Tanpa dependensi; unduh ulang semua; FIRMS ikut bila `FIRMS_MAP_KEY` di-set | Dijalankan 14 Okt 2026, 13/13 ✅ |
-| **Dataset uji FWI resmi** | `tests/fixtures/hazards/fwi-cffdrs-test_fwi-expected.csv` | 49 hari Van Wagner & Pickett 1985 + hasil harapan paket R `cffdrs` (FFMC, DMC, DC, ISI, BUI, FWI, DSR) | `node docs/dev/prototypes/check-cffdrs.mjs` → **selisih maks 0,005** pada 6 indeks (konstanta cffdrs 147,27723); 0,25 bila memakai konstanta asli 147,2 |
+| **Dataset uji FWI resmi** | `tests/fixtures/hazards/fwi-cffdrs-test_fwi-expected.csv` | 48 hari Van Wagner & Pickett 1985 + hasil harapan paket R `cffdrs` (FFMC, DMC, DC, ISI, BUI, FWI, DSR) | `node docs/dev/prototypes/check-cffdrs.mjs` → **selisih maks 0,005** pada 6 indeks (konstanta cffdrs 147,27723); 0,25 bila memakai konstanta asli 147,2 |
 | Prototipe FWI & ISPU | `docs/dev/prototypes/{fwi,ispu,check,check-cffdrs}.mjs` | Siap dipindah ke `src/domain/hazards/`; konstanta FFMC dapat dipilih (`setFfmcConstant`) | `check.mjs` lulus; `check-cffdrs.mjs` lulus |
 | **Batas kecamatan GeoJSON** | `src/data/geo/kecamatan.json` (21 kB; 5,6 kB gzip) | GADM 4.1 level 3: 14 kecamatan Aceh Tengah + poligon Danau Lut Tawar (`kind: lake`) + 7 kecamatan Bener Meriah; disederhanakan mapshaper 60 %, presisi 1e-4; properti `{id, name, kab, kind, gid}` | Dirender & diperiksa visual; test batas koordinat & ukuran ≤ 50 kB |
 | Pemetaan sentra → kecamatan | `src/data/hazards/sentraKecamatan.json` | Point-in-polygon 15 sentra; flag `ok=false` + centroid GADM sebagai kandidat koreksi | Lihat §3 temuan koordinat |
@@ -44,7 +44,7 @@ Hasil `npm test`: **98 lulus** (91 lama + 7 test aset baru). Tidak ada kode prod
    - `rusipantara` (4,40 · 96,55) → **di luar semua poligon** (di luar kabupaten); centroid Rusip Antara ≈ 4,717 · 96,476
    Dampak: kecil untuk model 0,25°, tetapi **signifikan** untuk radius hotspot FIRMS 10 km, sel GloFAS 5 km, jarak ke Burni Telong, dan penempatan marker di peta. Dicatat sebagai utang teknis **T13** di `00-REPO-AUDIT.md`.
 2. GADM Bener Meriah masih 7 kecamatan (belum ada Bener Kelipah, Gajah Putih, Mesidah) — cukup untuk peta skematik; ganti dengan batas BIG bila butuh akurasi administratif.
-3. Fixture `best_match` menunjukkan **jarak pandang minimum 120 m** pada jam dini hari (kabut radiasi lembah) → ambang jarak pandang asap harus **dibatasi pada jam 09–17 WIB** atau dikombinasikan dengan PM2,5/AOD agar kabut pagi tidak terbaca sebagai asap (tambahan untuk `06-THRESHOLDS` §2.3).
+3. Fixture `best_match` menunjukkan **jarak pandang minimum 120 m** pada jam dini hari (kabut radiasi lembah) → ambang jarak pandang asap harus **dibatasi pada jam siang** dan dikombinasikan dengan PM2,5/AOD agar kabut pagi tidak terbaca sebagai asap (tambahan untuk `06-THRESHOLDS` §2.3). *Implementasi Sprint 1:* jendela **10–17 WIB** + penyaring RH ≥ 90 % + persistensi 2 jam (`src/domain/hazards/airQuality.js#assessHaze`); fixture berikutnya menyertakan `relative_humidity_2m` (skrip sudah diperbarui).
 4. Konstanta FFMC: gunakan **147,27723** (cffdrs/Wang et al. 2015) sebagai default produksi karena menyamai dataset uji resmi hingga 0,005; dokumentasikan di `docs/THRESHOLDS.md`.
 
 ## 4. Perintah cepat
@@ -52,6 +52,6 @@ Hasil `npm test`: **98 lulus** (91 lama + 7 test aset baru). Tidak ada kode prod
 ```bash
 node scripts/fetch-hazard-fixtures.mjs        # perbarui fixture (FIRMS bila FIRMS_MAP_KEY di-set)
 node docs/dev/prototypes/check.mjs            # uji ISPU + FWI contoh
-node docs/dev/prototypes/check-cffdrs.mjs     # uji FWI vs dataset resmi 49 hari
+node docs/dev/prototypes/check-cffdrs.mjs     # uji FWI vs dataset resmi 48 hari
 npm test                                      # 98 test termasuk aset data
 ```

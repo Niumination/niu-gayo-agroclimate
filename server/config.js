@@ -15,6 +15,9 @@ export const ALERTS_TTL_MIN = Number(process.env.ALERTS_TTL_MIN || 10)
 export const WN2_TTL_MIN = Number(process.env.WN2_TTL_MIN || 30)
 // F5: nowcast BMKG diperbarui berkala → cache 10 menit.
 export const BMKG_TTL_MIN = Number(process.env.BMKG_TTL_MIN || 10)
+// H-ASAP: CAMS global diperbarui ~2×/hari → cache 60 menit (docs/dev/04-DATA-SOURCES.md).
+export const AQ_TTL_MIN = Number(process.env.AQ_TTL_MIN || 60)
 
 export const OPEN_METEO = 'https://api.open-meteo.com/v1/forecast'
 export const OPEN_METEO_ENSEMBLE = 'https://ensemble-api.open-meteo.com/v1/ensemble'
+export const OPEN_METEO_AIR_QUALITY = process.env.OPEN_METEO_AIR_QUALITY || 'https://air-quality-api.open-meteo.com/v1/air-quality'

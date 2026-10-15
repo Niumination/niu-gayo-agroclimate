@@ -1,0 +1,243 @@
+{
+  "_meta": {
+    "description": "Anjuran bertingkat per kategori ISPU untuk 4 kelompok. Sumber: Permen LHK P.14/2020 (kategori), Kemenkes Pusat Krisis Agu–Sep 2026 & SE Kemenkes Mei 2026 (anjuran, masker N95, PJJ, kelompok rentan), WHO AQG 2021 (PM2,5 24 jam 15 µg/m³). Teks Gayo (`gay`) KOSONG — wajib diisi/ditinjau penutur asli sebelum rilis (lihat 07-RISK-REGISTER R-06).",
+    "version": "1.0",
+    "lastReviewed": "2026-10-14",
+    "sources": [
+      "https://www.tempo.co/politik/sekolah-pjj-kabut-asap-kebakaran-hutan-2283912",
+      "https://www.idntimes.com/health/medical/kasus-ispa-naik-akibat-karhutla-kemenkes-lakukan-sejumlah-tindakan-00-h7csw-rzmtb1",
+      "https://mediaindonesia.com/humaniora/935674/151-ribu-kasus-ispa-akibat-karhutla-kemenkes-siagakan-ribuan-nakes-dan-pasokan-oksigen"
+    ],
+    "groups": {
+      "umum": "Umum",
+      "rentan": "Kelompok rentan (anak, lansia, ibu hamil, asma/PPOK, komorbid)",
+      "kebun": "Pekerja kebun / luar ruang",
+      "sekolah": "Sekolah & kampung"
+    }
+  },
+  "categories": [
+    {
+      "key": "baik",
+      "min": 0,
+      "max": 50,
+      "label": {
+        "id": "Baik",
+        "gay": null
+      },
+      "color": "#2E7D32",
+      "level": "rendah",
+      "policy": null,
+      "advice": {
+        "umum": {
+          "id": "Aktivitas normal.",
+          "gay": null
+        },
+        "rentan": {
+          "id": "Aktivitas normal.",
+          "gay": null
+        },
+        "kebun": {
+          "id": "Aktivitas normal.",
+          "gay": null
+        },
+        "sekolah": {
+          "id": "Aktivitas normal.",
+          "gay": null
+        }
+      }
+    },
+    {
+      "key": "sedang",
+      "min": 51,
+      "max": 100,
+      "label": {
+        "id": "Sedang",
+        "gay": null
+      },
+      "color": "#1565C0",
+      "level": "rendah",
+      "policy": null,
+      "whoNote": {
+        "id": "Catatan WHO: PM2,5 sudah di atas pedoman 24 jam (15 µg/m³).",
+        "gay": null
+      },
+      "advice": {
+        "umum": {
+          "id": "Normal; yang peka asap kurangi aktivitas berat yang lama.",
+          "gay": null
+        },
+        "rentan": {
+          "id": "Kurangi aktivitas berat yang lama di luar; siapkan masker.",
+          "gay": null
+        },
+        "kebun": {
+          "id": "Normal; istirahat cukup, minum cukup.",
+          "gay": null
+        },
+        "sekolah": {
+          "id": "Normal; pantau ISPU setiap pagi.",
+          "gay": null
+        }
+      }
+    },
+    {
+      "key": "tidak_sehat",
+      "min": 101,
+      "max": 200,
+      "label": {
+        "id": "Tidak Sehat",
+        "gay": null
+      },
+      "color": "#F9A825",
+      "level": "waspada",
+      "policy": {
+        "id": "Tiadakan olahraga, upacara, dan kegiatan luar ruang sekolah; tutup jemuran kopi terbuka.",
+        "gay": null
+      },
+      "advice": {
+        "umum": {
+          "id": "Kurangi aktivitas luar ruang yang lama; pakai masker (N95/KN95 dianjurkan) saat keluar; tutup pintu dan jendela.",
+          "gay": null
+        },
+        "rentan": {
+          "id": "Hindari aktivitas luar ruang; pakai masker N95; perhatikan gejala batuk/sesak, segera ke Puskesmas bila memburuk.",
+          "gay": null
+        },
+        "kebun": {
+          "id": "Batasi kerja berat maksimal 4 jam, pakai masker N95, jeda di ruang tertutup; tutup jemuran atau pakai pengering tertutup.",
+          "gay": null
+        },
+        "sekolah": {
+          "id": "Tiadakan olahraga, upacara, dan kegiatan luar ruang; siapkan ruang kelas tertutup.",
+          "gay": null
+        }
+      }
+    },
+    {
+      "key": "sangat_tidak_sehat",
+      "min": 201,
+      "max": 300,
+      "label": {
+        "id": "Sangat Tidak Sehat",
+        "gay": null
+      },
+      "color": "#C62828",
+      "level": "bahaya",
+      "policy": {
+        "id": "Pertimbangkan PJJ/libur sekolah (keputusan pemda; preseden Kota Jambi & Maluku Tengah 2026); buka ruang bersih kampung; tunda kerja kebun yang tidak mendesak.",
+        "gay": null
+      },
+      "advice": {
+        "umum": {
+          "id": "Hindari aktivitas luar ruang; gunakan AC mode resirkulasi/pembersih udara bila ada; cek ISPU sebelum keluar.",
+          "gay": null
+        },
+        "rentan": {
+          "id": "Tetap di dalam ruangan/ruang bersih; segera ke fasilitas kesehatan bila sesak.",
+          "gay": null
+        },
+        "kebun": {
+          "id": "Tunda kerja kebun yang tidak mendesak dan penjemuran terbuka; bila terpaksa, pakai N95 dan kurang dari 2 jam.",
+          "gay": null
+        },
+        "sekolah": {
+          "id": "Pertimbangkan pembelajaran jarak jauh/libur; buka ruang bersih kampung.",
+          "gay": null
+        }
+      }
+    },
+    {
+      "key": "berbahaya",
+      "min": 301,
+      "max": null,
+      "label": {
+        "id": "Berbahaya",
+        "gay": null
+      },
+      "color": "#212121",
+      "level": "ekstrem",
+      "policy": {
+        "id": "Tetap di dalam ruangan; libur/PJJ; posko kesehatan dan distribusi masker; hentikan kerja luar ruang.",
+        "gay": null
+      },
+      "advice": {
+        "umum": {
+          "id": "Tetap di dalam ruangan/ruang bersih; jangan membakar apa pun di dalam rumah.",
+          "gay": null
+        },
+        "rentan": {
+          "id": "Prioritas pindah ke ruang berudara bersih atau fasilitas kesehatan bila bergejala.",
+          "gay": null
+        },
+        "kebun": {
+          "id": "Hentikan kerja luar ruang.",
+          "gay": null
+        },
+        "sekolah": {
+          "id": "Libur/PJJ; posko kesehatan; distribusi masker.",
+          "gay": null
+        }
+      }
+    }
+  ],
+  "crossCutting": {
+    "minCategory": "tidak_sehat",
+    "items": [
+      {
+        "id": "Pantau ISPU pagi dan sore.",
+        "gay": null
+      },
+      {
+        "id": "Minum air yang cukup.",
+        "gay": null
+      },
+      {
+        "id": "Segera ke Puskesmas/RSUD bila sesak napas, nyeri dada, atau batuk memburuk.",
+        "gay": null
+      },
+      {
+        "id": "Jangan menambah asap: tidak membakar sampah atau lahan.",
+        "gay": null
+      }
+    ]
+  },
+  "cleanRoomChecklist": {
+    "title": {
+      "id": "Ruang bersih (saat ISPU ≥ 101)",
+      "gay": null
+    },
+    "items": [
+      {
+        "id": "Pilih satu ruangan dengan sedikit jendela; tutup celah pintu/jendela dengan kain basah atau lakban.",
+        "gay": null
+      },
+      {
+        "id": "Jangan merokok, membakar obat nyamuk/dupa, atau memasak dengan kayu di dalam ruangan.",
+        "gay": null
+      },
+      {
+        "id": "Gunakan pembersih udara HEPA bila ada; alternatif: kipas + filter HEPA/furnace (DIY) atau AC mode resirkulasi.",
+        "gay": null
+      },
+      {
+        "id": "Pel lantai dengan lap basah, hindari menyapu kering.",
+        "gay": null
+      },
+      {
+        "id": "Buka ventilasi hanya saat ISPU turun (pagi setelah hujan atau saat angin bersih).",
+        "gay": null
+      },
+      {
+        "id": "Prioritaskan bayi, lansia, ibu hamil, dan penderita asma/PPOK di ruang ini.",
+        "gay": null
+      }
+    ]
+  },
+  "coffeeDrying": {
+    "rule": "Tunda (asap) bila ISPU >= 101 ATAU (AOD >= 1.0 DAN DNI siang < 300 W/m2); tunda kerja kebun non-mendesak bila ISPU >= 201",
+    "reason": {
+      "id": "Radiasi langsung turun sehingga pengeringan lambat; partikel dan bau asap dapat menempel pada gabah terbuka. Bukti dampak asap pada mutu kopi masih terbatas — prinsip kehati-hatian.",
+      "gay": null
+    }
+  }
+}

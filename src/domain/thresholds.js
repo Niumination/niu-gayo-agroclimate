@@ -101,3 +101,52 @@ export const ENSEMBLE = {
   members: 50,
   thresholds: [25, 50], // mm/24 jam → P(hujan>X)
 }
+
+/* ======================= v2 Multi-bahaya (docs/dev/06-THRESHOLDS-MULTI-HAZARD.md) ======================= */
+
+/**
+ * H-ASAP — ISPU (Permen LHK P.14/MENLHK/SETJEN/KUM.1/7/2020).
+ * Batas atas indeks per kategori; tabel breakpoint konsentrasi ada di domain/hazards/ispu.js.
+ * ISPU resmi memakai rata-rata 24 jam (PM2,5/PM10) — di sini dari CAMS (estimasi model, ~40 km).
+ */
+export const ISPU = {
+  baik: 50,
+  sedang: 100,
+  tidakSehat: 200,
+  sangatTidakSehat: 300,
+  minHours24h: 18,      // jam data minimal agar rata-rata 24 jam dianggap lengkap (selain itu: partial)
+  whoPm25Daily: 15,     // µg/m³ — pedoman WHO AQG 2021 rata-rata 24 jam
+}
+
+/**
+ * H-ASAP — proksi kabut asap dari jarak pandang (Open-Meteo best_match `visibility`).
+ * Hanya dievaluasi pada jendela siang agar kabut radiasi lembah tidak terbaca sebagai asap
+ * (Takengon 15 Okt 2026: kabut 220–1.200 m pukul 05–09 WIB dengan RH 85–99 %, hilang pukul 10),
+ * jam dengan RH ≥ fogRhMax dikecualikan (kabut/mist = tetes air, bukan partikel asap),
+ * dan wajib didukung PM2,5/AOD (lihat 09-DATA-PREP §3). Eskalasi ke "bahaya" butuh persistensi ≥ 2 jam.
+ */
+export const HAZE = {
+  dayStartHour: 10,     // WIB
+  dayEndHour: 17,       // WIB (inklusif)
+  fogRhMax: 90,         // % — jam dengan RH ≥ ini diabaikan (kabut radiasi/mist)
+  visRinganKm: 5,       // < 5 km → kabut asap ringan
+  visTebalKm: 2,        // < 2 km → tebal
+  visSangatTebalKm: 1,  // < 1 km → sangat tebal (kriteria ekstrem BMKG KEP.009/2010)
+  persistHours: 2,      // jam < visTebalKm yang dibutuhkan agar "sangat tebal" mengeskalasi ke bahaya
+  pm25Support: 35,      // µg/m³ — jarak pandang rendah dianggap "asap" bila PM2,5 ≥ ini ...
+  aodSupport: 0.5,      // ... atau AOD ≥ ini (selain itu dilabeli kabut/awan)
+}
+
+/**
+ * H-API — Fire Weather Index System (Van Wagner 1987) & kelas FDRS Indonesia (de Groot et al. 2007 / BMKG SPBK).
+ * ffmcConstant 147.27723 = cffdrs/Wang et al. 2015 (menyamai dataset uji resmi hingga 0,005); asli VW&P 1985 = 147.2.
+ * Tampilan "ekstrem" FFMC wajib dikombinasikan dengan hotspot ≤ 10 km atau HTH ≥ 21 hari (kalibrasi lokal, iterasi 9).
+ */
+export const FWI = {
+  ffmcConstant: 147.27723,
+  defaultStart: { ffmc: 85, dmc: 6, dc: 15 },
+  ffmc: { sedang: 73, tinggi: 78, ekstrem: 83 },   // ≥
+  fwi: { sedang: 1, tinggi: 6, ekstrem: 13 },       // >
+  isi: { sedang: 2, tinggi: 5, ekstrem: 6 },        // ≥
+  equator: true,                                    // Gayo 4–5° LU → panjang hari DMC 9 jam, faktor DC 1,4 (Lawson & Armitage 2008)
+}

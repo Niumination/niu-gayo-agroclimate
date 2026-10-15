@@ -1,0 +1,233 @@
+{
+  "_meta": {
+    "description": "Pemetaan 15 sentra (src/data/locations.js) ke kecamatan GADM (src/data/geo/kecamatan.json) via point-in-polygon, dibuat 2026-10-14. `ok=false` berarti koordinat di repo jatuh di luar poligon kecamatan nominal → verifikasi koordinat kampung sebelum dipakai untuk radius FIRMS/GloFAS/peta. `gadmCentroid` = [lat, lon] centroid poligon kecamatan sebagai kandidat koreksi (bukan lokasi ibu kota kecamatan).",
+    "todo": "Takengon Kota secara administratif berada di Kec. Lut Tawar/Bebesen (koordinat jatuh di Bebesen) — dibiarkan."
+  },
+  "sentra": {
+    "bebesan": {
+      "name": "Bebesan (Kemili)",
+      "kecamatan": "bebesan",
+      "kecamatanName": "Bebesen",
+      "coordInRepo": [
+        4.6275,
+        96.8491
+      ],
+      "polygonHit": "bebesan",
+      "ok": true,
+      "gadmCentroid": [
+        4.6379,
+        96.812
+      ]
+    },
+    "takengon": {
+      "name": "Takengon Kota",
+      "kecamatan": "luttawar",
+      "kecamatanName": "Lut Tawar",
+      "coordInRepo": [
+        4.63,
+        96.845
+      ],
+      "polygonHit": "bebesan",
+      "ok": true,
+      "gadmCentroid": [
+        4.5798,
+        96.8844
+      ]
+    },
+    "pegasing": {
+      "name": "Pegasing",
+      "kecamatan": "pegasing",
+      "kecamatanName": "Pegasing",
+      "coordInRepo": [
+        4.58,
+        96.82
+      ],
+      "polygonHit": "pegasing",
+      "ok": true,
+      "gadmCentroid": [
+        4.4927,
+        96.729
+      ]
+    },
+    "kutepanang": {
+      "name": "Kute Panang",
+      "kecamatan": "kutepanang",
+      "kecamatanName": "Kute Panang",
+      "coordInRepo": [
+        4.68,
+        96.79
+      ],
+      "polygonHit": "kutepanang",
+      "ok": true,
+      "gadmCentroid": [
+        4.6881,
+        96.7745
+      ]
+    },
+    "atulintang": {
+      "name": "Atu Lintang",
+      "kecamatan": "atulintang",
+      "kecamatanName": "Atu Lintang",
+      "coordInRepo": [
+        4.45,
+        96.82
+      ],
+      "polygonHit": "atulintang",
+      "ok": true,
+      "gadmCentroid": [
+        4.4376,
+        96.782
+      ]
+    },
+    "jagongjeget": {
+      "name": "Jagong Jeget",
+      "kecamatan": "jagongjeget",
+      "kecamatanName": "Jagong Jeget",
+      "coordInRepo": [
+        4.38,
+        96.8
+      ],
+      "polygonHit": "linge",
+      "ok": false,
+      "gadmCentroid": [
+        4.3811,
+        96.7317
+      ]
+    },
+    "luttawar": {
+      "name": "Lut Tawar",
+      "kecamatan": "luttawar",
+      "kecamatanName": "Lut Tawar",
+      "coordInRepo": [
+        4.61,
+        96.88
+      ],
+      "polygonHit": "luttawar",
+      "ok": true,
+      "gadmCentroid": [
+        4.5798,
+        96.8844
+      ]
+    },
+    "bintang": {
+      "name": "Bintang",
+      "kecamatan": "bintang",
+      "kecamatanName": "Bintang",
+      "coordInRepo": [
+        4.58,
+        96.95
+      ],
+      "polygonHit": "bintang",
+      "ok": true,
+      "gadmCentroid": [
+        4.5392,
+        97.1482
+      ]
+    },
+    "kebayakan": {
+      "name": "Kebayakan",
+      "kecamatan": "kebayakan",
+      "kecamatanName": "Kebayakan",
+      "coordInRepo": [
+        4.65,
+        96.85
+      ],
+      "polygonHit": "kebayakan",
+      "ok": true,
+      "gadmCentroid": [
+        4.6531,
+        96.8704
+      ]
+    },
+    "bies": {
+      "name": "Bies",
+      "kecamatan": "bies",
+      "kecamatanName": "Bies",
+      "coordInRepo": [
+        4.59,
+        96.78
+      ],
+      "polygonHit": "pegasing",
+      "ok": false,
+      "gadmCentroid": [
+        4.6122,
+        96.7912
+      ]
+    },
+    "silihnara": {
+      "name": "Silih Nara (Angkup)",
+      "kecamatan": "silihnara",
+      "kecamatanName": "Silih Nara",
+      "coordInRepo": [
+        4.61,
+        96.72
+      ],
+      "polygonHit": "silihnara",
+      "ok": true,
+      "gadmCentroid": [
+        4.6267,
+        96.726
+      ]
+    },
+    "ketol": {
+      "name": "Ketol",
+      "kecamatan": "ketol",
+      "kecamatanName": "Ketol",
+      "coordInRepo": [
+        4.75,
+        96.75
+      ],
+      "polygonHit": "timanggajah",
+      "ok": false,
+      "gadmCentroid": [
+        4.822,
+        96.6111
+      ]
+    },
+    "celala": {
+      "name": "Celala",
+      "kecamatan": "celala",
+      "kecamatanName": "Celala",
+      "coordInRepo": [
+        4.5,
+        96.65
+      ],
+      "polygonHit": "celala",
+      "ok": true,
+      "gadmCentroid": [
+        4.5457,
+        96.6686
+      ]
+    },
+    "rusipantara": {
+      "name": "Rusip Antara",
+      "kecamatan": "rusipantara",
+      "kecamatanName": "Rusip Antara",
+      "coordInRepo": [
+        4.4,
+        96.55
+      ],
+      "polygonHit": null,
+      "ok": false,
+      "gadmCentroid": [
+        4.7167,
+        96.4757
+      ]
+    },
+    "linge": {
+      "name": "Linge (Isaq)",
+      "kecamatan": "linge",
+      "kecamatanName": "Linge",
+      "coordInRepo": [
+        4.42,
+        97.02
+      ],
+      "polygonHit": "linge",
+      "ok": true,
+      "gadmCentroid": [
+        4.3608,
+        97.0705
+      ]
+    }
+  }
+}

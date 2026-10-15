@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "description": "Konteks iklim musiman terkurasi manual dari rilis BMKG (tanpa API). Diperbarui tiap dasarian/bulan oleh maintainer; UI menampilkan banner bila `validUntil` belum lewat, selain itu menampilkan 'perlu pembaruan'.",
+    "howToUpdate": "Cek rilis BMKG (bmkg.go.id → Iklim → Prediksi musim / ENSO-IOD dasarian) & Staklim Aceh; perbarui angka, tanggal rilis, sumber, validUntil.",
+    "lastReviewed": "2026-10-14"
+  },
+  "current": {
+    "issuedAt": "2026-10",
+    "validUntil": "2026-11-10",
+    "enso": {
+      "phase": "El Niño",
+      "strength": "sangat kuat",
+      "nino34Dasarian": 3.44,
+      "index3Month": 2.7,
+      "note": "Anomali Niño3.4 dasarian +3,44 °C; indeks JAS +2,70 (rilis BMKG, dikutip iterasi riset 4)."
+    },
+    "iod": {
+      "phase": "positif",
+      "index": 0.935
+    },
+    "season": {
+      "status": "kemarau diperpanjang",
+      "rainyOnset": "terlambat (prediksi BMKG untuk sebagian Sumatra/Aceh)",
+      "peak": "Des–Feb",
+      "note": "Musim hujan 2026/27 diprediksi datang terlambat dan lebih singkat; kemarau panas, hujan berkurang signifikan."
+    },
+    "implications": {
+      "id": [
+        "Risiko karhutla & asap tetap tinggi sampai hujan konsisten.",
+        "HTH panjang → stres air kopi, kurangi pemupukan N, mulsa & naungan.",
+        "Saat hujan pertama deras setelah kemarau panjang: waspadai longsor & luapan (tanah retak, serasah kering)."
+      ],
+      "gay": null
+    },
+    "sources": [
+      {
+        "title": "BMKG — perkembangan ENSO/IOD dasarian (dikutip di docs/dev/01-RESEARCH-LOG.md iterasi 4)",
+        "url": "https://www.bmkg.go.id/iklim"
+      }
+    ]
+  },
+  "history": []
+}

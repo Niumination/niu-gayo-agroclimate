@@ -64,7 +64,7 @@ Lihat `08-STAKEHOLDERS-GOVERNANCE.md` §4 (Open-Meteo CC BY 4.0; FIRMS bebas; BM
 |---|---|
 | Open-Meteo (AQ, best_match, GFS, ECMWF konvektif, Archive, Flood), BMKG gempa ×3, USGS, MAGMA HTML, PetaBencana, BMKG nowcast RSS | ✅ Fixture nyata tersimpan di `tests/fixtures/hazards/`; skrip pembaru `scripts/fetch-hazard-fixtures.mjs` |
 | NASA FIRMS | 🔑 Menunggu `FIRMS_MAP_KEY` (tugas manusia H-1); contoh sintetis untuk parser tersedia |
-| FWI in-house | ✅ Prototipe = dataset uji resmi `cffdrs` 49 hari (selisih ≤ 0,005) |
+| FWI in-house | ✅ Prototipe = dataset uji resmi `cffdrs` 48 hari (selisih ≤ 0,005) |
 | GADM kecamatan | ✅ `src/data/geo/kecamatan.json` (21 kB) |
 | Data statis kurasi (kesehatan, iklim, riwayat, kontak) | ✅ Draf di `src/data/hazards/`; kontak kecamatan & teks Gayo menunggu pengisian manusia |
 | SPBK Staklim, AWLR, sensor PM2,5, ISPU resmi | ⏳ Bergantung mitra |

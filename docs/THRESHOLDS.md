@@ -80,6 +80,54 @@ ECMWF `ecmwf_ifs025`, 50 member. Ditampilkan di kartu peringatan:
 | Penjemuran: hujan | > 0.1 mm/jam → tutup terpal |
 | Penjemuran: radiasi | < 150 W/m² DNI atau RH > 80% → kurang optimal |
 
+## 7. Kualitas udara — ISPU (v2 Fase 1, H-ASAP)
+
+Sumber angka: **Permen LHK P.14/MENLHK/SETJEN/KUM.1/7/2020**; implementasi `src/domain/hazards/ispu.js`, konstanta `thresholds.ISPU`.
+Data: Open-Meteo Air Quality (**CAMS global, ~40 km**) → **estimasi model, bukan ISPU resmi** (tidak ada stasiun ISPU di Aceh Tengah). Selalu tampilkan label ini + tautan ISPUNet.
+
+| Kategori | ISPU | PM2,5 24 jam (µg/m³) | PM10 24 jam | CO 8 jam | Level internal | Warna resmi |
+|---|---|---|---|---|---|---|
+| Baik | 0–50 | 0–15,4 | 0–50 | 0–4.000 | rendah | hijau |
+| Sedang | 51–100 | 15,5–55,4 | 51–150 | 4.001–8.000 | rendah | biru |
+| Tidak Sehat | 101–200 | 55,5–150,4 | 151–350 | 8.001–15.000 | waspada | kuning |
+| Sangat Tidak Sehat | 201–300 | 150,5–250,4 | 351–420 | 15.001–30.000 | bahaya | merah |
+| Berbahaya | > 300 | ≥ 250,5 (titik atas 500 = asumsi, H-9) | ≥ 421 | ≥ 30.001 | ekstrem | hitam |
+
+- Sub-indeks: interpolasi linier per segmen `I = ((Ib−Ia)/(Xb−Xa))·(X−Xa)+Ia`, dibulatkan; **ISPU = maksimum** sub-indeks, parameter kritis dilaporkan.
+- Rata-rata bergerak **24 jam** (PM2,5/PM10) dan **8 jam** (CO) yang berakhir pada jam berjalan; `partial` bila data valid < **18 jam** (`ISPU.minHours24h`). Nilai sesaat ditampilkan sebagai pembanding ("sesaat N").
+- Catatan WHO AQG 2021: PM2,5 24 jam **15 µg/m³** (`ISPU.whoPm25Daily`) — ditandai bila terlampaui.
+- Anjuran 4 kelompok (umum, rentan, pekerja kebun, sekolah & kampung) + kebijakan (PJJ, ruang bersih) dari `src/data/hazards/healthAdvice.json` (Kemenkes 2026, WHO).
+- Kopi: **tunda penjemuran terbuka** bila ISPU ≥ 101 ATAU (AOD ≥ 1,0 DAN DNI siang maks < 300 W/m²); **tunda kerja kebun non-mendesak** bila ISPU ≥ 201.
+
+## 8. Kabut asap — proksi jarak pandang (v2 Fase 1, H-ASAP)
+
+`visibility` Open-Meteo `best_match` (ECMWF IFS tidak menyediakannya), konstanta `thresholds.HAZE`, fungsi `assessHaze()`.
+
+| Parameter | Nilai | Alasan |
+|---|---|---|
+| Jendela evaluasi | **10–17 WIB** (`dayStartHour/dayEndHour`) | Kabut radiasi lembah Takengon 05–09 WIB (15 Okt 2026: 220–1.200 m, RH 85–99 %, hilang pukul 10) |
+| Penyaring kabut/mist | jam dengan **RH ≥ 90 %** diabaikan (`fogRhMax`) | kabut = tetes air, asap = partikel kering |
+| Dukungan wajib | **PM2,5 ≥ 35 µg/m³** ATAU **AOD ≥ 0,5** | tanpa dukungan → "jarak pandang rendah, kemungkinan kabut/awan", bukan asap |
+| Ringan | jarak pandang minimum < **5 km** | — |
+| Tebal | < **2 km** | level **waspada** |
+| Sangat tebal | < **1 km** (kriteria ekstrem BMKG KEP.009/2010) | level **bahaya** bila **≥ 2 jam** < 2 km (`persistHours`), selain itu waspada |
+
+Level kartu = maksimum(level kategori ISPU, level kabut asap).
+
+## 9. Bahaya kebakaran — FWI System (v2 Fase 1, H-API; kartu menyusul 1.5/1.6)
+
+`src/domain/hazards/fireWeather.js` (Van Wagner 1987), konstanta `thresholds.FWI`. Diverifikasi terhadap dataset uji resmi 48 hari (`cffdrs`): selisih ≤ 0,005 pada 6 indeks dengan konstanta FFMC **147,27723**.
+
+| Kelas FDRS | FFMC (≥) | FWI (>) | ISI (≥) |
+|---|---|---|---|
+| Sedang | 73 | 1 | 2 |
+| Tinggi | 78 | 6 | 5 |
+| Ekstrem | 83 | 13 | 6 |
+
+- Opsi ekuator (default Gayo, 4–5° LU): panjang hari DMC 9 jam, faktor DC 1,4 sepanjang tahun (Lawson & Armitage 2008).
+- Kalibrasi lokal: kelas **"ekstrem" FFMC hanya ditampilkan bila hotspot ≤ 10 km atau HTH ≥ 21 hari**; selain itu diturunkan ke "tinggi" (`fireDangerClass`).
+- Nilai awal spin-up: FFMC 85 / DMC 6 / DC 15 (standar), dijalankan dari arsip ≥ 60 hari (item 1.9b).
+
 ## Disclaimer
 
-Semua ambang merupakan **model prakiraan probabilistik** berbasis Open-Meteo ECMWF, belum tervalidasi lapangan secara sistematis. Tampilkan selalu keyakinan ensemble + sumber & waktu data; validasi bersama BPBD Aceh Tengah / penyuluh sebelum dipakai sebagai dasar keputusan mitigasi.
+Semua ambang merupakan **model prakiraan probabilistik** berbasis Open-Meteo ECMWF (dan CAMS global untuk kualitas udara), belum tervalidasi lapangan secara sistematis. Tampilkan selalu keyakinan ensemble + sumber & waktu data; validasi bersama BPBD Aceh Tengah / penyuluh sebelum dipakai sebagai dasar keputusan mitigasi.
