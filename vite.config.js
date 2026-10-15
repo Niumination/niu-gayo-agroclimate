@@ -58,5 +58,10 @@ export default defineConfig({
       },
     }),
   ],
-  server: { port: 5188 },
+  server: {
+    port: 5188,
+    // Dev: teruskan /api ke server proxy lokal (node server/index.js, :7455) agar fitur
+    // konsensus/BMKG/air-quality tampil tanpa build produksi. Tidak berpengaruh pada build.
+    proxy: { '/api': { target: 'http://127.0.0.1:7455', changeOrigin: true } },
+  },
 })
