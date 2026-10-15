@@ -3,6 +3,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { LOCATIONS } from '../src/data/locations.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DATA_DIR = path.join(__dirname, 'data')
@@ -26,11 +27,7 @@ export function readToken(name) {
 const VALID_TYPES = new Set(['longsor', 'banjir', 'angin', 'karat', 'asap', 'kebakaran'])
 export const VISIBILITY_SCALE = new Set(['>5km', '1-5km', '<1km'])
 export const VISIBILITY_LABEL = { '>5km': 'jarak pandang > 5 km', '1-5km': 'jarak pandang 1–5 km', '<1km': 'jarak pandang < 1 km' }
-const VALID_LOCATIONS = new Set([
-  'bebesan', 'takengon', 'pegasing', 'kutepanang', 'atulintang',
-  'jagongjeget', 'luttawar', 'bintang', 'kebayakan', 'bies',
-  'silihnara', 'ketol', 'celala', 'rusipantara', 'linge',
-])
+const VALID_LOCATIONS = new Set(LOCATIONS.map((l) => l.id)) // Fase 0.2: satu sumber kebenaran (src/data/locations.js)
 
 function ensureStore() {
   fs.mkdirSync(DATA_DIR, { recursive: true })

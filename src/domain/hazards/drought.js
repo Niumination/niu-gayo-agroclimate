@@ -172,3 +172,39 @@ export function assessDrought(daily, { today } = {}) {
     thresholds: { rainDayMm: HTH.rainDayMm, balanceWaspada: WATER_BALANCE.waspada, balanceBahaya: WATER_BALANCE.bahaya },
   }
 }
+
+// ---------------------------------------------------------------------------
+// Modul registry (ADR-12) — adaptor payload /api/drought → HazardResult.
+// ---------------------------------------------------------------------------
+export default {
+  id: 'kekeringan',
+  group: 'agro',
+  label: { id: 'Kekeringan & Air Kebun', gayo: 'Kemarau urum Wih Empus [?]' },
+  requires: ['drought'],
+  evaluate(ctx) {
+    const p = ctx.drought
+    const a = p?.assessment
+    if (!a) return { level: 'n/a', degraded: true, headline: p?.error ? `Kekeringan tidak tersedia (${p.error})` : 'Data kekeringan belum tersedia' }
+    const h = a.hth
+    const b = a.balance30
+    const proj = h.projected?.days > h.days ? ` → proyeksi ${h.projected.days} hari (${h.projected.horizonDays} hari ke depan)` : ''
+    return {
+      level: a.level,
+      score: h.days != null ? Math.min(100, Math.round((h.days / 60) * 100)) : null,
+      headline: `HTH ${h.days} hari — ${h.classLabel}${proj}`,
+      detail: `Hujan terakhir ${h.lastRainDate ?? '–'}${h.lastRainMm != null ? ` (${h.lastRainMm} mm)` : ''}; neraca air 30 hari ${b?.balance ?? '–'} mm (hujan ${b?.rain ?? '–'} / ET0 ${b?.et0 ?? '–'} mm).${p.archive?.lagDays != null ? ` Arsip tertinggal ${p.archive.lagDays} hari.` : ''}`,
+      metrics: [
+        { key: 'hthDays', label: 'Hari tanpa hujan', value: h.days, unit: 'hari' },
+        { key: 'hthProjected', label: 'Proyeksi HTH', value: h.projected?.days ?? null, unit: 'hari' },
+        { key: 'rain30', label: 'Hujan 30 hari', value: b?.rain ?? null, unit: 'mm' },
+        { key: 'et0_30', label: 'ET0 30 hari', value: b?.et0 ?? null, unit: 'mm' },
+        { key: 'balance30', label: 'Neraca air 30 hari', value: b?.balance ?? null, unit: 'mm' },
+      ],
+      advice: { kebun: (a.advice ?? []).slice(0, 3) },
+      sources: [{ name: p.source?.name ?? 'Open-Meteo Historical (ERA5)', kind: 'reanalysis', retrievedAt: p.retrievedAt, url: p.source?.url }],
+      validUntil: p.retrievedAt ? new Date(new Date(p.retrievedAt).getTime() + 12 * 3_600_000).toISOString() : null,
+      flags: { classKey: h.classKey, balanceLevel: b?.level ?? null, lagDays: p.archive?.lagDays ?? null },
+      degraded: !!p.degraded,
+    }
+  },
+}

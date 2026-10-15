@@ -24,12 +24,9 @@ import { assessDrought } from '../src/domain/hazards/drought.js'
 import { seasonalInfo } from '../src/domain/seasonal.js'
 import disasterHistory from '../src/data/disasterHistory.json' with { type: 'json' }
 import { validateReport, rateLimited, submitReport, recentReports } from './reports.js'
+import { LOCATIONS } from '../src/data/locations.js'
 
-const VALID_LOCATIONS = new Set([
-  'bebesan', 'takengon', 'pegasing', 'kutepanang', 'atulintang',
-  'jagongjeget', 'luttawar', 'bintang', 'kebayakan', 'bies',
-  'silihnara', 'ketol', 'celala', 'rusipantara', 'linge',
-])
+const VALID_LOCATIONS = new Set(LOCATIONS.map((l) => l.id)) // Fase 0.2: satu sumber kebenaran (src/data/locations.js)
 
 function json(res, status, body) {
   const data = JSON.stringify(body)

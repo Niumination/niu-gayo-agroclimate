@@ -94,6 +94,7 @@ export const WIND = {
 export const WIND_GUST = {
   waspada: 40.0,  // km/jam
   bahaya: 60.0,
+  ekstrem: 45.0,  // FR-KONV-4: hembusan ≥ 45 km/jam = kriteria cuaca ekstrem BMKG (penanda, docs/THRESHOLDS.md §13)
 }
 
 /** Ensemble (S3/M3): keyakinan probabilistik pada kartu peringatan. */

@@ -3,6 +3,7 @@ const KEYS = {
   lang: 'nga.lang',
   theme: 'nga.theme', // 'light' | 'dark' | null = ikut sistem
   location: 'nga.location',
+  hiddenHazards: 'nga.hiddenHazards', // daftar id bahaya yang disembunyikan pengguna (koma), FR-X-3
 }
 
 function safeGet(key) {
@@ -45,6 +46,19 @@ export const prefs = {
   setLocationId(id) {
     safeSet(KEYS.location, id)
   },
+  getHiddenHazards() {
+    return getHiddenHazards()
+  },
+  setHiddenHazards(ids) {
+    safeSet(KEYS.hiddenHazards, (ids || []).join(','))
+  },
+}
+
+/** Id bahaya yang disembunyikan pengguna (aman dipanggil di luar browser → []). */
+export function getHiddenHazards() {
+  if (typeof window === 'undefined') return []
+  const raw = safeGet(KEYS.hiddenHazards)
+  return raw ? raw.split(',').map((x) => x.trim()).filter(Boolean) : []
 }
 
 /** Terapkan tema ke <html>: dark/light + media query bila ikut sistem. */

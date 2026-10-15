@@ -268,3 +268,47 @@ export function assessFireDanger({ fwi: codes = null, hotspots = null, hthDays: 
 function capital(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'
 }
+
+// ---------------------------------------------------------------------------
+// Modul registry (ADR-12) — adaptor payload /api/fire-danger → HazardResult.
+// ---------------------------------------------------------------------------
+export default {
+  id: 'kebakaran',
+  group: 'atmosfer',
+  label: { id: 'Bahaya Kebakaran', gayo: 'Bahaya Rara [?]' },
+  requires: ['fireDanger'],
+  evaluate(ctx) {
+    const p = ctx.fireDanger
+    if (!p || (!p.fwi?.latest && !p.hotspots?.summary)) {
+      return { level: 'n/a', degraded: true, headline: p?.error ? `Bahaya kebakaran tidak tersedia (${p.error})` : 'Bahaya kebakaran belum tersedia' }
+    }
+    const a = p.assessment ?? {}
+    const codes = p.fwi?.latest?.codes ?? null
+    const hs = p.hotspots?.degraded ? null : p.hotspots?.summary ?? null
+    const level = a.level ?? p.level ?? 'rendah'
+    const fdrs = a.displayClass ? ` (${String(a.displayClass).charAt(0).toUpperCase()}${String(a.displayClass).slice(1)})` : ''
+    const hsTxt = p.hotspots?.degraded ? 'hotspot: tidak tersedia' : `hotspot 24 jam: ${hs?.within10km24h ?? 0} ≤ 10 km · ${hs?.within25km24h ?? 0} ≤ 25 km`
+    return {
+      level,
+      score: codes ? Math.round(Math.min(100, (codes.fwi / 20) * 100)) : null,
+      headline: codes ? `FWI ${codes.fwi.toFixed(1)}${fdrs}${a.siagaLokal ? ' · SIAGA KEBAKARAN LOKAL' : ''}` : a.headline ?? 'Kode FWI belum tersedia',
+      detail: `${codes ? `FFMC ${Math.round(codes.ffmc)}, DC ${Math.round(codes.dc)}, ISI ${codes.isi.toFixed(1)}` : 'FWI belum dihitung'}; ${hsTxt}; HTH ${p.hth?.days ?? '–'} hari.${p.fwi?.latest?.isToday === false ? ' Kode terakhir = kemarin (pengamatan 12.00 WIB belum lewat).' : ''}`,
+      metrics: [
+        { key: 'fwi', label: 'FWI', value: codes?.fwi ?? null, unit: '' },
+        { key: 'ffmc', label: 'FFMC', value: codes ? Math.round(codes.ffmc) : null, unit: '' },
+        { key: 'dc', label: 'DC', value: codes ? Math.round(codes.dc) : null, unit: '' },
+        { key: 'hotspots10km24h', label: 'Hotspot ≤ 10 km / 24 jam', value: hs?.within10km24h ?? null, unit: '' },
+        { key: 'hotspots25km24h', label: 'Hotspot ≤ 25 km / 24 jam', value: hs?.within25km24h ?? null, unit: '' },
+        { key: 'hthDays', label: 'Hari tanpa hujan', value: p.hth?.days ?? null, unit: 'hari' },
+      ],
+      advice: { umum: (a.advice ?? []).slice(0, 3), kebun: (a.advice ?? []).slice(3, 6) },
+      sources: [
+        { name: p.source?.fwi?.name ?? 'FWI System (ERA5 + ECMWF via Open-Meteo)', kind: 'model', retrievedAt: p.retrievedAt, url: p.source?.fwi?.url },
+        ...(p.hotspots && !p.hotspots.degraded ? [{ name: p.source?.hotspots?.name ?? 'NASA FIRMS', kind: 'satellite', retrievedAt: p.hotspots.retrievedAt, url: p.source?.hotspots?.url }] : []),
+      ],
+      validUntil: p.retrievedAt ? new Date(new Date(p.retrievedAt).getTime() + 6 * 3_600_000).toISOString() : null,
+      flags: { siagaLokal: !!a.siagaLokal, extreme: !!a.extreme, displayClass: a.displayClass ?? null, hotspotsDegraded: !!p.hotspots?.degraded, isToday: p.fwi?.latest?.isToday ?? null },
+      degraded: !!p.degraded,
+    }
+  },
+}

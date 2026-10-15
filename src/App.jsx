@@ -10,6 +10,7 @@ import DisasterWarning from './components/DisasterWarning'
 import AirQualityCard from './components/AirQualityCard'
 import FireDangerCard from './components/FireDangerCard'
 import DroughtCard from './components/DroughtCard'
+import HazardPanel from './components/HazardPanel'
 import SeasonalBanner from './components/SeasonalBanner'
 import ReportButton from './components/ReportButton'
 import HourlyForecast from './components/HourlyForecast'
@@ -174,6 +175,8 @@ export default function App() {
 
   const mobileRisk = data && (
     <>
+      {/* v2 Fase 0 (ADR-12, FR-X-3) — indeks bahaya majemuk dari registry, urut level tertinggi dulu */}
+      <HazardPanel hazards={data.hazards} location={selectedLocation} lang={lang} tr={tr} />
       <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
       {/* H-API (v2 Fase 1, Sprint 2) — bahaya kebakaran: FWI + hotspot + HTH; H-KERING — kekeringan ringkas */}
       <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
@@ -205,6 +208,8 @@ export default function App() {
 
         {/* Kolom kanan: peringatan + keyakinan ensemble */}
         <div className="col-span-3 min-w-0 space-y-4">
+          {/* v2 Fase 0 (ADR-12, FR-X-3) — indeks bahaya majemuk dari registry */}
+          <HazardPanel hazards={data.hazards} location={selectedLocation} lang={lang} tr={tr} />
           {/* H-ASAP (v2 Fase 1) — kabut asap & kualitas udara */}
           <AirQualityCard airQuality={data.airQuality} tr={tr} />
           <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />

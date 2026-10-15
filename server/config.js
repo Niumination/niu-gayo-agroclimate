@@ -33,3 +33,8 @@ export const FIRMS_BBOX = process.env.FIRMS_BBOX || '96.1,3.9,97.5,5.2'    // Ac
 export const FIRMS_SOURCES = (process.env.FIRMS_SOURCES || 'VIIRS_SNPP_NRT,VIIRS_NOAA20_NRT,VIIRS_NOAA21_NRT,MODIS_NRT').split(',').map((s) => s.trim()).filter(Boolean)
 export const FIRMS_DAYS = Number(process.env.FIRMS_DAYS || 2)
 export const FIRMS_API = process.env.FIRMS_API || 'https://firms.modaps.eosdis.nasa.gov/api/area/csv'
+// v2 Fase 0 (ADR-12) — feature flag registry bahaya: daftar id dipisah koma ("" / "*" = semua).
+// id valid: longsor, banjir, angin, asap, kebakaran, kekeringan, karat (src/domain/hazards/index.js).
+export const HAZARDS_ENABLED = process.env.HAZARDS_ENABLED ?? '*'
+// Fase 1.10b — arsip harian level bahaya per sentra (server/data/hazard-archive/YYYY-MM-DD.json), TTL evaluasi gabungan.
+export const HAZARDS_TTL_MIN = Number(process.env.HAZARDS_TTL_MIN || 10)

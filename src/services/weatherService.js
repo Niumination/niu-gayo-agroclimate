@@ -8,6 +8,9 @@ import { tempStatus, rustRisk, dryingStatus, leafWetnessRustRisk } from '../doma
 import { landslideScore, watershedIndex, windRisk } from '../domain/disaster.js'
 import { rainProbabilities } from '../domain/ensemble.js'
 import { sliceHourlyFromCurrent, currentSolarRad, apiTimestamp } from '../domain/format.js'
+import { weatherFeatures } from '../domain/hazards/features.js'
+import { evaluateAll } from '../domain/hazards/index.js'
+import { getHiddenHazards } from '../lib/prefs.js'
 
 function colorForLevel(level) {
   const l = String(level)
@@ -145,6 +148,28 @@ export async function getAgroClimateData(location) {
     // jangan blokir dashboard
   }
 
+  // v2 Fase 0 (ADR-12) — registry multi-bahaya: satu ctx, semua modul; hasil terurut level tertinggi dulu.
+  // Kartu lama (DisasterWarning/AirQualityCard/...) tetap memakai field lama; HazardPanel memakai `hazards`.
+  let hazards = null
+  try {
+    hazards = evaluateAll(
+      {
+        location,
+        now: curr.time ?? new Date().toISOString(),
+        weather: weatherFeatures(data),
+        ari,
+        airQuality,
+        fireDanger,
+        drought,
+        bmkgNowcast,
+        reports: communityReports?.reports ?? [],
+      },
+      { enabled: import.meta.env.VITE_HAZARDS_ENABLED ? String(import.meta.env.VITE_HAZARDS_ENABLED).split(',').map((x) => x.trim()).filter(Boolean) : null, hidden: getHiddenHazards() }
+    )
+  } catch {
+    hazards = null // jangan blokir dashboard
+  }
+
   return {
     timestamp: apiTimestamp(data) ?? new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     current: { temp, rh, rain, wind, gust, solarRad },
@@ -194,5 +219,7 @@ export async function getAgroClimateData(location) {
     // H-API — bahaya kebakaran (FWI + hotspot + HTH) & H-KERING — kekeringan (null bila API proxy tidak tersedia)
     fireDanger,
     drought,
+    // v2 Fase 0 — hasil registry multi-bahaya { results[], worst, active[], counts } (null bila evaluasi gagal)
+    hazards,
   }
 }

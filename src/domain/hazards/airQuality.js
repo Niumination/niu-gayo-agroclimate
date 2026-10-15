@@ -16,6 +16,7 @@
 import healthAdvice from '../../data/hazards/healthAdvice.json' with { type: 'json' }
 import { ispuComposite, ispuCategory, rollingMean } from './ispu.js'
 import { ISPU, HAZE } from '../thresholds.js'
+import { bumpLevel } from './levels.js'
 
 export const LEVEL_RANK = { rendah: 0, waspada: 1, bahaya: 2, ekstrem: 3 }
 export const PARAM_LABEL = { pm25: 'PM2,5', pm10: 'PM10', co: 'CO' }
@@ -261,3 +262,68 @@ export function summarizeAirQuality(a) {
 }
 
 export { ispuCategory }
+
+// ---------------------------------------------------------------------------
+// Modul registry (ADR-12) — adaptor payload /api/air-quality → HazardResult.
+// Eskalasi laporan warga (docs/dev/06 §2): ≥ 3 laporan `asap` "< 1 km" dalam 6 jam di sentra → +1 level (maks. bahaya).
+// ---------------------------------------------------------------------------
+export const ASAP_REPORT_ESCALATION = { minReports: 3, windowHours: 6, visibility: '<1km' }
+
+export function asapReportEscalation(reports, now = new Date()) {
+  const list = Array.isArray(reports) ? reports : reports?.reports ?? []
+  const cutoff = new Date(now).getTime() - ASAP_REPORT_ESCALATION.windowHours * 3_600_000
+  const hits = list.filter((r) => r?.type === 'asap' && r.visibility === ASAP_REPORT_ESCALATION.visibility && new Date(r.timestamp ?? r.ts ?? r.createdAt ?? 0).getTime() >= cutoff)
+  return { count: hits.length, escalate: hits.length >= ASAP_REPORT_ESCALATION.minReports }
+}
+
+/** healthAdvice {groups:{umum,rentan,kebun,sekolah}: string, crossCutting[], policy, cleanRoomItems[]} → advice {umum[],rentan[],kebun[],sekolah[]} (kontrak §2.1). */
+export function adviceGroups(adv) {
+  if (!adv) return {}
+  const g = adv.groups && !Array.isArray(adv.groups) ? adv.groups : {}
+  const out = {}
+  for (const k of ['umum', 'rentan', 'kebun', 'sekolah']) {
+    const items = []
+    if (g[k]) items.push(g[k])
+    if (k === 'umum') {
+      if (adv.policy) items.push(adv.policy)
+      for (const c of adv.crossCutting ?? []) items.push(typeof c === 'string' ? c : c?.id ?? String(c))
+    }
+    if (k === 'rentan' && adv.cleanRoom && Array.isArray(adv.cleanRoomItems)) items.push(...adv.cleanRoomItems.slice(0, 2))
+    if (items.length) out[k] = items
+  }
+  return out
+}
+
+export default {
+  id: 'asap',
+  group: 'atmosfer',
+  label: { id: 'Kabut Asap & Udara', gayo: 'Asap urum Udara [?]' },
+  requires: ['airQuality'],
+  evaluate(ctx) {
+    const p = ctx.airQuality
+    const a = p?.assessment
+    if (!a) return { level: 'n/a', degraded: true, headline: p?.error ? `Kualitas udara tidak tersedia (${p.error})` : 'Kualitas udara belum tersedia', sources: p?.source ? [{ name: p.source.name, kind: 'model' }] : [] }
+    const esc = asapReportEscalation(ctx.reports, ctx.now ?? new Date())
+    let level = maxLevel(a.level, hazeLevel(a.haze))
+    if (esc.escalate) level = bumpLevel(level, 1, 'bahaya')
+    const hazeTxt = a.haze?.level && a.haze.level !== 'tidak_ada' && a.haze.level !== 'tidak_diketahui' ? ` · kabut asap ${a.haze.label?.toLowerCase?.() ?? a.haze.level}${a.haze.visibilityKm != null ? ` (${a.haze.visibilityKm} km)` : ''}` : ''
+    return {
+      level,
+      score: a.ispu?.index ?? null,
+      headline: `ISPU ${a.ispu.index} — ${a.ispu.category.label} (${a.ispu.paramLabel})${hazeTxt}`,
+      detail: `${a.ispu.basis === 'sesaat' ? 'Nilai sesaat' : `Rata-rata ${a.ispu.hours} jam`}; PM2,5 ${a.measurements?.pm25 ?? '–'} µg/m³, AOD ${a.measurements?.aod ?? '–'}. ${a.outlook?.peakIndex != null ? `Prospek puncak ISPU ${a.outlook.peakIndex} (${a.outlook.trend}).` : ''}${esc.escalate ? ` Dinaikkan 1 tingkat: ${esc.count} laporan warga jarak pandang < 1 km dalam 6 jam.` : ''}`.trim(),
+      metrics: [
+        { key: 'ispu', label: 'ISPU', value: a.ispu.index, unit: '' },
+        { key: 'pm25', label: 'PM2,5', value: a.measurements?.pm25 ?? null, unit: 'µg/m³' },
+        { key: 'pm10', label: 'PM10', value: a.measurements?.pm10 ?? null, unit: 'µg/m³' },
+        { key: 'aod', label: 'AOD', value: a.measurements?.aod ?? null, unit: '' },
+        { key: 'visibilityKm', label: 'Jarak pandang siang min.', value: a.haze?.visibilityKm ?? null, unit: 'km' },
+      ],
+      advice: adviceGroups(a.advice),
+      sources: [{ name: p.source?.name ?? 'CAMS global via Open-Meteo', kind: 'model', retrievedAt: p.retrievedAt, url: p.source?.url }],
+      validUntil: p.retrievedAt ? new Date(new Date(p.retrievedAt).getTime() + 3 * 3_600_000).toISOString() : null,
+      flags: { estimate: true, hazeLevel: a.haze?.level ?? null, dryingHold: !!a.coffee?.dryingHold, fieldWorkHold: !!a.coffee?.fieldWorkHold, reportEscalation: esc },
+      degraded: !!p.degraded,
+    }
+  },
+}

@@ -46,7 +46,7 @@ export function parseBmkgRss(xml) {
 }
 
 /** Kecamatan sentra (map nama BMKG → id lokasi internal). */
-const KECEMATAN_MAP = {
+const KECAMATAN_MAP = {
   BEBESEN: 'bebesan', 'DANAU LAUT TAWAR': 'luttawar', LAUT: 'luttawar',
   TAKENGON: 'takengon', 'KUTE PANANG': 'kutepanang', ATULINTANG: 'atulintang',
   'JAGONG JEGET': 'jagongjeget', PEGASING: 'pegasing', BIES: 'bies',
@@ -58,7 +58,7 @@ const KECEMATAN_MAP = {
 export function affectedLocations(description) {
   const up = String(description).toUpperCase()
   const hits = []
-  for (const [name, id] of Object.entries(KECEMATAN_MAP)) {
+  for (const [name, id] of Object.entries(KECAMATAN_MAP)) {
     if (up.includes(name)) {
       if (!hits.includes(id)) hits.push(id)
     }
