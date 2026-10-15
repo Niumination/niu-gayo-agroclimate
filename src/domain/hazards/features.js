@@ -37,9 +37,13 @@ export function weatherFeatures(raw) {
     temp: arr('temperature_2m')[start + i] ?? null,
   })).filter((h) => h.temp != null)
 
+  // Fase 3.2 H-SUHU — ringkasan termal 3 hari: Tmin/Tmax harian + kondisi malam (19–07 WIB: awan, angin, Td) + VPD siang (09–15 WIB).
+  const thermal = thermalSummary(raw, nowIdx)
+
   return {
     nowTime: curr.time ?? times[nowIdx],
     nowIdx,
+    thermal,
     rain24: r1(rain24),
     rain72: r1(rain72),
     rainNext24: r1(rainNext24),
@@ -56,4 +60,75 @@ export function weatherFeatures(raw) {
     rh: curr.relative_humidity_2m ?? null,
     rolling48h,
   }
+}
+
+/**
+ * Ringkasan termal per hari (≤ 3 hari) dari deret jam Open-Meteo (temperature_2m, dew_point_2m, cloud_cover, wind_speed_10m,
+ * vapour_pressure_deficit) + daily temperature_2m_min/max. Malam hari d = 19:00 (d−1) … 07:00 (d). Fungsi murni; null bila deret kosong.
+ */
+export function thermalSummary(raw, nowIdx = 0) {
+  const hourly = raw?.hourly
+  const times = hourly?.time ?? []
+  if (!times.length) return null
+  const num = (v) => (v == null || Number.isNaN(Number(v)) ? null : Number(v))
+  const col = (k) => (Array.isArray(hourly[k]) ? hourly[k] : [])
+  const temp = col('temperature_2m')
+  const dew = col('dew_point_2m')
+  const cloud = col('cloud_cover')
+  const wind = col('wind_speed_10m')
+  const vpd = col('vapour_pressure_deficit')
+  const rh = col('relative_humidity_2m')
+  const dayKeys = [...new Set(times.map((t) => t.slice(0, 10)))].slice(0, 3)
+  const dailyT = raw.daily ?? {}
+  const dIdx = (d) => (dailyT.time ?? []).indexOf(d)
+  const mean = (arr) => {
+    const v = arr.filter((x) => x != null)
+    return v.length ? Math.round((v.reduce((a, b) => a + b, 0) / v.length) * 10) / 10 : null
+  }
+  const min = (arr) => {
+    const v = arr.filter((x) => x != null)
+    return v.length ? Math.min(...v) : null
+  }
+  const max = (arr) => {
+    const v = arr.filter((x) => x != null)
+    return v.length ? Math.max(...v) : null
+  }
+  // VPD dari T & RH (Tetens) bila kolom vapour_pressure_deficit tidak ada
+  const vpdAt = (i) => {
+    const v = num(vpd[i])
+    if (v != null) return v
+    const t = num(temp[i])
+    const h = num(rh[i])
+    if (t == null || h == null) return null
+    const es = 0.6108 * Math.exp((17.27 * t) / (t + 237.3))
+    return Math.round(es * (1 - h / 100) * 100) / 100
+  }
+  const days = dayKeys.map((d, k) => {
+    const idxOf = (prefix, from, to) => times.map((t, i) => ({ t, i })).filter(({ t }) => t.startsWith(prefix) && Number(t.slice(11, 13)) >= from && Number(t.slice(11, 13)) <= to).map(({ i }) => i)
+    const prev = k > 0 ? dayKeys[k - 1] : null
+    const nightIdx = [...(prev ? idxOf(prev, 19, 23) : []), ...idxOf(d, 0, 7)]
+    const dayIdx = idxOf(d, 9, 15)
+    const di = dIdx(d)
+    const hourlyMin = min(nightIdx.length ? nightIdx.map((i) => num(temp[i])) : idxOf(d, 0, 23).map((i) => num(temp[i])))
+    const hourlyMax = max(idxOf(d, 0, 23).map((i) => num(temp[i])))
+    const coldest = nightIdx.length ? nightIdx.reduce((b, i) => (num(temp[i]) != null && (b == null || num(temp[i]) < num(temp[b])) ? i : b), null) : null
+    return {
+      date: d,
+      tmin: di >= 0 ? num(dailyT.temperature_2m_min?.[di]) ?? hourlyMin : hourlyMin,
+      tmax: di >= 0 ? num(dailyT.temperature_2m_max?.[di]) ?? hourlyMax : hourlyMax,
+      night: {
+        hours: nightIdx.length,
+        cloudMean: mean(nightIdx.map((i) => num(cloud[i]))),
+        windMean: mean(nightIdx.map((i) => num(wind[i]))),
+        dewMin: min(nightIdx.map((i) => num(dew[i]))),
+        coldestTime: coldest != null ? times[coldest] : null,
+        cloudAtColdest: coldest != null ? num(cloud[coldest]) : null,
+        windAtColdest: coldest != null ? num(wind[coldest]) : null,
+        dewAtColdest: coldest != null ? num(dew[coldest]) : null,
+      },
+      day: { vpdMean: mean(dayIdx.map((i) => vpdAt(i))), vpdMax: max(dayIdx.map((i) => vpdAt(i))), rhMin: min(dayIdx.map((i) => num(rh[i]))) },
+      partial: k === 0 && nowIdx > 7,
+    }
+  })
+  return { days, hasDew: dew.some((v) => v != null), hasCloud: cloud.some((v) => v != null), hasVpd: vpd.some((v) => v != null) }
 }

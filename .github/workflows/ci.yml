@@ -27,3 +27,11 @@ jobs:
 
       - name: Build production bundle
         run: npm run build
+
+      # Fase 4.4 — anggaran bundel (gzip ≤ 200 kB total, ≤ 150 kB per berkas) agar tetap ringan di jaringan 3G Gayo
+      - name: Check bundle budget
+        run: npm run check:bundle
+
+      # Fase 4.4 — smoke test API offline: server dinyalakan tanpa kunci; semua endpoint harus menjawab JSON (degraded boleh, 5xx tidak)
+      - name: API smoke test (offline-tolerant)
+        run: npm run smoke

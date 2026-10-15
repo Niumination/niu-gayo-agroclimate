@@ -6,7 +6,7 @@
  * berdata; bila hari terakhir ≥ 1 mm → "HH" (hari hujan, HTH = 0). Kelas: Sangat Pendek 1–5 · Pendek 6–10 ·
  * Menengah 11–20 · Panjang 21–30 · Sangat Panjang 31–60 · Kekeringan Ekstrem > 60 hari.
  */
-import { HTH, WATER_BALANCE } from '../thresholds.js'
+import { HTH, WATER_BALANCE , VPD, SPI } from '../thresholds.js'
 
 export const HTH_CLASSES = [
   { key: 'hh', label: 'Hari Hujan', short: 'HH', max: 0 },
@@ -127,7 +127,37 @@ function maxLevel(a, b) {
  * `source[i]` ∈ 'archive'|'model'|'forecast' — hari berlabel 'forecast' (dan hari ini bila `today` diberikan) dihitung sebagai proyeksi.
  * Mengembalikan null bila tidak ada hari observasi sama sekali.
  */
-export function assessDrought(daily, { today } = {}) {
+/**
+ * FR-KER-3 — VPD siang (09–15 WIB) rata-rata N hari observasi terakhir dari deret jam { time[], temperature_2m[], relative_humidity_2m[], source[] }.
+ * VPD (kPa) = es(T)·(1 − RH/100), es Tetens. Level: > 0,82 waspada (pembungaan), > 1,5 bahaya.
+ */
+export function vpdDaytime(hourly, { today, days = VPD.days } = {}) {
+  const time = hourly?.time ?? []
+  if (!time.length || !hourly.temperature_2m || !hourly.relative_humidity_2m) return null
+  const src = hourly.source ?? time.map(() => 'archive')
+  const byDay = new Map()
+  time.forEach((t, i) => {
+    if (src[i] === 'forecast' || (today && t.slice(0, 10) >= today)) return
+    const h = Number(t.slice(11, 13))
+    if (h < VPD.dayStartH || h > VPD.dayEndH) return
+    const T = hourly.temperature_2m[i]
+    const rh = hourly.relative_humidity_2m[i]
+    if (T == null || rh == null) return
+    const es = 0.6108 * Math.exp((17.27 * T) / (T + 237.3))
+    const v = es * (1 - rh / 100)
+    const d = t.slice(0, 10)
+    if (!byDay.has(d)) byDay.set(d, [])
+    byDay.get(d).push(v)
+  })
+  const dayKeys = [...byDay.keys()].sort().slice(-days)
+  if (!dayKeys.length) return null
+  const dailyMeans = dayKeys.map((d) => byDay.get(d).reduce((a, b) => a + b, 0) / byDay.get(d).length)
+  const mean = Math.round((dailyMeans.reduce((a, b) => a + b, 0) / dailyMeans.length) * 100) / 100
+  const level = mean > VPD.bahaya ? 'bahaya' : mean > VPD.waspada ? 'waspada' : 'rendah'
+  return { mean, days: dayKeys.length, from: dayKeys[0], to: dayKeys[dayKeys.length - 1], level, daily: dayKeys.map((d, i) => ({ date: d, vpd: Math.round(dailyMeans[i] * 100) / 100 })) }
+}
+
+export function assessDrought(daily, { today, hourly = null } = {}) {
   const time = daily?.time ?? []
   if (!time.length) return null
   const src = daily.source ?? time.map(() => 'archive')
@@ -147,7 +177,8 @@ export function assessDrought(daily, { today } = {}) {
   const fcPrecip = fcIdx.map((i) => daily.precipitation_sum?.[i] ?? null)
   const proj = projectHth(h.days, fcPrecip)
   const balance = waterBalance(precipObs, et0Obs)
-  const overall = maxLevel(level, balance.level)
+  const vpd7 = hourly ? vpdDaytime(hourly, { today }) : null
+  const overall = maxLevel(level, balance.level) // VPD tidak menaikkan level agregat (indikator stres bunga, ditampilkan terpisah)
   const series = obsIdx.slice(-WATER_BALANCE.days).map((i) => ({ date: time[i], rain: daily.precipitation_sum?.[i] ?? null }))
   return {
     hth: {
@@ -166,10 +197,11 @@ export function assessDrought(daily, { today } = {}) {
       },
     },
     balance30: balance,
+    vpd7,
     level: overall,
     advice: ADVICE[overall] ?? ADVICE.rendah,
     series,
-    thresholds: { rainDayMm: HTH.rainDayMm, balanceWaspada: WATER_BALANCE.waspada, balanceBahaya: WATER_BALANCE.bahaya },
+    thresholds: { rainDayMm: HTH.rainDayMm, balanceWaspada: WATER_BALANCE.waspada, balanceBahaya: WATER_BALANCE.bahaya, vpdWaspada: VPD.waspada, vpdBahaya: VPD.bahaya },
   }
 }
 
@@ -187,23 +219,37 @@ export default {
     if (!a) return { level: 'n/a', degraded: true, headline: p?.error ? `Kekeringan tidak tersedia (${p.error})` : 'Data kekeringan belum tersedia' }
     const h = a.hth
     const b = a.balance30
+    const v = a.vpd7
+    const spi = p.spi
     const proj = h.projected?.days > h.days ? ` → proyeksi ${h.projected.days} hari (${h.projected.horizonDays} hari ke depan)` : ''
+    // Fase 3.1 — SPI-1/3 (McKee) menaikkan level agregat bila lebih kering dari HTH/neraca; VPD hanya indikator stres bunga.
+    const spiLevel = spi?.level ?? 'n/a'
+    const level = LEVEL_RANK[spiLevel] > LEVEL_RANK[a.level] ? spiLevel : a.level
+    const spiTxt = spi?.spi1 || spi?.spi3 ? ` SPI-1 ${spi.spi1?.value ?? '–'} (${spi.spi1?.classLabel ?? '–'}), SPI-3 ${spi.spi3?.value ?? '–'} (${spi.spi3?.classLabel ?? '–'}) vs baseline ${spi.baseline?.period ?? '1991–2020'}.` : ''
+    const vpdTxt = v ? ` VPD siang ${v.days} hari ${v.mean} kPa${v.level !== 'rendah' ? ` (${v.level === 'bahaya' ? 'sangat kering' : 'kering'} untuk pembungaan)` : ''}.` : ''
+    const extraAdvice = []
+    if (v?.level === 'bahaya') extraAdvice.push('Udara siang sangat kering (VPD > 1,5 kPa): siram/irigasi pagi, naungan sementara untuk kebun berbunga, tunda pemangkasan.')
+    else if (v?.level === 'waspada') extraAdvice.push('VPD siang > 0,82 kPa: bunga kopi rentan — jaga kelembapan tanah (mulsa), hindari membuka naungan.')
+    if (LEVEL_RANK[spiLevel] >= LEVEL_RANK.waspada) extraAdvice.push(`Hujan ${spi.spi3?.value != null && spi.spi3.value <= (spi.spi1?.value ?? 0) ? '3 bulan' : '1 bulan'} terakhir jauh di bawah normal 30 tahun (SPI ${Math.min(spi.spi1?.value ?? 0, spi.spi3?.value ?? 0)}): rencanakan air baku & kebun untuk kekeringan berkepanjangan.`)
     return {
-      level: a.level,
+      level,
       score: h.days != null ? Math.min(100, Math.round((h.days / 60) * 100)) : null,
-      headline: `HTH ${h.days} hari — ${h.classLabel}${proj}`,
-      detail: `Hujan terakhir ${h.lastRainDate ?? '–'}${h.lastRainMm != null ? ` (${h.lastRainMm} mm)` : ''}; neraca air 30 hari ${b?.balance ?? '–'} mm (hujan ${b?.rain ?? '–'} / ET0 ${b?.et0 ?? '–'} mm).${p.archive?.lagDays != null ? ` Arsip tertinggal ${p.archive.lagDays} hari.` : ''}`,
+      headline: `HTH ${h.days} hari — ${h.classLabel}${proj}${LEVEL_RANK[spiLevel] > LEVEL_RANK[a.level] ? ` · SPI ${Math.min(spi.spi1?.value ?? 0, spi.spi3?.value ?? 0)}` : ''}`,
+      detail: `Hujan terakhir ${h.lastRainDate ?? '–'}${h.lastRainMm != null ? ` (${h.lastRainMm} mm)` : ''}; neraca air 30 hari ${b?.balance ?? '–'} mm (hujan ${b?.rain ?? '–'} / ET0 ${b?.et0 ?? '–'} mm).${spiTxt}${vpdTxt}${p.archive?.lagDays != null ? ` Arsip tertinggal ${p.archive.lagDays} hari.` : ''}`,
       metrics: [
         { key: 'hthDays', label: 'Hari tanpa hujan', value: h.days, unit: 'hari' },
         { key: 'hthProjected', label: 'Proyeksi HTH', value: h.projected?.days ?? null, unit: 'hari' },
         { key: 'rain30', label: 'Hujan 30 hari', value: b?.rain ?? null, unit: 'mm' },
         { key: 'et0_30', label: 'ET0 30 hari', value: b?.et0 ?? null, unit: 'mm' },
         { key: 'balance30', label: 'Neraca air 30 hari', value: b?.balance ?? null, unit: 'mm' },
+        { key: 'spi1', label: 'SPI-1 (30 hari)', value: spi?.spi1?.value ?? null, unit: '' },
+        { key: 'spi3', label: 'SPI-3 (90 hari)', value: spi?.spi3?.value ?? null, unit: '' },
+        { key: 'vpd7', label: `VPD siang ${v?.days ?? 7} hari`, value: v?.mean ?? null, unit: 'kPa' },
       ],
-      advice: { kebun: (a.advice ?? []).slice(0, 3) },
+      advice: { kebun: [...(a.advice ?? []).slice(0, 3), ...extraAdvice] },
       sources: [{ name: p.source?.name ?? 'Open-Meteo Historical (ERA5)', kind: 'reanalysis', retrievedAt: p.retrievedAt, url: p.source?.url }],
       validUntil: p.retrievedAt ? new Date(new Date(p.retrievedAt).getTime() + 12 * 3_600_000).toISOString() : null,
-      flags: { classKey: h.classKey, balanceLevel: b?.level ?? null, lagDays: p.archive?.lagDays ?? null },
+      flags: { classKey: h.classKey, balanceLevel: b?.level ?? null, lagDays: p.archive?.lagDays ?? null, spiLevel, spi1Class: spi?.spi1?.classKey ?? null, spi3Class: spi?.spi3?.classKey ?? null, vpdLevel: v?.level ?? null, spiDegraded: spi ? !!spi.degraded : true },
       degraded: !!p.degraded,
     }
   },

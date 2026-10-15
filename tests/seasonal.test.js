@@ -47,3 +47,44 @@ test('disasterHistory: transform per lokasi', () => {
   const last = evs.sort((a, b) => b.date.localeCompare(a.date))[0]
   assert.ok(['2025', '2026'].includes(String(last.year)))
 })
+
+// Fase 3.4 — kalender diperluas
+import { dryPhase, frostWindow, climateAdjustment, seasonalInfoExtended } from '../src/domain/seasonal.js'
+
+test('dryPhase: puncak Jul–Agu, sedang Jun & Sep, lainnya basah; jendela embun upas Jun–Sep', () => {
+  assert.strictEqual(dryPhase(7), 'tinggi')
+  assert.strictEqual(dryPhase(9), 'sedang')
+  assert.strictEqual(dryPhase(12), 'rendah')
+  assert.strictEqual(frostWindow(8), true)
+  assert.strictEqual(frostWindow(1), false)
+})
+
+test('climateAdjustment: El Niño kuat + IOD positif → drier (boost 2), kedaluwarsa → tidak aktif; La Niña → wetter', () => {
+  const outlook = { current: { validUntil: '2099-01-01', enso: { phase: 'El Niño', strength: 'sangat kuat' }, iod: { phase: 'positif' }, season: { rainyOnset: 'terlambat' } } }
+  const a = climateAdjustment(outlook, { now: new Date('2026-10-15T00:00:00Z') })
+  assert.strictEqual(a.shift, 'drier')
+  assert.strictEqual(a.dryBoost, 2)
+  assert.strictEqual(a.active, true)
+  assert.match(a.note, /terlambat/)
+  const stale = climateAdjustment({ current: { ...outlook.current, validUntil: '2026-01-01' } }, { now: new Date('2026-10-15T00:00:00Z') })
+  assert.strictEqual(stale.active, false)
+  assert.strictEqual(stale.stale, true)
+  assert.strictEqual(climateAdjustment({ current: { validUntil: '2099-01-01', enso: { phase: 'La Niña', strength: 'lemah' }, iod: { phase: 'netral' } } }).shift, 'wetter')
+  assert.strictEqual(climateAdjustment(null).shift, 'neutral')
+})
+
+test('seasonalInfoExtended: Oktober normal = sedang/rendah-kering; dengan El Niño kuat → fase hujan turun, kering naik', () => {
+  const normal = seasonalInfoExtended(10, { outlook: null })
+  assert.strictEqual(normal.phase, 'sedang')
+  assert.strictEqual(normal.dry.phase, 'rendah')
+  assert.strictEqual(normal.climate.active, false)
+  const outlook = { current: { validUntil: '2099-01-01', enso: { phase: 'El Niño', strength: 'sangat kuat' }, iod: { phase: 'positif' } } }
+  const nino = seasonalInfoExtended(10, { outlook, now: new Date('2026-10-15T00:00:00Z') })
+  assert.strictEqual(nino.phase, 'rendah')
+  assert.strictEqual(nino.dry.phase, 'sedang')
+  assert.ok(nino.climate.note)
+  const jul = seasonalInfoExtended(7, { outlook, now: new Date('2026-07-15T00:00:00Z') })
+  assert.strictEqual(jul.dry.phase, 'tinggi')
+  assert.strictEqual(jul.frostWindow, true)
+  assert.strictEqual(jul.phase, 'rendah')
+})
