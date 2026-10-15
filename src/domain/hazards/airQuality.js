@@ -306,7 +306,7 @@ export default {
     const esc = asapReportEscalation(ctx.reports, ctx.now ?? new Date())
     let level = maxLevel(a.level, hazeLevel(a.haze))
     if (esc.escalate) level = bumpLevel(level, 1, 'bahaya')
-    const hazeTxt = a.haze?.level && a.haze.level !== 'tidak_ada' && a.haze.level !== 'tidak_diketahui' ? ` · kabut asap ${a.haze.label?.toLowerCase?.() ?? a.haze.level}${a.haze.visibilityKm != null ? ` (${a.haze.visibilityKm} km)` : ''}` : ''
+    const hazeTxt = a.haze?.level && a.haze.level !== 'tidak_ada' && a.haze.level !== 'tidak_diketahui' ? ` · ${a.haze.label ? a.haze.label.toLowerCase() : `kabut asap ${a.haze.level}`}${a.haze.visibilityKm != null ? ` (${a.haze.visibilityKm} km)` : ''}` : ''
     return {
       level,
       score: a.ispu?.index ?? null,
