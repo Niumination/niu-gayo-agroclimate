@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { GROUP_LABEL } from '../domain/hazards/index.js'
 import { LEVEL_LABEL } from '../domain/hazards/levels.js'
+import { InteractionsList } from './HazardFocusCards.jsx'
 import { prefs } from '../lib/prefs.js'
 import ShareButton from './ShareButton.jsx'
 
@@ -114,7 +115,7 @@ export default function HazardPanel({ hazards, location, lang = 'id', onAbout, o
   const [openId, setOpenId] = useState(null)
   const [showAll, setShowAll] = useState(false)
   if (!hazards?.results?.length) return null
-  const { results, worst, active, counts } = hazards
+  const { results, worst, active, counts, interactions = [] } = hazards
   const hidden = prefs.getHiddenHazards()
   const visible = showAll ? results : results.filter((r) => r.level !== 'n/a' || active.length === 0)
   const asOf = clock(results[0]?.evaluatedAt)
@@ -149,6 +150,8 @@ export default function HazardPanel({ hazards, location, lang = 'id', onAbout, o
         {counts.degraded > 0 && counts.degraded < counts.total && (
           <p className="text-[11px] text-ink/45 dark:text-mist/40 mt-1">{counts.degraded} bahaya tanpa data (sumber tidak tersedia / tidak berlaku di sentra ini).</p>
         )}
+        {/* Fase 2.5 (FR-X-2) — aturan interaksi lintas-bahaya */}
+        {interactions.length > 0 && <div className="mt-2"><InteractionsList interactions={interactions} /></div>}
       </div>
 
       <ul className="divide-y divide-ink/10 dark:divide-mist/10 pt-3">

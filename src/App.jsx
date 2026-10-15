@@ -11,6 +11,7 @@ import AirQualityCard from './components/AirQualityCard'
 import FireDangerCard from './components/FireDangerCard'
 import DroughtCard from './components/DroughtCard'
 import HazardPanel from './components/HazardPanel'
+import { StormCard, FloodCard, TemperatureCard, QuakeCard, VolcanoCard, ExternalReportsCard } from './components/HazardFocusCards'
 import ClimateBanner from './components/ClimateBanner'
 import DisasterHistoryCard from './components/DisasterHistoryCard'
 import EmergencyContacts from './components/EmergencyContacts'
@@ -189,6 +190,13 @@ export default function App() {
       {/* H-API (v2 Fase 1, Sprint 2) — bahaya kebakaran: FWI + hotspot + HTH; H-KERING — kekeringan ringkas */}
       <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
       <DroughtCard drought={data.drought} tr={tr} />
+      {/* Fase 2–3 — kartu fokus: petir/badai, debit GloFAS, gempa, Burni Telong, suhu kopi, laporan PetaBencana (tampil hanya bila ada data) */}
+      <StormCard hazards={data.hazards} />
+      <FloodCard hazards={data.hazards} flood={data.flood} />
+      <QuakeCard hazards={data.hazards} />
+      <VolcanoCard hazards={data.hazards} volcano={data.volcano} />
+      <TemperatureCard hazards={data.hazards} />
+      <ExternalReportsCard externalReports={data.externalReports} />
       {/* 1.9d — riwayat multi-bahaya + FR-X-4 kontak darurat */}
       <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} />
       <EmergencyContacts location={selectedLocation} hazard={data.hazards?.active?.[0]?.id ?? '*'} />
@@ -219,6 +227,13 @@ export default function App() {
           <CoffeeAdvisory coffee={data.coffee} tr={tr} />
           {/* H-KERING (v2 Fase 1, Sprint 2) — HTH kelas BMKG + neraca air 30 hari */}
           <DroughtCard drought={data.drought} tr={tr} />
+          {/* Fase 2–3 — kartu fokus (tampil hanya bila ada data) */}
+          <StormCard hazards={data.hazards} />
+          <FloodCard hazards={data.hazards} flood={data.flood} />
+          <TemperatureCard hazards={data.hazards} />
+          <QuakeCard hazards={data.hazards} />
+          <VolcanoCard hazards={data.hazards} volcano={data.volcano} />
+          <ExternalReportsCard externalReports={data.externalReports} />
         </div>
 
         {/* Kolom kanan: peringatan + keyakinan ensemble */}
