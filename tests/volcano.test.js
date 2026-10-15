@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { parseMagmaLevels, findVolcano, getVolcanoStatus, fetchSummitWind, RADIUS_BY_LEVEL } from '../server/magma.js'
+import { parseMagmaLevels, findVolcano, getVolcanoStatus, fetchSummitWind, readOverride, RADIUS_BY_LEVEL } from '../server/magma.js'
 import volcanoMod, { bearingDeg, angleDiff, downwindSentra, levelForDistance } from '../src/domain/hazards/volcano.js'
 import { BURNI_TELONG } from '../src/domain/geo.js'
 import { LOCATIONS } from '../src/data/locations.js'
@@ -59,6 +59,36 @@ test('getVolcanoStatus: parse OK → simpan nilai terakhir; HTML berubah → deg
   assert.equal(none.degraded, true)
   const w = await fetchSummitWind({ fetchJson: windJson })
   assert.equal(w.dir10m, 90)
+  fs.rmSync(dir, { recursive: true, force: true })
+})
+
+test('getVolcanoStatus: override manual (VOLCANO_OVERRIDE_PATH) — dipakai saat parser gagal, atau selalu bila force', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'volcano-ovr-'))
+  const file = path.join(dir, 'last.json')
+  const ovr = path.join(dir, 'override.json')
+  const windJson = async () => ({ current: { time: '2026-10-15T19:00', wind_speed_10m: 8, wind_direction_10m: 90 }, hourly: { time: ['2026-10-15T19:00'], wind_speed_10m: [8], wind_direction_10m: [90] } })
+  fs.writeFileSync(ovr, JSON.stringify({ burniTelong: { level: 'III', asOf: '2026-10-14', source: 'rilis PVMBG uji' } }))
+  assert.deepEqual(readOverride(ovr).level, 3)
+  assert.equal(readOverride(path.join(dir, 'tidak-ada.json')), null)
+  fs.writeFileSync(path.join(dir, 'bad.json'), JSON.stringify({ burniTelong: { level: 'IX' } }))
+  assert.equal(readOverride(path.join(dir, 'bad.json')), null, 'level tidak valid diabaikan')
+  // parser OK + override tanpa force → nilai halaman dipakai
+  const ok = await getVolcanoStatus({ fetchText: async () => HTML, fetchJson: windJson, lastGoodFile: file, overridePath: ovr, now: NOW })
+  assert.equal(ok.volcano.level, 2)
+  assert.equal(ok.overridden, undefined)
+  // parser gagal + override → override dipakai, tidak degraded, tidak stale
+  const broken = await getVolcanoStatus({ fetchText: async () => '<html>maintenance</html>', fetchJson: windJson, lastGoodFile: file, overridePath: ovr, now: NOW })
+  assert.equal(broken.volcano.level, 3)
+  assert.equal(broken.volcano.label, 'Siaga')
+  assert.equal(broken.volcano.radiusKm, RADIUS_BY_LEVEL[3])
+  assert.equal(broken.overridden, true)
+  assert.equal(broken.degraded, false)
+  assert.equal(broken.volcano.override.source, 'rilis PVMBG uji')
+  // force → menimpa hasil parser yang sukses
+  fs.writeFileSync(ovr, JSON.stringify({ burniTelong: { level: 4, force: true } }))
+  const forced = await getVolcanoStatus({ fetchText: async () => HTML, fetchJson: windJson, lastGoodFile: file, overridePath: ovr, now: NOW })
+  assert.equal(forced.volcano.level, 4)
+  assert.equal(forced.overridden, true)
   fs.rmSync(dir, { recursive: true, force: true })
 })
 

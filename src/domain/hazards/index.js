@@ -3,9 +3,12 @@
  * Setiap modul: { id, group, label, requires[], evaluate(ctx) → HazardResult } (fungsi murni, tanpa fetch, tanpa className).
  * id modul = tipe laporan warga = kunci i18n = feature flag (`HAZARDS_ENABLED`).
  *
- * ctx = { location, now, weather (weatherFeatures), ari, airQuality, fireDanger, drought, reports, bmkgNowcast,
- *         quakes (/api/quakes?location=), volcano (/api/volcano), convective (/api/convective?location=), flood (/api/flood),
- *         temperature (/api/temperature?location= — Tmin/Tmax/Td/awan/angin harian, Fase 3.2) }
+ * ctx = { location, now, weather (weatherFeatures: current/next24/next72 + thermal per hari untuk modul `suhu`), ari,
+ *         airQuality (/api/air-quality), fireDanger (/api/fire-danger), drought (/api/drought: HTH, neraca, SPI, VPD),
+ *         reports, bmkgNowcast, quakes (/api/quakes?location=), volcano (/api/volcano),
+ *         convective (/api/convective?location=), flood (/api/flood — sel GloFAS per sentra), externalReports (konteks saja) }
+ * evaluateAll(ctx) → { results[] (terurut level), worst, active[], counts, interactions[] } — interaksi antar-bahaya
+ * (gempa×tanah jenuh, kekeringan×FFMC, badai×longsor, vulkanik×hujan, asap×hujan) diterapkan setelah evaluasi modul (interactions.js).
  */
 import landslide from './landslide.js'
 import watershed from './watershed.js'

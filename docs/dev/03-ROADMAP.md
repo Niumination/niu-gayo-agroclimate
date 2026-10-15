@@ -47,48 +47,48 @@ Okt 2026        Nov 2026        Des 2026        Jan 2027        Feb 2027        
 | 1.9b ✅ | `server/archive.js` (Open-Meteo Archive 90 hari + celah ECMWF) + `hthDays()` kelas BMKG + neraca air + `GET /api/drought` + kartu `DroughtCard.jsx` — **selesai Sprint 2** | FR-KER-1/2/3/4 | — |
 | 1.9c ✅ | Banner konteks iklim `ClimateBanner.jsx` (`climateOutlook.json` + verifikasi lokal dari `/api/drought`; peringatan bila `validUntil` lewat) — **selesai Sprint 3** | FR-KER-5 | — |
 | 1.9d ✅ | Riwayat diperluas (12 kejadian 2013–2026, `GET /api/disaster-history?location=&hazard=`, `DisasterHistoryCard`) + modal "Tentang data & batasan" (`AboutData.jsx`: sumber & lisensi, estimasi vs pengukuran, batasan, privasi) + `EmergencyContacts` — **selesai Sprint 3** | FR-X-8/9, FR-X-4 | — |
-| 1.10b ◐ | Arsip harian hazard — **selesai Sprint 3** (`server/hazards.js` `archiveSnapshot()` → `server/data/hazard-archive/YYYY-MM-DD.json`, satu snapshot per sentra per jam saat `/api/hazards?location=all` dievaluasi; `readArchive({days})`) · `scripts/validate-season.mjs` + surat pengantar BPBD Aceh Tengah → Sprint 4 | FR-X-10, ADR-26 | 1.8 |
-| 1.10 ◐ | Dokumen: THRESHOLDS (ISPU ✅, FWI ✅, visibility ✅, FWI ops ✅, hotspot ✅, HTH ✅, level seragam & CAP ✅ §13–14), CHANGELOG 2.0.0 (saat rilis) | — | — |
+| 1.10b ✅ | Arsip harian hazard (Sprint 3) · `scripts/validate-season.mjs` (POD/FAR/rasio aktif dari arsip + laporan warga/kejadian terkurasi, `npm run validate:season`) + `docs/VALIDATION.md` + draf surat pengantar `docs/templates/surat-pengantar-BPBD.md` — **selesai Sprint 4** (pengiriman surat = tugas manusia H-8) | FR-X-10, ADR-26 | 1.8 |
+| 1.10 ✅ | Dokumen: THRESHOLDS §1–21 (ISPU, FWI, visibility, FWI ops, hotspot, HTH, level seragam & CAP, gempa, vulkanik, konvektif, banjir+, interaksi, SPI/VPD, suhu), CHANGELOG 2.0.0 — **selesai Sprint 4**; tag git `v2.0.0` = tugas H-6 | — | — |
 
 **Gate G1:** episode asap berikutnya tampil di dashboard dalam ≤ 30 menit; cron berjalan; ≥ 25 test baru.
 **Rilis cepat (hotfix opsional, minggu 3):** kartu ISPU + jarak pandang saja (1.1–1.3) agar warga segera terbantu. → **Dikerjakan di Sprint 1 (15 Okt 2026): 1.5b, 1.1, 1.2, 1.3 + kartu; +46 test (144 total).**
 **Sprint 2 (15 Okt 2026, selesai):** 1.5 server FWI + arsip 90 hari, 1.9b HTH/neraca air + kartu, 1.4 FIRMS (kode siap; degraded sampai MAP_KEY H-1), 1.6 kartu "Bahaya Kebakaran", 1.7 laporan asap/kebakaran, 1.9 `dryingStatus` × asap; +54 test (**198 total**). Gate G1 "≥ 25 test baru" terpenuhi; "cron berjalan" & "episode ≤ 30 menit" menunggu Sprint 3.
 **Sprint 3 (15 Okt 2026, selesai):** 0.2–0.5 hazard registry + `HazardPanel` + flag; 1.8b `Alert` CAP + renderer + anti-kebisingan + `ShareButton`; 1.8 `/api/hazards`, `/api/alerts/{feed,run}`, `/healthz` per sumber, cron systemd → Telegram; 1.9c banner iklim; 1.9d riwayat 12 kejadian + "Tentang data & batasan" + kontak darurat; 1.7 laporan `kekeringan`/`badai`; 1.6b peta skematik SVG; `scripts/check-bundle.mjs`; +38 test (**236 total**). **Gate G1:** "≥ 25 test baru" ✅, "cron berjalan" ✅ secara kode (`timer` 30 menit; aktivasi produksi = tugas H-7 isi `TELEGRAM_*` + `ALERTS_CRON_TOKEN`), "episode asap ≤ 30 menit" ✅ secara desain (TTL AQ 60 menit → turunkan `AQ_TTL_MIN=20` bila episode berlangsung).
-**Sprint 4 (berikutnya):** 1.9 faskes per kecamatan (H-5 nomor terverifikasi), 1.10b `validate-season.mjs` (membaca arsip harian) + surat BPBD, ADR-24 tahap 2 (Leaflet lazy-load, lapisan angin), rilis **v2.0.0** (CHANGELOG, tag) → lanjut Fase 2 (H-GEMPA, H-VULKANIK).
+**Sprint 4 (15 Okt 2026, selesai):** seluruh butir yang tidak memerlukan masukan manusia — 1.10b `validate-season.mjs` + `docs/VALIDATION.md` + draf surat BPBD, 1.10 dokumen, **Fase 2 lengkap** (2.1–2.5), **Fase 3 lengkap** (3.1, 3.2, 3.4), **Fase 4.2/4.4/4.5** (dokumen validasi, CI bundle + smoke, roadmap v3); +49 test (**285 total**). Ditunda dengan alasan: ADR-24 tahap 2 Leaflet lazy-load & lapisan angin (anggaran bundel; peta SVG sudah memenuhi FR-API-6), 2.6 Web Push (butuh VAPID key — H-9; `/api/alerts/feed` sudah ada), 1.9 faskes (H-5). Tag `v2.0.0` = H-6.
 
 ## Fase 2 — v2.1 "Gempa, Vulkanik, Konvektif, Banjir+" (Des 2026)
 | # | Pekerjaan | Keluaran |
 |---|---|---|
-| 2.1 | `server/bmkgQuake.js` (gempadirasakan + autogempa + gempaterkini, radius 300 km) + `quakeImpact()` + kartu gempa + panduan + cron segera | FR-GEMPA-1/2/3/6 |
-| 2.2 | Riwayat gempa Gayo 2013 & USGS 10 tahun → `disasterHistory.json` (skema `hazard`) | FR-GEMPA-5 |
-| 2.2b | **Vulkanik**: `server/magma.js` parser halaman tingkat aktivitas (fixture) + sektor arah angin + kartu Burni Telong + laporan `abu`/`gas` | FR-VULK-1…5 |
-| 2.2c | Aturan majemuk gempa × longsor (72 jam) | FR-GEMPA-4 |
-| 2.3 | Modul **konvektif** `convective.js`: konsensus CAPE ECMWF + LI GFS + `weather_code` + gusts + BMKG → petir/hujan es/puting beliung; jam puncak; anjuran pekerja kebun; H-ANGIN+ titik 45 km/jam | FR-KONV-1…5 |
-| 2.4 | **Banjir+**: `server/flood.js` (4 sel GloFAS) + skrip klimatologi debit + `dischargeAnomaly()` + Indeks Luapan DAS v2 + kartu debit 14 hari | FR-BJR-1…5 |
-| 2.4b | Umpan PetaBencana.id (Aceh Tengah/Bener Meriah/Gayo Lues) sebagai konteks laporan eksternal | FR-BJR-6 |
-| 2.5 | Indeks bahaya majemuk per sentra + aturan interaksi | FR-X-2 |
-| 2.6 | Web Push opsional (opt-in per sentra, level ≥ bahaya) + `GET /api/alerts/feed` | FR-DIS-4/5 |
+| 2.1 ✅ | `server/bmkgQuake.js` (gempadirasakan + autogempa + gempaterkini, radius 300 km, cache 2 menit) + modul `gempa` (MMI indikatif IPE, level 24/72 jam) + `QuakeCard` + `/api/quakes` + Alert segera per `eventId` + timer cepat 5 menit (`agroclimate-alerts-fast.*`) — **selesai Sprint 4** (THRESHOLDS §15) | FR-GEMPA-1/2/3/6 |
+| 2.2 ✅ | Riwayat USGS 10 tahun (82 kejadian M ≥ 4,5 ≤ 150 km) → `src/data/hazards/quakeHistory.json`; laporan warga `gempa` (lemah/sedang/kuat) — **selesai Sprint 4** | FR-GEMPA-5 |
+| 2.2b ✅ | **Vulkanik**: `server/magma.js` parser tingkat aktivitas MAGMA (fixture Bur Ni Telong Level II) + override/last-good + sektor bawah angin + modul `vulkanik` + `VolcanoCard` + laporan `abu`/`gas` — **selesai Sprint 4** (§16) | FR-VULK-1…5 |
+| 2.2c ✅ | Gempa × longsor 72 jam → `flags.landslideAfterQuake` + aturan interaksi `gempa_tanah_jenuh` (longsor +1, maks bahaya) — **selesai Sprint 4** | FR-GEMPA-4 |
+| 2.3 ✅ | Modul **`badai`** (`src/domain/hazards/convective.js`, `server/convective.js`): konsensus CAPE ECMWF + LI GFS + kode 95–99 + hembusan + BMKG aktif; `agreement`, jam puncak, hujan es kualitatif, puting beliung (≥ 45 km/jam); `StormCard` strip 12 jam — **selesai Sprint 4** (§17) | FR-KONV-1…5 |
+| 2.4 ✅ | **Banjir+**: `server/flood.js` (4 sel GloFAS, cache 6 jam, nilai terakhir) + `scripts/build-flood-clim.mjs` → `server/clim/flood-clim.json` (1997–2025) + `dischargeAnomaly()` + Indeks Luapan v2 (`watershed.js`) + `FloodCard` SVG 14 hari — **selesai Sprint 4** (§18) | FR-BJR-1…5 |
+| 2.4b ✅ | `server/petabencana.js` + `/api/external-reports` (Aceh → saring 1104/1117/1113 atau ≤ 60 km, CC BY-NC) + `ExternalReportsCard` — **selesai Sprint 4** | FR-BJR-6 |
+| 2.5 ✅ | `src/domain/hazards/interactions.js` (5 aturan) di `evaluateAll` → `interactions[]` + daftar di `HazardPanel` — **selesai Sprint 4** (§19) | FR-X-2 |
+| 2.6 ◐ | `GET /api/alerts/feed` ✅ (Sprint 3); Web Push opt-in **ditunda** sampai VAPID key tersedia (H-9) — desain di `05-ARCHITECTURE.md` ADR-19 | FR-DIS-4/5 |
 
-**Gate G2:** gempa terasa (BMKG) tampil ≤ 5 menit; tingkat aktivitas Burni Telong tampil & cocok dengan halaman MAGMA; indeks majemuk ter-test.
+**Gate G2:** gempa terasa (BMKG) tampil ≤ 5 menit ✅ (TTL 2 menit + timer 5 menit); tingkat aktivitas Burni Telong tampil & cocok dengan halaman MAGMA ✅ (Level II Waspada, parser + fixture); indeks majemuk ter-test ✅ (`tests/interactions.test.js`).
 
 ## Fase 3 — v2.2 "Musim Kering & Suhu" (Jan–Feb 2027)
 | # | Pekerjaan | Keluaran |
 |---|---|---|
-| 3.1 | **Kekeringan lanjutan**: neraca air 30 hari, VPD pembungaan, SPI-1/3 (baseline 1991–2020 per lokasi) | FR-KER-3/6 |
-| 3.2 | **Suhu ekstrem kopi**: stres dingin/embun upas (Tmin ≤ 10/6/4 °C + cerah + tenang + Td rendah) & panas/aborsi bunga (Tmax ≥ 28/30/32 °C, VPD > 0,82 kPa) | FR-SUHU-1…3 |
+| 3.1 ✅ | **Kekeringan lanjutan**: neraca air 30 hari (Sprint 2) + VPD siang 7 hari (`vpdDaytime`) + SPI-1/3 gamma McKee (`server/spi.js`, baseline ERA5 1991–2020 `server/clim/spi-baseline.json` via `scripts/build-spi-baseline.mjs`) → `/api/drought.spi`, modul `kekeringan` naik level bila SPI ≤ −1/−1,5/−2 — **selesai Sprint 4** (§20) | FR-KER-3/6 |
+| 3.2 ✅ | **Suhu ekstrem kopi** modul `suhu` (`temperature.js`: `coldStress`, `heatStress`; `features.thermalSummary`) + `TemperatureCard` — **selesai Sprint 4** (§21) | FR-SUHU-1…3 |
 | 3.3 | *(dipindah ke Fase 2.2b — status Waspada aktif)* | — |
-| 3.4 | Kalender musiman diperluas: fase kering (karhutla/kekeringan) + penyesuaian tahunan dari prediksi musim BMKG (ENSO/IOD) | F7+ |
+| 3.4 ✅ | Kalender musiman diperluas `seasonalInfoExtended` (fase kering, jendela embun upas, penyesuaian ENSO/IOD dari `climateOutlook.json`) → `/api/seasonal` + `SeasonalBanner` — **selesai Sprint 4** | F7+ |
 
-**Gate G3:** 9 hazard aktif di registry; dokumentasi threshold lengkap.
+**Gate G3:** 9 hazard aktif di registry ✅ (**11**: longsor, banjir, angin, badai, asap, kebakaran, kekeringan, gempa, vulkanik, suhu, karat); dokumentasi threshold lengkap ✅ (§1–21).
 
 ## Fase 4 — v2.3 "Peta, Validasi, Kemitraan" (Mar–Apr 2027)
 | # | Pekerjaan | Keluaran |
 |---|---|---|
-| 4.1 | Peta detail Leaflet lazy-load (~40 kB) + tile berizin saat online | FR-API-7 |
-| 4.2 | Validasi silang: FWI in-house vs SPBK BMKG; ISPU estimasi vs stasiun terdekat; longsor vs kejadian; **debit GloFAS vs banjir 2025** | Laporan validasi |
-| 4.3 | Kemitraan: BPBD Aceh Tengah, Staklim Aceh, Manggala Agni, Dinkes/Puskesmas & DLH (sensor PM2,5 murah → `POST /api/sensors`), Pos PGA Burni Telong, BWS Sumatera I | MoU/komitmen |
-| 4.4 | Smoke test Playwright di CI; `scripts/check-bundle.mjs` (gagal > 400 kB gzip); Lighthouse | ADR-25 |
-| 4.5 | Evaluasi & roadmap v3 (sensor IoT kebun, WN3, API publik) | Dokumen |
+| 4.1 | Peta detail Leaflet lazy-load (~40 kB) + tile berizin saat online — **ditunda** (peta SVG 1.6b memenuhi kebutuhan; anggaran bundel) | FR-API-7 |
+| 4.2 ◐ | Protokol & alat validasi ✅ (`docs/VALIDATION.md`, `scripts/validate-season.mjs`, format kejadian terkurasi `docs/validation/events-template.json`); **laporan validasi** menunggu data musim (≥ 90 hari arsip) & kejadian BPBD (H-8) | Laporan validasi |
+| 4.3 | Kemitraan: BPBD Aceh Tengah, Staklim Aceh, Manggala Agni, Dinkes/Puskesmas & DLH (sensor PM2,5 murah → `POST /api/sensors`), Pos PGA Burni Telong, BWS Sumatera I — tugas manusia (draf surat tersedia) | MoU/komitmen |
+| 4.4 ✅ | CI: `npm test` + build + `check:bundle` (gzip ≤ 200 kB) + `npm run smoke` (`scripts/smoke.mjs`: server dinyalakan, 15 endpoint + dry-run cron harus 200/JSON) — **selesai Sprint 4**; Playwright/Lighthouse opsional | ADR-25 |
+| 4.5 ✅ | `docs/dev/10-ROADMAP-V3.md` (sensor IoT kebun, WN3, API publik, Web Push, Leaflet, kalibrasi lokal) — **selesai Sprint 4** | Dokumen |
 
 ---
 

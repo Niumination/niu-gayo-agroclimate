@@ -1,6 +1,40 @@
 # Changelog
 
-## [Unreleased] — v2.0-dev "Asap & Kebakaran" Sprint 3 (Fase 0: 0.2–0.5 · Fase 1: 1.6b, 1.8, 1.8b, 1.9c, 1.9d, FR-X-4/5/8/9)
+## [2.0.0] — 2026-10-15 · Sprint 4 "Multi-bahaya lengkap" (Fase 2: 2.1–2.5 · Fase 3: 3.1, 3.2, 3.4 · Fase 1: 1.10b · Fase 4: 4.2, 4.4, 4.5)
+
+Rilis v2.0.0 menutup seluruh butir roadmap `docs/dev/03-ROADMAP.md` yang tidak memerlukan masukan manusia. Registry kini **11 bahaya** (`longsor, banjir, angin, badai, asap, kebakaran, kekeringan, gempa, vulkanik, suhu, karat`) + interaksi lintas-bahaya. Tag git `v2.0.0` dan aktivasi cron/kunci tetap tugas manusia (H-1, H-6, H-7, H-9).
+
+### Fitur — geologi (Fase 2.1, 2.2, 2.2b, 2.2c)
+- **H-GEMPA** `GET /api/quakes[?location=]` (`server/bmkgQuake.js`): tiga feed BMKG TEWS (`gempadirasakan`, `autogempa`, `gempaterkini`), saringan radius 300 km dari Takengon / menyebut Aceh, cache 2 menit (`QUAKE_TTL_MIN`), kegagalan per sumber tidak menjatuhkan hasil; modul `gempa` (`src/domain/hazards/quake.js`): jarak hiposentral per sentra, **MMI indikatif** IPE Allen dkk. 2012, level `waspada` MMI ≥ 3 / `bahaya` ≥ 5 / `ekstrem` ≥ 7 selama 24 jam (72 jam maks. waspada), penanda **gempa pemicu longsor** (M ≥ 5 ≤ 100 km), tautan shakemap BMKG. Riwayat 10 tahun USGS (82 kejadian M ≥ 4,5 ≤ 150 km, `src/data/hazards/quakeHistory.json`) hanya untuk konteks — tanpa prediksi (ADR-17). `docs/THRESHOLDS.md` §15.
+- **H-VULKANIK** `GET /api/volcano` (`server/magma.js`): parser halaman tingkat aktivitas MAGMA Indonesia (Level I–IV) untuk **Burni Telong** + nilai terakhir tersimpan (`server/data/volcano-last.json`) + `VOLCANO_LEVEL_OVERRIDE`; arah angin puncak (Open-Meteo) → daftar sentra **di bawah angin** (± 30°); modul `vulkanik`: Level II → `waspada` (dekat ≤ 30 km) … Level IV → `ekstrem`, radius rekomendasi 3/5/7 km, anjuran abu (masker, atap, air, kopi). §16.
+- **Diseminasi geologi**: `gempa`/`vulkanik` di `PUSH_POLICY`/`DEFAULT_EXPIRES`/CAP category; `eventId` baru (`bmkg-<ISO>`, `magma-level-N`) → **Alert segera** melewati jeda 6 jam; `POST /api/alerts/run?only=gempa,vulkanik`, `scripts/alerts-cron.mjs --only`, unit systemd `server/agroclimate-alerts-fast.{service,timer}` (tiap 5 menit).
+- Laporan warga tipe baru `abu` (tipis | tebal), `gas` (ringan | menyengat), `gempa` (lemah | sedang | kuat) — validasi server + isian `ReportButton.jsx`.
+
+### Fitur — hidromet & atmosfer (Fase 2.3, 2.4, 2.4b, 2.5)
+- **H-PETIR / badai** `GET /api/convective?location=` (`server/convective.js`, TTL 30 menit): ECMWF IFS 0,25° (CAPE, kode cuaca 95–99, hembusan, hujan) × GFS (CAPE, Lifted Index, CIN) 12 jam ke depan; modul `badai`: CAPE 1000/2000, LI −3/−6, hembusan ≥ 45 km/jam (puting beliung), hujan ≥ 20 mm/jam, **potensi hujan es** (CAPE ≥ 2500 & LI ≤ −6 atau kode 96/99), `agreement` ECMWF↔GFS, nowcast BMKG aktif → minimal `bahaya`; aturan 30-30. §17.
+- **H-BANJIR+ / Indeks Luapan v2** `GET /api/flood` (`server/flood.js`, TTL 6 jam): debit **GloFAS** (Open-Meteo Flood API) 4 sel DAS Peusangan (outlet Lut Tawar, Takengon, Bintang, Angkup) vs klimatologi DOY ± 15 hari 1997–2025 (`server/clim/flood-clim.json`, `npm run clim:flood`); `watershed.js` v2 = maks(indeks hujan hulu, anomali debit 2×/3×/5× median atau > p95) + pengubah ARI72 ≥ 100 mm; sentra di luar DAS tetap `n/a`. §18.
+- **Laporan eksternal** `GET /api/external-reports` (`server/petabencana.js`, TTL 10 menit): laporan warga PetaBencana.id (Aceh) disaring Gayo (kode 1104/1117/1113 atau ≤ 60 km), konteks saja — bukan masukan skor (ADR-20), atribusi CC BY-NC 4.0.
+- **Interaksi lintas-bahaya** (`src/domain/hazards/interactions.js`, FR-X-2): `gempa_tanah_jenuh` (longsor +1 ≤ bahaya), `kekeringan_ffmc` (kebakaran +1 ≤ waspada), `badai_longsor`, `vulkanik_hujan_lahar`, `asap_hujan_lebat`; `evaluateAll` → `interactions[]`, hasil yang dinaikkan membawa `flags.baseLevel/bumpedBy`. §19.
+- **UI**: `HazardFocusCards.jsx` (StormCard strip 12 jam, FloodCard grafik SVG debit vs median/p95, QuakeCard, VolcanoCard, ExternalReportsCard) + daftar interaksi di `HazardPanel`; peta skematik mewarnai 11 bahaya.
+
+### Fitur — agro-klimat (Fase 3.1, 3.2, 3.4)
+- **SPI-1/3** (`server/spi.js`): gamma McKee/Thom 1958 dengan koreksi nol, baseline ERA5 **1991–2020** per sentra (`server/clim/spi-baseline.json`, `npm run clim:spi`); `/api/drought` → `spi`; modul `kekeringan` menaikkan level bila SPI ≤ −1 / −1,5 / −2. **VPD siang** 09–15 WIB rata-rata 7 hari (Tetens) → `vpd7` (> 0,82 kPa waspada bunga, > 1,5 bahaya). §20.
+- **H-SUHU** modul `suhu` (`temperature.js`, `features.thermalSummary`): **dingin/embun upas** Tmin 10/6/4 °C dengan syarat awan < 30 %, angin ≤ 5 km/jam, Td ≤ 2 °C, koreksi −1 °C untuk sentra ≥ 1.400 m; **panas/aborsi bunga** Tmax 28/30/32 °C (+1 tingkat saat bulan berbunga [1–4, 8–9] & VPD > 0,82). Open-Meteo klien/server menambah `cloud_cover, dew_point_2m, vapour_pressure_deficit`. §21.
+- **Kalender musiman diperluas** (`seasonal.js`: `dryPhase`, `frostWindow`, `climateAdjustment` ENSO/IOD dari `climateOutlook.json`, `seasonalInfoExtended`) → `/api/seasonal` + `SeasonalBanner.jsx`.
+
+### Validasi, operasi & CI (Fase 1.10b, 4.2, 4.4, 4.5)
+- `scripts/validate-season.mjs` (`npm run validate:season -- --days 120 --min waspada --events <json> --out <json>`): POD / FAR / rasio aktif per bahaya dari arsip harian × laporan warga × kejadian terkurasi; protokol di **`docs/VALIDATION.md`**, format kejadian `docs/validation/events-template.json`, draf surat **`docs/templates/surat-pengantar-BPBD.md`** (H-8).
+- `scripts/smoke.mjs` (`npm run smoke`): menjalankan server pada port acak, memeriksa 15 endpoint + `POST /api/alerts/run?dryRun=1` (gagal pada 5xx/non-JSON; upstream degraded ditoleransi). `.github/workflows/ci.yml`: `npm ci → test → build → check:bundle → smoke`.
+- `/healthz` menambah status `quakes`, `volcano`, `flood`, `petabencana`; `.env.example` + `CONVECTIVE_TTL_MIN`, `QUAKE_TTL_MIN`, `VOLCANO_TTL_MIN`, `PETABENCANA_TTL_MIN`, `HAZARDS_ENABLED` (11 id).
+- Dokumentasi: `docs/THRESHOLDS.md` §15–21, `docs/dev/03-ROADMAP.md` (status), `05-ARCHITECTURE.md` §5 (realisasi vs rencana), `06-THRESHOLDS-MULTI-HAZARD.md` §11, **`docs/dev/10-ROADMAP-V3.md`** (arah 2027–28: kalibrasi lokal, Web Push/VAPID, sensor PM2,5, AWLR, Leaflet lazy-load, API publik, Gayo).
+
+### Test & kinerja
+- +49 test (`quake`, `volcano`, `convective`, `flood`, `interactions`, `temperature`, `validate-season`, tambahan `seasonal`, `reports`, kontrak registry) → total **285** lulus; `npm run build` OK; `check:bundle` ✓ (JS utama ≈ 132 kB gzip, batas 150).
+
+### Ditunda (lihat `10-ROADMAP-V3.md`)
+- 2.6 Web Push (butuh VAPID key — H-9); ADR-24 tahap 2 Leaflet lazy-load; 4.1 kalibrasi lokal (butuh ≥ 1 musim arsip + kejadian BPBD); 4.3 sensor PM2,5.
+
+## v2.0-dev Sprint 3 (Fase 0: 0.2–0.5 · Fase 1: 1.6b, 1.8, 1.8b, 1.9c, 1.9d, FR-X-4/5/8/9)
 
 ### Fitur
 - **Hazard registry (ADR-12/16)** `src/domain/hazards/{index,levels,features,landslide,watershed,wind,rust,airQuality,fireWeather,drought}.js`: 7 modul murni (`longsor, banjir, angin, karat, asap, kebakaran, kekeringan`) dengan kontrak seragam `{id,label{id,gayo},group,level,score,headline,detail,metrics[],advice{umum,rentan,kebun,sekolah},sources[],flags,degraded,validUntil,evaluatedAt}`; `evaluateAll(ctx)` → `{results[] terurut level, worst, active[], counts}`; skala level seragam `n/a < rendah < waspada < bahaya < ekstrem` (docs/THRESHOLDS.md §13). Logika kartu lama tidak diubah — registry memakai fungsi domain yang sama.

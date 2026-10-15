@@ -111,7 +111,22 @@ async function defaultFetchJson(url) {
  * Status Burni Telong + angin puncak + sentra di bawah angin.
  * @returns {{ volcano:{name,level,label,roman,reportUrl,pageUrl,summit,radiusKm}, wind, downwind[], retrievedAt, source, degraded, stale?, error? }}
  */
-export async function getVolcanoStatus({ fetchText = defaultFetchText, fetchJson = defaultFetchJson, url = MAGMA_URL, lastGoodFile = LAST_GOOD_FILE, now = new Date().toISOString(), locations = LOCATIONS, summit = BURNI_TELONG } = {}) {
+/**
+ * Override manual (env `VOLCANO_OVERRIDE_PATH`, lihat .env.example): JSON `{ burniTelong: { level: 'II'|2, asOf, source, force? } }`.
+ * Dipakai bila parser MAGMA gagal (sebelum nilai terakhir), atau selalu bila `force: true` (mis. rilis PVMBG lebih baru dari halaman).
+ * @returns {null | { level:number, label:string, asOf?:string, source?:string, force:boolean }}
+ */
+export function readOverride(file) {
+  if (!file) return null
+  const doc = readLast(file)
+  const o = doc?.burniTelong ?? doc?.volcano ?? null
+  if (!o) return null
+  const level = typeof o.level === 'string' ? ROMAN_TO_NUM[o.level.trim().toUpperCase()] ?? Number(o.level) : Number(o.level)
+  if (!Number.isInteger(level) || level < 1 || level > 4) return null
+  return { level, label: LEVEL_LABEL[level], asOf: o.asOf ?? null, source: o.source ?? 'override manual', force: !!o.force }
+}
+
+export async function getVolcanoStatus({ fetchText = defaultFetchText, fetchJson = defaultFetchJson, url = MAGMA_URL, lastGoodFile = LAST_GOOD_FILE, overridePath = process.env.VOLCANO_OVERRIDE_PATH, now = new Date().toISOString(), locations = LOCATIONS, summit = BURNI_TELONG } = {}) {
   let volcano = null
   let error
   let counts = null
@@ -127,13 +142,23 @@ export async function getVolcanoStatus({ fetchText = defaultFetchText, fetchJson
     error = err.message
   }
   let stale = false
-  if (!volcano) {
+  let overridden = false
+  const override = readOverride(overridePath)
+  if (override && (override.force || !volcano)) {
+    volcano = {
+      name: volcano?.name ?? 'Bur Ni Telong', region: volcano?.region ?? 'Aceh', level: override.level, label: override.label,
+      roman: ['', 'I', 'II', 'III', 'IV'][override.level], reportUrl: volcano?.reportUrl ?? null, observedAt: override.asOf ?? now,
+      override: { source: override.source, asOf: override.asOf },
+    }
+    overridden = true
+  } else if (!volcano) {
     const last = readLast(lastGoodFile)
     if (last?.volcano) {
       volcano = { ...last.volcano }
       stale = true
     }
-  } else writeLast(lastGoodFile, { volcano, savedAt: now })
+  }
+  if (volcano && !stale) writeLast(lastGoodFile, { volcano, savedAt: now })
 
   let wind = null
   try {
@@ -148,8 +173,9 @@ export async function getVolcanoStatus({ fetchText = defaultFetchText, fetchJson
     retrievedAt: now,
     source: 'MAGMA Indonesia — PVMBG / Badan Geologi (tingkat aktivitas)',
     pageUrl: url,
-    degraded: !volcano || stale || !!error,
+    degraded: !volcano || stale || (!!error && !overridden),
     stale: stale || undefined,
+    overridden: overridden || undefined,
     error,
     counts,
     volcano: volcano ? { ...volcano, summit: { lat: summit.lat, lon: summit.lon }, radiusKm } : null,

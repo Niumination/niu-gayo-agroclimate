@@ -10,7 +10,7 @@
 //   /api/air-quality   — H-ASAP ISPU estimasi (CAMS) + proksi kabut asap per lokasi / ?location=all (TTL 60 menit)
 //   /api/hotspots      — H-API hotspot NASA FIRMS 48 jam (bbox Aceh Tengah+50 km) + ringkasan per sentra / ?location=<id> (TTL 30 menit)
 //   /api/fire-danger   — H-API FWI harian (spin-up arsip ERA5) + hotspot + HTH per lokasi / ?location=all
-//   /api/hazards       — v2 registry bahaya (ADR-12): 7 bahaya per lokasi terurut level / ?location=all ringkasan 15 sentra (TTL HAZARDS_TTL_MIN)
+//   /api/hazards       — v2 registry bahaya (ADR-12): 11 bahaya per lokasi terurut level + interaksi / ?location=all ringkasan 15 sentra (TTL HAZARDS_TTL_MIN)
 //   /api/alerts/feed   — 1.8b feed peringatan CAP-JSON 24 jam terakhir (?hours, ?location, ?hazard; ?format=cap&id=<identifier> → CAP 1.2 XML)
 //   /api/alerts/run    — 1.8 POST siklus peringatan (anti-bising 6 jam, Telegram topik cron); ?dryRun=1 tanpa kirim/simpan; header x-cron-token bila ALERTS_CRON_TOKEN diset
 //   /api/drought       — H-KERING HTH kelas BMKG + neraca air 30 hari + SPI-1/3 (baseline 1991–2020) per lokasi (arsip ERA5 TTL 12 jam)

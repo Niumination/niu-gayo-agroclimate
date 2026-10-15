@@ -154,3 +154,38 @@ src/data/contacts.js  src/data/geo/kecamatan.json  src/services/hazardService.js
 src/components/HazardPanel.jsx  src/components/SchematicMap.jsx
 docs/dev/prototypes/{ispu,fwi,check}.mjs  (prototipe tervalidasi → dipindah ke src/domain/hazards di Fase 1)
 ```
+
+## 5. Status implementasi (Sprint 4 — 15 Okt 2026, v2.0.0)
+Struktur nyata (menggantikan target §4; nama berbeda dari rencana dicatat):
+```
+src/domain/hazards/                      server/
+  index.js        registry 11 modul +      hazards.js       ctx 15 sentra + arsip harian + interaksi
+                  evaluateAll + interaksi  alerts.js        siklus CAP → Telegram (anti-bising)
+  interactions.js 5 aturan silang          airQuality.js    CAMS (TTL 60')     firms.js      FIRMS (TTL 30')
+  levels.js       skala seragam            fireWeather.js   FWI ops + state    archive.js    ERA5 90 hari
+  features.js     fitur cuaca + thermal    bmkgQuake.js     TEWS 3 feed (TTL 2')  magma.js   MAGMA (TTL 60')
+  landslide.js watershed.js (v2: +GloFAS)  convective.js    ECMWF×GFS (TTL 30')  flood.js   GloFAS 4 sel (TTL 6 j)
+  wind.js convective.js airQuality.js      petabencana.js   laporan eksternal (TTL 10')  spi.js  SPI Thom gamma
+  fireWeather.js drought.js (+SPI/VPD)     clim/flood-clim.json  clim/spi-baseline.json  (artefak skrip, ADR-19)
+  quake.js volcano.js temperature.js       data/ (gitignored): archive-*, fwi-state, alert-state, hazard-archive/, reports
+  rust.js hotspots.js ispu.js              agroclimate-alerts.{service,timer} (30') + -fast (5', --only gempa,vulkanik)
+src/domain/{alert,share,climate,geo,seasonal,thresholds}.js
+src/components/{HazardPanel,HazardFocusCards,SchematicMap,ClimateBanner,SeasonalBanner,ShareButton,AboutData,
+                DisasterHistoryCard,EmergencyContacts,ReportButton,FireDangerCard,DroughtCard,AirQualityCard}.jsx
+scripts/{alerts-cron,smoke,validate-season,check-bundle,build-flood-clim,build-spi-baseline,fetch-hazard-fixtures}.mjs
+```
+| Rencana | Realisasi | Catatan |
+|---|---|---|
+| `hazardService.js` klien terpisah | ctx klien dirakit di `weatherService.js` (`allSettled`), evaluasi di `HazardPanel` | file terpisah tidak diperlukan; kontrak sama |
+| `server/fwiState.js` | digabung ke `server/fireWeather.js` (`server/data/fwi-state.json`) | — |
+| `frost.js` | `temperature.js` (`suhu`: dingin/embun upas **dan** panas/VPD saat berbunga) | satu modul dua arah |
+| `hotspots.js` sebagai modul hazard | fitur di dalam `kebakaran` (FWI × hotspot × HTH) | menghindari dua kartu untuk satu bahaya |
+| `CompoundBanner` | `interactions[]` ditampilkan di `HazardPanel` + `flags.bumpedBy` pada kartu | ADR-16 tetap |
+| `quota.json` | belum perlu (semua upstream tanpa kuota keras kecuali FIRMS) | — |
+| Web Push (ADR-23) | ditunda (H-9 VAPID) — lihat `10-ROADMAP-V3.md` V3-2 | — |
+| Leaflet lazy-load (ADR-24 tahap 2) | ditunda — SVG skematik mencukupi; bundel gzip ≈ 132 kB | V3-6 |
+| ADR-21 konvektif multi-model | ECMWF IFS 0,25° (CAPE, kode cuaca, hembusan) + GFS (CAPE, LI, CIN); level = sinyal terkuat, `agreement` flag | §9 di 06 |
+| ADR-25 CI | `.github/workflows/ci.yml`: test → build → check:bundle → smoke (server nyata, upstream degraded ditoleransi) | — |
+| ADR-26 arsip | `server/data/hazard-archive/YYYY-MM-DD.json` (1 snapshot/sentra/jam) + `validate-season.mjs` + `docs/VALIDATION.md` | — |
+
+*(ADR berikutnya tetap ADR-27.)*

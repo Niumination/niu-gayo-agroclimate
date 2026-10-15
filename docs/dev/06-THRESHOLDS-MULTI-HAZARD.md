@@ -151,3 +151,18 @@ Rincian pemetaan severity/certainty/expires ada di `docs/THRESHOLDS.md` §13–1
 - **Jarak pandang & kabut pagi:** fixture `best_match` 14 Okt menunjukkan visibility minimum 120 m pada dini hari (kabut radiasi lembah Takengon) → proksi jarak pandang asap (§2.3) hanya dievaluasi **jam 10–17 WIB** dan wajib dikombinasikan dengan PM2,5 ≥ 35 µg/m³ atau AOD ≥ 0,5; di luar itu dilabeli "kabut" bukan "asap". **Revisi Sprint 1 (15 Okt 2026):** data langsung menunjukkan kabut 220–1.200 m bertahan sampai **09:00 WIB** (RH 85 %) → jendela digeser ke 10–17, jam dengan **RH ≥ 90 %** dikecualikan, dan eskalasi ke "bahaya" menuntut **≥ 2 jam** jarak pandang < 2 km (`thresholds.HAZE`, `docs/THRESHOLDS.md` §8).
 
 *(Dokumen final iterasi 10; perubahan ambang berikutnya lewat PR + `docs/THRESHOLDS.md` + test.)*
+
+## 11. Status implementasi (Sprint 4 — 15 Okt 2026)
+Semua ambang di bawah **sudah diimplementasikan** di `src/domain/thresholds.js` dan menjadi acuan resmi di `docs/THRESHOLDS.md` (§ yang dirujuk). Bila terjadi perbedaan antara dokumen riset ini dan `docs/THRESHOLDS.md`, yang terakhir yang berlaku.
+| Bagian riset | Modul | `docs/THRESHOLDS.md` | Penyesuaian saat implementasi |
+|---|---|---|---|
+| §1 ISPU/kabut asap | `asap` | §7–9 | jendela jarak pandang 10–17 WIB, RH ≥ 90 % dikecualikan |
+| §2 FWI & hotspot | `kebakaran` | §10–12 | kelas "ekstrem" butuh FFMC ≥ 83 **dan** (hotspot ≤ 10 km atau HTH ≥ 21) |
+| §4 Gempa | `gempa` | §15 | IPE Allen 2012 (3,67/1,17/3,19), jarak hiposentral min 5 km; 24 jam penuh, 72 jam maks waspada; USGS hanya riwayat (`quakeHistory.json`) |
+| §5 Vulkanik | `vulkanik` | §16 | parser halaman publik `magma.esdm.go.id/v1/gunung-api/tingkat-aktivitas` (ADR-18) + fallback `server/data/volcano-last.json`; sektor bawah angin ± 30° dari angin puncak (Open-Meteo); dekat ≤ 30 km / jauh ≤ 60 km; radius rekomendasi 3/5/7 km |
+| §6 Kekeringan & suhu | `kekeringan`, `suhu` | §20–21 | SPI-1/3 Thom gamma baseline 1991–2020 (Open-Meteo Archive best_match); VPD 0,82/1,5 kPa 09–15 WIB; dingin 10/6/4 °C dgn syarat awan < 30 %, angin ≤ 5, Td ≤ 2, koreksi −1 °C ≥ 1.400 m; panas 28/30/32 °C (+1 saat berbunga & VPD > 0,82) |
+| §7 Banjir+ | `banjir` (watershed v2) | §18 | rasio debit GloFAS terhadap median klimatologi 2/3/5 + > p95 → waspada; sel per sentra (outlet/takengon/bintang/angkup; lainnya `n/a`) |
+| §8 Kriteria BMKG | lintas modul | §4, §17 | hembusan ≥ 45 km/jam = `flags.bmkgExtreme` |
+| §8b Anti-kebisingan | `alert.js` | §14 | gempa/vulkanik: `eventId` baru melewati jeda 6 jam; `--only gempa,vulkanik` timer 5 menit |
+| §9 Konvektif | `badai` | §17 | CAPE 1000/2000, LI −3/−6, hujan es: CAPE ≥ 2500 & LI ≤ −6 atau kode 96/99; nowcast BMKG → min. bahaya |
+| Interaksi (02-PRD FR-X) | `interactions.js` | §19 | gempa×ARI72 ≥ 100 → longsor +1 (≤ bahaya); FFMC ≥ 78 × kekeringan → kebakaran +1 (≤ waspada); badai×longsor; vulkanik×hujan (lahar); asap×hujan lebat (meredakan — catatan saja) |

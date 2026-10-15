@@ -1,0 +1,5 @@
+[
+  { "date": "2026-11-12", "location": "ketol", "hazard": "longsor", "source": "BPBD", "note": "contoh — ganti dengan kejadian nyata (Pusdalops BPBD Aceh Tengah)" },
+  { "date": "2026-10-20", "location": "*", "hazard": "asap", "source": "BMKG", "note": "contoh kabupaten-wide: jarak pandang Takengon < 1 km (Stamet Rembele)" },
+  { "date": "2026-10-04", "location": "takengon", "hazard": "gempa", "source": "BMKG", "note": "contoh: M5,9 Calang dirasakan II–III MMI Takengon" }
+]

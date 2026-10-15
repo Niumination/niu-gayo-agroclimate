@@ -213,7 +213,7 @@ Renderer: Telegram (Markdown), WhatsApp-teks, SMS ≤ 160 karakter (`NGA <Sentra
 
 | Parameter | Nilai | Catatan |
 |---|---|---|
-| Ambang kirim `PUSH_POLICY` | longsor/banjir/angin/asap/kebakaran **≥ waspada** · kekeringan **≥ bahaya** · karat **tidak pernah** (agronomis, bukan darurat) | `shouldPush(hazardId, level)` |
+| Ambang kirim `PUSH_POLICY` | longsor/banjir/angin/asap/kebakaran/**gempa** **≥ waspada** · kekeringan/**vulkanik/badai/suhu** **≥ bahaya** · karat **tidak pernah** (agronomis, bukan darurat) | `shouldPush(hazardId, level)`; gempa/vulkanik: `eventId` baru → Alert segera (Fase 2) |
 | Jeda minimum | **6 jam** per (sentra × hazard) kecuali level naik | `MIN_INTERVAL_H`; state `server/data/alert-state.json` |
 | Penggabungan | ≥ **3** sentra dengan hazard + level + msgType sama dalam satu siklus → 1 pesan gabungan | `GROUP_MIN` |
 | Batas per siklus | **12** pesan (sisanya dicoba siklus berikutnya; state tidak diperbarui bila kirim gagal) | `maxPerCycle` |
@@ -222,6 +222,90 @@ Renderer: Telegram (Markdown), WhatsApp-teks, SMS ≤ 160 karakter (`NGA <Sentra
 **Banner konteks iklim (1.9c)** — `climateOutlook.json` ditampilkan dengan verifikasi lokal dari `/api/drought`: hujan 30 hari **≥ 150 mm & HTH ≤ 5** → "basah, prospek kemarau regional belum terasa (asap kemungkinan kiriman)"; hujan 30 hari **< 60 mm atau HTH > 20** → "kering, selaras prospek"; selain itu "sedang". Lewat `validUntil` → banner meminta pembaruan manual.
 
 **Peta skematik (1.6b)** — warna sentra = level tertinggi dari `/api/hazards?location=all`; lingkaran radius **3 km** Burni Telong (PVMBG Level II) hanya penanda zona rekomendasi, bukan pemodelan bahaya; hotspot ≤ 25 km dari sentra terpilih diplot bila FIRMS aktif.
+
+## 15. Gempa bumi — H-GEMPA (Fase 2.1/2.2/2.2c)
+
+Sumber: BMKG TEWS (`gempadirasakan`, `autogempa`, `gempaterkini`, cache **2 menit**) + riwayat USGS FDSN 10 tahun (statis, `src/data/hazards/quakeHistory.json`, 82 kejadian M ≥ 4,5 ≤ 150 km). Konstanta: `QUAKE` di `thresholds.js`.
+
+| Aturan | Nilai |
+|---|---|
+| Gempa relevan | episenter **≤ 300 km** dari Takengon (4,63 N 96,85 E) **atau** kolom *Dirasakan* menyebut kabupaten/kota Aceh |
+| MMI indikatif per sentra | IPE sederhana pada jarak hiposenter: `MMI = 3,67 + 1,17·M − 3,19·log10(R_hipo)`, `R_hipo = √(d² + h²)`, min 5 km; dilabeli **indikatif** — bila BMKG memberi MMI kota terdekat, pakai itu |
+| Level | MMI < III → rendah · **III–IV** waspada · **V–VI** bahaya · **≥ VII** ekstrem; berlaku **24 jam** penuh, 24–72 jam dibatasi maks waspada (pengingat susulan) |
+| Gempa × longsor (FR-GEMPA-4) | M ≥ 5 **dan** ≤ 100 km **dan** ≤ 72 jam **dan** ARI72 ≥ 100 mm → `flags.landslideAfterQuake`; aturan interaksi §19 menaikkan longsor satu tingkat (maks bahaya) |
+| Diseminasi | kejadian baru (`eventId = bmkg-<ISO waktu>`) → **Alert segera** tanpa jeda 6 jam; kirim bila M ≥ 4,5 ≤ 150 km atau terasa Aceh Tengah/Bener Meriah; urgency Immediate, expires 24 jam; timer cepat `agroclimate-alerts-fast.timer` (**5 menit**, `--only gempa,vulkanik`) |
+| Laporan warga `gempa` | `kind` lemah (II–III) · sedang (IV–V) · kuat (≥ VI) — skala awam → MMI |
+
+Uji konsistensi: Gayo 2 Juli 2013 M6,1 kedalaman 10 km, sentra ≤ 10 km → MMI ≥ VI (bahaya) — sesuai laporan kerusakan Ketol/Kute Panang.
+
+## 16. Gunung api — H-VULKANIK Burni Telong (Fase 2.2b)
+
+Sumber: MAGMA Indonesia (PVMBG) halaman tingkat aktivitas (HTML, cache **60 menit**, nilai terakhir bila gagal + `VOLCANO_OVERRIDE_PATH`). Konstanta `VOLCANO`.
+
+| Tingkat PVMBG | Level UI (≤ 30 km) | 30–60 km | > 60 km | Radius rekomendasi |
+|---|---|---|---|---|
+| I Normal | rendah | rendah | rendah | — |
+| II Waspada (status 2025–2026) | waspada | rendah | rendah | 3 km |
+| III Siaga | bahaya (+ banner global) | waspada | rendah | 5 km |
+| IV Awas | ekstrem | bahaya | rendah | 7 km |
+
+Sektor **bawah angin**: arah menuju = arah angin 10 m puncak + 180°; sentra dalam ±30° dan ≤ 30 km ditandai (`downwind`). Takengon ≈ 15,7 km, azimut ≈ 170° dari puncak (bawah angin saat angin dari utara). Laporan warga `abu` (tipis|tebal) & `gas` (ringan|menyengat) menaikkan prioritas tampil, tidak mengubah level resmi. `eventId = magma-level-N` → perubahan tingkat dikirim segera (Expected, 24 jam, push ≥ bahaya).
+
+## 17. Petir & badai konvektif — H-PETIR / H-ANGIN+ (Fase 2.3)
+
+Sumber: Open-Meteo ECMWF IFS 0,25° (`cape`, `weather_code`, `precipitation`, `wind_gusts_10m`) + GFS seamless (`cape`, `lifted_index`, `convective_inhibition`), cache **30 menit**; GFS gagal → `degraded`, ECMWF saja. Konstanta `CONVECTIVE`; horizon **12 jam** dari jam sekarang.
+
+| Level | ECMWF (per jam) | GFS (per jam) | Pengubah |
+|---|---|---|---|
+| waspada | CAPE ≥ **1.000** J/kg | LI ≤ **−3** atau CAPE ≥ 1.000 | — |
+| bahaya | CAPE ≥ **2.000** atau kode WMO **95–99** | LI ≤ **−6** atau CAPE ≥ 2.000 | — |
+| ekstrem | bahaya **+** (hembusan ≥ **45** km/jam **atau** hujan ≥ **20** mm/jam **atau** peringatan dini BMKG aktif) | | |
+
+Konsensus: level = **sinyal terkuat** dari kedua model; `agreement:false` bila level puncak ECMWF ≠ GFS (ditampilkan di kartu). **Hujan es** (kualitatif): kode 96/99 **atau** CAPE ≥ 2.500 & LI ≤ −6. **Puting beliung** (FR-KONV-4): bahaya + hembusan ≥ 45 km/jam (= kriteria cuaca ekstrem BMKG). Laporan warga `badai` (petir | hujan_es | puting_beliung). CAP: Met, Immediate, expires 6 jam, push ≥ bahaya.
+
+## 18. Banjir & luapan — H-BANJIR+ Indeks Luapan v2 (Fase 2.4)
+
+Sumber: GloFAS v4 (Copernicus EMS) via Open-Meteo Flood API, **4 sel** DAS Peusangan hulu — outlet Lut Tawar 4,625/96,875 · Takengon 4,625/96,825 · Bintang 4,575/96,925 · Angkup 4,625/96,725 — past 7 + forecast 7 hari, statistik ensemble; cache **6 jam**, nilai terakhir per sel bila gagal. Klimatologi per hari-dalam-tahun (median & p95, jendela ±15 hari) dari deret 1997–2025 → `server/clim/flood-clim.json` (`npm run clim:flood`, 1×/tahun). Konstanta `FLOOD_DISCHARGE`.
+
+| Komponen | Aturan |
+|---|---|
+| Anomali debit | rasio = debit / median klimatologi hari itu: **≥ 2** waspada · **≥ 3** bahaya · **≥ 5** ekstrem · **> p95** → minimal waspada; level sel = terburuk dalam 7 hari ke depan |
+| Indeks hujan hulu (lama) | bobot Bintang 0,35 · Lut Tawar 0,30 · Kebayakan 0,20 · Silih Nara 0,15; ≥ 30 waspada · ≥ 50 bahaya |
+| Indeks Luapan v2 | **maks(level hujan hulu, level anomali debit)**; bila ≥ waspada **dan ARI72 ≥ 100 mm → +1 tingkat** (maks ekstrem, `flags.bumpedByAri`) |
+| Pemetaan sentra → sel | Lut Tawar, Kebayakan → outlet · Takengon, Bebesen, Pegasing, Bies → takengon · Bintang → bintang · Silih Nara, Ketol, Kute Panang → angkup; **Celala, Rusip Antara (Krueng Woyla/Tripa) & Atu Lintang, Jagong Jeget, Linge (Jambo Aye) berada di DAS lain → n/a** |
+| Label wajib | "Model hidrologi global (GloFAS ~5 km) — bukan muka air terukur" |
+
+PetaBencana.id (Fase 2.4b, `/api/external-reports`): laporan Aceh 7 hari, disaring kode BPS **1104/1117/1113** atau ≤ **60 km** dari Takengon; atribusi **CC BY-NC 4.0** wajib tampil; data komunitas belum terverifikasi, tidak mengubah level.
+
+## 19. Interaksi lintas-bahaya (Fase 2.5, FR-X-2)
+
+`applyInteractions()` berjalan di akhir `evaluateAll`; hasil `interactions[]` ikut payload `/api/hazards` dan HazardPanel.
+
+| Aturan | Syarat | Efek |
+|---|---|---|
+| `gempa_tanah_jenuh` | `flags.landslideAfterQuake` atau (gempa pemicu M ≥ 5 ≤ 100 km & (ARI72 ≥ 100 mm atau skor longsor ≥ 40)) | **longsor +1 tingkat (maks bahaya)**, `flags.bumpedBy`, `baseLevel` |
+| `asap_hujan_lebat` | asap ≥ waspada & (hujan 24 jam ke depan ≥ 20 mm atau intensitas ≥ 10 mm/jam) | catatan (jarak pandang, limpasan abu, asap tercuci 6–12 jam) |
+| `kekeringan_ffmc` | kekeringan ≥ waspada & FFMC ≥ 78 | **kebakaran +1 (maks waspada)** bila masih rendah; catatan siaga karhutla |
+| `badai_longsor` | badai ≥ bahaya & longsor ≥ waspada | catatan (hujan intens singkat → longsor dangkal/banjir bandang) |
+| `vulkanik_hujan_lahar` | vulkanik ≥ bahaya & hujan 24 jam ≥ 20 mm | catatan lahar hujan |
+
+## 20. Kekeringan lanjutan — SPI & VPD (Fase 3.1)
+
+| Indikator | Definisi | Ambang |
+|---|---|---|
+| SPI-1 / SPI-3 | McKee dkk. 1993: total 30/90 hari observasi terakhir vs distribusi **gamma** (MLE Thom 1958, koreksi nol `H = q + (1−q)G`) total 1/3-bulan berjalan yang berakhir di bulan kalender sama; baseline **ERA5 1991–2020** per lokasi (`server/clim/spi-baseline.json`, `npm run clim:spi`); nilai dibatasi ±3 | ≤ **−1** agak kering → waspada · ≤ **−1,5** sangat kering → bahaya · ≤ **−2** ekstrem; menaikkan level `kekeringan` bila lebih buruk dari HTH/neraca |
+| VPD siang | rata-rata VPD 09–15 WIB **7 hari** observasi (Tetens dari T & RH arsip) | > **0,82** kPa waspada pembungaan · > **1,5** kPa bahaya — indikator, tidak mengubah level agregat |
+
+## 21. Suhu ekstrem kopi — H-SUHU (Fase 3.2)
+
+Konstanta `TEMP_STRESS`; input `weatherFeatures().thermal` (Tmin/Tmax 3 hari, malam 19–07 WIB: awan, angin, titik embun; VPD siang 09–15).
+
+| Sisi | Ambang | Syarat tambahan |
+|---|---|---|
+| Dingin | Tmin ≤ **10** waspada · ≤ **6** bahaya · ≤ **4** ekstrem = **potensi embun upas** | ekstrem hanya bila **awan < 30 %**, **angin ≤ 5 km/jam**, **Td ≤ 2 °C** pada jam terdingin; elevasi ≥ **1.400 m** → Tmin model **−1 °C** (genangan udara dingin; Jagong Jeget, Atu Lintang, Kute Panang) |
+| Panas | Tmax ≥ **28** waspada · ≥ **30** bahaya · ≥ **32** ekstrem | fase bunga **& VPD siang > 0,82 kPa → +1 tingkat**; fase bunga indikatif Gayo **Jan–Apr & Agu–Sep** (`floweringMonths`, sesuaikan per kebun) |
+
+Kalender musiman diperluas (Fase 3.4): fase kering **Jul–Agu puncak**, Jun & Sep sedang; jendela embun upas Jun–Sep; El Niño/IOD+ aktif (`climateOutlook.json` belum kedaluwarsa) → Sep–Nov naik satu tingkat kering & fase hujan Okt–Nov turun satu tingkat; La Niña/IOD− → sebaliknya.
 
 ## Disclaimer
 
