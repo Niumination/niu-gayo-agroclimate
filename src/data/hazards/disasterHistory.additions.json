@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "description": "Kejadian tambahan (multi-bahaya) untuk digabung ke src/data/disasterHistory.json. BELUM digabung karena tests/seasonal.test.js masih membatasi type ∈ {longsor, banjir} dan UI riwayat belum punya ikon/filter per hazard.",
+    "description": "SUDAH DIGABUNG ke src/data/disasterHistory.json (Sprint 3 / Fase 1.9d). File ini dipertahankan sebagai arsip penyiapan; tambahkan kejadian baru langsung ke file utama.",
     "mergeSteps": [
       "Perluas assert type di tests/seasonal.test.js → {longsor, banjir, kebakaran, gempa, vulkanik, angin, asap}",
       "Tambahkan field opsional `hazard` (= type), `emergencyStatus`, `district` lintas-kabupaten",

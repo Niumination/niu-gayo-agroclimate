@@ -34,7 +34,9 @@ test('disasterHistory: struktur valid & lokasi dikenal', () => {
   assert.ok(Array.isArray(disasterHistory.events) && disasterHistory.events.length > 0)
   const ids = new Set(LOCATIONS.map((l) => l.id))
   for (const ev of disasterHistory.events) {
-    assert.ok(ev.type === 'longsor' || ev.type === 'banjir')
+    assert.ok(['longsor', 'banjir', 'kebakaran', 'gempa', 'vulkanik', 'angin', 'asap', 'kekeringan'].includes(ev.type), `type ${ev.type}`)
+    assert.equal(ev.hazard, ev.type) // Fase 1.9d: skema `hazard` = id registry
+    assert.ok('emergencyStatus' in ev)
     assert.ok(ev.date && ev.year && ev.source?.startsWith('http'), `event ${ev.id}`)
     for (const loc of ev.locations) assert.ok(ids.has(loc), `lokasi ${loc} pada ${ev.id}`)
   }

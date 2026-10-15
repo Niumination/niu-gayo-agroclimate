@@ -11,6 +11,10 @@ import AirQualityCard from './components/AirQualityCard'
 import FireDangerCard from './components/FireDangerCard'
 import DroughtCard from './components/DroughtCard'
 import HazardPanel from './components/HazardPanel'
+import ClimateBanner from './components/ClimateBanner'
+import DisasterHistoryCard from './components/DisasterHistoryCard'
+import EmergencyContacts from './components/EmergencyContacts'
+import AboutData from './components/AboutData'
 import SeasonalBanner from './components/SeasonalBanner'
 import ReportButton from './components/ReportButton'
 import HourlyForecast from './components/HourlyForecast'
@@ -37,6 +41,7 @@ export default function App() {
 
   // i18n
   const [lang, setLang] = useState(() => prefs.getLang() || 'id')
+  const [aboutOpen, setAboutOpen] = useState(false) // FR-X-9 modal "Tentang data & batasan"
   const tr = useMemo(() => (key) => t(lang, key), [lang])
   useEffect(() => prefs.setLang(lang), [lang])
 
@@ -160,6 +165,8 @@ export default function App() {
       <AirQualityCard airQuality={data.airQuality} tr={tr} />
       <CoffeeAdvisory coffee={data.coffee} tr={tr} />
       <SeasonalBanner seasonal={data.disaster?.seasonal} />
+      {/* 1.9c — konteks iklim ENSO/IOD (BMKG terkurasi) + verifikasi lokal arsip ERA5 */}
+      <ClimateBanner drought={data.drought} />
       <div className="flex justify-center">
         <ReportButton location={selectedLocation} />
       </div>
@@ -176,11 +183,14 @@ export default function App() {
   const mobileRisk = data && (
     <>
       {/* v2 Fase 0 (ADR-12, FR-X-3) — indeks bahaya majemuk dari registry, urut level tertinggi dulu */}
-      <HazardPanel hazards={data.hazards} location={selectedLocation} lang={lang} tr={tr} />
+      <HazardPanel hazards={data.hazards} location={selectedLocation} lang={lang} tr={tr} onAbout={() => setAboutOpen(true)} />
       <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
       {/* H-API (v2 Fase 1, Sprint 2) — bahaya kebakaran: FWI + hotspot + HTH; H-KERING — kekeringan ringkas */}
       <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
       <DroughtCard drought={data.drought} tr={tr} />
+      {/* 1.9d — riwayat multi-bahaya + FR-X-4 kontak darurat */}
+      <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} />
+      <EmergencyContacts location={selectedLocation} hazard={data.hazards?.active?.[0]?.id ?? '*'} />
     </>
   )
 
@@ -209,14 +219,15 @@ export default function App() {
         {/* Kolom kanan: peringatan + keyakinan ensemble */}
         <div className="col-span-3 min-w-0 space-y-4">
           {/* v2 Fase 0 (ADR-12, FR-X-3) — indeks bahaya majemuk dari registry */}
-          <HazardPanel hazards={data.hazards} location={selectedLocation} lang={lang} tr={tr} />
+          <HazardPanel hazards={data.hazards} location={selectedLocation} lang={lang} tr={tr} onAbout={() => setAboutOpen(true)} />
           {/* H-ASAP (v2 Fase 1) — kabut asap & kualitas udara */}
           <AirQualityCard airQuality={data.airQuality} tr={tr} />
           <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
           {/* H-API (v2 Fase 1, Sprint 2) — bahaya kebakaran & hotspot */}
           <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
-          {/* F7 — kalender musiman (rail bawah desktop) */}
+          {/* F7 — kalender musiman (rail bawah desktop) + 1.9c konteks iklim */}
           <SeasonalBanner seasonal={data.disaster?.seasonal} />
+          <ClimateBanner drought={data.drought} />
           {/* F8 — tombol lapor kejadian */}
           <div className="flex justify-center">
             <ReportButton location={selectedLocation} />
@@ -229,6 +240,16 @@ export default function App() {
         <div className="col-span-7 min-w-0">{rainPanel}</div>
         <div className="col-span-5 min-w-0">
           <HourlyForecast hourly={data.hourly} tr={tr} variant="desktop" />
+        </div>
+      </div>
+
+      {/* 1.9d riwayat multi-bahaya + FR-X-4 kontak darurat */}
+      <div className="mt-8 pt-6 border-t border-ink/10 dark:border-mist/10 grid grid-cols-12 gap-8">
+        <div className="col-span-7 min-w-0">
+          <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} />
+        </div>
+        <div className="col-span-5 min-w-0">
+          <EmergencyContacts location={selectedLocation} hazard={data.hazards?.active?.[0]?.id ?? '*'} />
         </div>
       </div>
     </div>
@@ -274,8 +295,12 @@ export default function App() {
       )}
 
       <footer className="border-t border-ink/10 dark:border-mist/10 py-4 text-center text-[11px] text-ink/45 dark:text-mist/40">
-        Niu Gayo Agro-Climate &bull; {tr('footer')}
+        Niu Gayo Agro-Climate &bull; {tr('footer')} &bull;{' '}
+        <button type="button" onClick={() => setAboutOpen(true)} className="underline underline-offset-2 hover:text-ink dark:hover:text-mist">
+          Tentang data &amp; batasan
+        </button>
       </footer>
+      <AboutData open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </div>
   )
 }

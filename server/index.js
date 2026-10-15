@@ -271,12 +271,18 @@ const server = http.createServer(async (req, res) => {
       if (!id || !VALID_LOCATIONS.has(id)) {
         return json(res, 400, { error: "parameter 'location' wajib dan harus id lokasi yang valid" })
       }
+      // 1.9d (FR-X-8): filter opsional ?hazard=<id>; respons memuat `hazard`, `emergencyStatus`, ringkasan per bahaya
+      const hazardFilter = url.searchParams.get('hazard')
       const events = disasterHistory.events
-        .filter((e) => e.locations.includes(id))
+        .filter((e) => e.locations.includes(id) && (!hazardFilter || (e.hazard ?? e.type) === hazardFilter))
         .sort((a, b) => b.date.localeCompare(a.date))
+      const byHazard = {}
+      for (const e of events) byHazard[e.hazard ?? e.type] = (byHazard[e.hazard ?? e.type] ?? 0) + 1
       return json(res, 200, {
         count: events.length,
-        lastEvents: events.slice(0, 5).map((e) => ({ type: e.type, date: e.date, year: e.year, title: e.title, source: e.source })),
+        hazard: hazardFilter || null,
+        byHazard,
+        lastEvents: events.slice(0, 8).map((e) => ({ id: e.id, type: e.type, hazard: e.hazard ?? e.type, date: e.date, year: e.year, title: e.title, summary: e.summary ?? null, emergencyStatus: e.emergencyStatus ?? null, district: e.district ?? null, source: e.source })),
         source: 'curated-public-reports',
       })
     }

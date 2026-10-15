@@ -10,6 +10,19 @@ const TYPES = [
   // v2 Fase 1 (FR-ASAP-6): kabut asap (skala jarak pandang + bau) & kebakaran lahan/hutan
   { value: 'asap', label: 'Kabut asap' },
   { value: 'kebakaran', label: 'Kebakaran lahan / hutan' },
+  // Sprint 3 (FR-X-5): kekeringan (tanda di lapangan) & badai konvektif (sub-jenis)
+  { value: 'kekeringan', label: 'Kekeringan / sumber air surut' },
+  { value: 'badai', label: 'Badai: petir / hujan es / puting beliung' },
+]
+const STORM_KINDS = [
+  { value: 'petir', label: 'Petir / kilat sangat dekat' },
+  { value: 'hujan_es', label: 'Hujan es' },
+  { value: 'puting_beliung', label: 'Puting beliung / angin puyuh' },
+]
+const DROUGHT_SIGNS = [
+  { value: 'sumur_kering', label: 'Sumur / mata air mengering' },
+  { value: 'daun_layu', label: 'Daun kopi layu / gugur' },
+  { value: 'sungai_surut', label: 'Sungai / irigasi surut' },
 ]
 const VISIBILITY = [
   { value: '>5km', label: 'Jarak pandang > 5 km (tipis)' },
@@ -19,6 +32,8 @@ const VISIBILITY = [
 const PLACEHOLDER = {
   asap: 'cth: asap sejak pagi, bau menyengat, anak-anak batuk',
   kebakaran: 'cth: api di semak dekat kebun, arah angin ke kampung',
+  kekeringan: 'cth: sumur kampung tinggal 1 m, bibit baru tanam mulai layu',
+  badai: 'cth: hujan es sebesar kelereng ±10 menit, atap seng beterbangan',
 }
 
 export default function ReportButton({ location, onSubmitted, className = '' }) {
@@ -28,6 +43,8 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
   const [visibility, setVisibility] = useState('1-5km')
   const [smell, setSmell] = useState(false)
   const [active, setActive] = useState(true)
+  const [kind, setKind] = useState('petir')
+  const [signs, setSigns] = useState([])
   const [status, setStatus] = useState(null) // 'sending' | 'ok' | 'error'
   const dialogRef = useRef(null)
 
@@ -66,6 +83,8 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
           note,
           ...(type === 'asap' ? { visibility, smell } : {}),
           ...(type === 'kebakaran' ? { active } : {}),
+          ...(type === 'badai' ? { kind } : {}),
+          ...(type === 'kekeringan' ? { signs } : {}),
         }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -157,6 +176,39 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                   <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="w-4 h-4" />
                   Api masih menyala saat ini
                 </label>
+              )}
+              {type === 'badai' && (
+                <div>
+                  <label htmlFor="report-kind" className="block text-[13px] font-medium text-ink/70 dark:text-mist/60">
+                    Jenis badai
+                  </label>
+                  <select
+                    id="report-kind"
+                    value={kind}
+                    onChange={(e) => setKind(e.target.value)}
+                    className="mt-1 w-full min-h-[44px] rounded-lg border border-ink/15 dark:border-mist/15 bg-transparent px-3 text-[14px] text-ink dark:text-mist"
+                  >
+                    {STORM_KINDS.map((k) => (
+                      <option key={k.value} value={k.value}>{k.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {type === 'kekeringan' && (
+                <fieldset>
+                  <legend className="text-[13px] font-medium text-ink/70 dark:text-mist/60">Tanda yang terlihat</legend>
+                  {DROUGHT_SIGNS.map((d) => (
+                    <label key={d.value} className="flex items-center gap-2 min-h-[40px] text-[13px] text-ink/75 dark:text-mist/70">
+                      <input
+                        type="checkbox"
+                        checked={signs.includes(d.value)}
+                        onChange={(e) => setSigns(e.target.checked ? [...signs, d.value] : signs.filter((x) => x !== d.value))}
+                        className="w-4 h-4"
+                      />
+                      {d.label}
+                    </label>
+                  ))}
+                </fieldset>
               )}
               <div>
                 <label htmlFor="report-note" className="block text-[13px] font-medium text-ink/70 dark:text-mist/60">

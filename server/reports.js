@@ -23,8 +23,12 @@ export function readToken(name) {
   }
 }
 
-// v2 Fase 1 (FR-ASAP-6): tipe `asap` (wajib skala jarak pandang) & `kebakaran`.
-const VALID_TYPES = new Set(['longsor', 'banjir', 'angin', 'karat', 'asap', 'kebakaran'])
+// v2 Fase 1 (FR-ASAP-6): tipe `asap` (wajib skala jarak pandang) & `kebakaran`. Sprint 3 (FR-X-5): `kekeringan`, `badai` (sub-jenis konvektif).
+const VALID_TYPES = new Set(['longsor', 'banjir', 'angin', 'karat', 'asap', 'kebakaran', 'kekeringan', 'badai'])
+export const STORM_KINDS = new Set(['petir', 'hujan_es', 'puting_beliung'])
+export const STORM_LABEL = { petir: 'petir/kilat dekat', hujan_es: 'hujan es', puting_beliung: 'puting beliung / angin puyuh' }
+export const DROUGHT_SIGNS = new Set(['sumur_kering', 'daun_layu', 'sungai_surut'])
+export const DROUGHT_LABEL = { sumur_kering: 'sumur/mata air mengering', daun_layu: 'daun kopi layu/gugur', sungai_surut: 'sungai/irigasi surut' }
 export const VISIBILITY_SCALE = new Set(['>5km', '1-5km', '<1km'])
 export const VISIBILITY_LABEL = { '>5km': 'jarak pandang > 5 km', '1-5km': 'jarak pandang 1–5 km', '<1km': 'jarak pandang < 1 km' }
 const VALID_LOCATIONS = new Set(LOCATIONS.map((l) => l.id)) // Fase 0.2: satu sumber kebenaran (src/data/locations.js)
@@ -63,9 +67,9 @@ export function rateLimited(ip) {
 
 /** Validasi body laporan. Return {error} atau laporan bersih. */
 export function validateReport(body) {
-  const { location, type, note, visibility, smell, active } = body || {}
+  const { location, type, note, visibility, smell, active, kind, signs } = body || {}
   if (!VALID_LOCATIONS.has(location)) return { error: "field 'location' harus id sentra yang valid" }
-  if (!VALID_TYPES.has(type)) return { error: "field 'type' harus salah satu: longsor, banjir, angin, karat, asap, kebakaran" }
+  if (!VALID_TYPES.has(type)) return { error: `field 'type' harus salah satu: ${[...VALID_TYPES].join(', ')}` }
   const cleanNote = String(note || '').slice(0, 500) // bukan PII, batasi panjang
   const report = { location, type, note: cleanNote }
   if (type === 'asap') {
@@ -74,6 +78,14 @@ export function validateReport(body) {
     report.smell = Boolean(smell)
   }
   if (type === 'kebakaran') report.active = active == null ? null : Boolean(active)
+  if (type === 'badai') {
+    if (!STORM_KINDS.has(kind)) return { error: "laporan 'badai' wajib menyertakan 'kind': petir | hujan_es | puting_beliung" }
+    report.kind = kind
+  }
+  if (type === 'kekeringan') {
+    const list = Array.isArray(signs) ? signs.filter((x) => DROUGHT_SIGNS.has(x)) : []
+    report.signs = list
+  }
   return { report }
 }
 
@@ -115,6 +127,8 @@ async function relayTelegram(report) {
 export function reportDetail(report) {
   if (report.type === 'asap') return `\nSkala: ${VISIBILITY_LABEL[report.visibility] ?? report.visibility}${report.smell ? ', bau asap menyengat' : ''}`
   if (report.type === 'kebakaran' && report.active != null) return `\nApi: ${report.active ? 'masih menyala' : 'sudah padam/tidak terlihat'}`
+  if (report.type === 'badai') return `\nJenis: ${STORM_LABEL[report.kind] ?? report.kind}`
+  if (report.type === 'kekeringan' && report.signs?.length) return `\nTanda: ${report.signs.map((x) => DROUGHT_LABEL[x] ?? x).join(', ')}`
   return ''
 }
 

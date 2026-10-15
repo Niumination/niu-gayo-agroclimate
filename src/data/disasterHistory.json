@@ -1,44 +1,12 @@
 {
   "_meta": {
-    "description": "Riwayat kejadian bencana hidrometeorologi (longsor/banjir) terdokumentasi publik untuk Kabupaten Aceh Tengah, dipetakan ke id sentra di src/data/locations.js.",
+    "description": "Riwayat kejadian bencana multi-bahaya (longsor, banjir, kebakaran lahan, gempa, vulkanik; skema `hazard` = id registry / `type` dipertahankan untuk kompatibilitas) terdokumentasi publik untuk Kabupaten Aceh Tengah & sekitarnya, dipetakan ke id sentra di src/data/locations.js. `emergencyStatus`: status darurat resmi (mis. 'tanggap darurat') bila ada.",
     "source": "Kompilasi terkurasi dari BNPB, BPBD Aceh Tengah, dan pemberitaan nasional.",
     "upgradeNote": "DIBI BNPB (dibi.bnpb.go.id) saat ini hanya mengekspos dataset Posko Pengungsian via Superset REST; layanan kejadian (robust data) tidak dipublikasikan sebagai endpoint JSON. Endpoint ini diisi dari data statis terkurasi sampai endpoint resmi tersedia.",
-    "lastReviewed": "2026-10"
+    "lastReviewed": "2026-10-15",
+    "mergedFrom": "src/data/hazards/disasterHistory.additions.json (Fase 1.9d, Sprint 3) — file additions kini hanya referensi/arsip penyiapan."
   },
   "events": [
-    {
-      "id": "2025-11-26-banjir-bandang",
-      "type": "banjir",
-      "date": "2025-11-26",
-      "year": 2025,
-      "district": "Aceh Tengah",
-      "title": "Banjir bandang & longsor susulan",
-      "summary": "Banjir bandang melanda sebagian besar Aceh Tengah; 12.638 ha lahan kopi arabika terdampak dan 295 desa di 14 kecamatan terisolasi.",
-      "locations": ["takengon", "bebesan", "kebayakan", "luttawar", "pegasing", "silihnara"],
-      "source": "https://www.merahputih.com/post/read/12-ribu-hektare-lahan-kopi-di-aceh-tengah-rusak-akibat-banjir"
-    },
-    {
-      "id": "2025-11-26-longsor-hulu",
-      "type": "longsor",
-      "date": "2025-11-26",
-      "year": 2025,
-      "district": "Aceh Tengah",
-      "title": "Longsor lereng Gayo pasca hujan ekstrem",
-      "summary": "Longsor di lereng-lereng hulu memutus jalur nasional Takengon–Blangkejeren dan menutup akses antar-kecamatan.",
-      "locations": ["celala", "silihnara", "kebayakan", "jagongjeget", "atulintang"],
-      "source": "https://www.bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/2025%20Buletin%20Info%20Bencana/2025%20Desember/Buletin%20Info%20Bencana%20Desember%202025.pdf"
-    },
-    {
-      "id": "2024-10-longsor",
-      "type": "longsor",
-      "date": "2024-10-01",
-      "year": 2024,
-      "district": "Aceh Tengah",
-      "title": "Longsor bulanan (BNPB)",
-      "summary": "BNPB mencatat kejadian tanah longsor di Aceh Tengah pada Oktober 2024 dalam rekap bencana nasional.",
-      "locations": ["bies", "kutepanang", "pegasing", "celala"],
-      "source": "https://www.metrotvnews.com/read/b7WCgXOX-bnpb-catat-2-107-bencana-sepanjang-2024"
-    },
     {
       "id": "2026-09-13-longsor-7kampung",
       "type": "longsor",
@@ -47,8 +15,106 @@
       "district": "Aceh Tengah",
       "title": "Longsor 7 kampung di 4 kecamatan",
       "summary": "Hujan deras memicu longsor di Jalan Takengon–Bintang (Pagar Merah) dan 7 kampung di Kebayakan, Lut Tawar, Celala, dan Silih Nara; 1 warga meninggal, 13 luka, 4 rumah rusak.",
-      "locations": ["kebayakan", "luttawar", "celala", "silihnara", "bintang"],
-      "source": "https://koran-jakarta.com/2026-09-14/longsor-melanda-7-kampung-di-aceh-tengah-satu-orang-meninggal-dunia"
+      "locations": [
+        "kebayakan",
+        "luttawar",
+        "celala",
+        "silihnara",
+        "bintang"
+      ],
+      "source": "https://koran-jakarta.com/2026-09-14/longsor-melanda-7-kampung-di-aceh-tengah-satu-orang-meninggal-dunia",
+      "hazard": "longsor",
+      "emergencyStatus": null
+    },
+    {
+      "id": "2026-07-19-karhutla-celala",
+      "type": "kebakaran",
+      "hazard": "kebakaran",
+      "date": "2026-07-19",
+      "year": 2026,
+      "district": "Aceh Tengah",
+      "title": "Kebakaran lahan Kampung Kuyun Uken, Celala",
+      "summary": "Laporan masyarakat masuk ke Posko Kecamatan Celala pukul 01.15 WIB; ±1 ha lahan terbakar, tanpa korban; BPBD Aceh Tengah koordinasi & asesmen; api padam.",
+      "locations": [
+        "celala"
+      ],
+      "areaHa": 1,
+      "emergencyStatus": null,
+      "source": "https://www.bnpb.go.id/berita/perkembangan-situasi-dan-penanganan-bencana-di-tanah-air-20-juli-2026"
+    },
+    {
+      "id": "2026-06-01-karhutla-ketol",
+      "type": "kebakaran",
+      "hazard": "kebakaran",
+      "date": "2026-06-01",
+      "year": 2026,
+      "district": "Aceh Tengah",
+      "title": "Kebakaran lahan Desa Simpang 4 Rajawali, Ketol",
+      "summary": "Awal kemarau; 1 ha lahan terbakar, padam oleh personel gabungan BPBD Aceh Tengah, Damkar, TNI, Polri.",
+      "locations": [
+        "ketol"
+      ],
+      "areaHa": 1,
+      "emergencyStatus": null,
+      "source": "https://www.bnpb.go.id/berita/perkembangan-situasi-dan-penanganan-bencana-di-tanah-air-tanggal-2-juni-2026"
+    },
+    {
+      "id": "2026-06-01-karhutla-wihpesam",
+      "type": "kebakaran",
+      "hazard": "kebakaran",
+      "date": "2026-06-01",
+      "year": 2026,
+      "district": "Bener Meriah",
+      "title": "Kebakaran lahan Kampung Simpang Balek, Wih Pesam (Bener Meriah)",
+      "summary": "1 ha lahan terbakar pukul 13.15 WIB; dipadamkan BPBD Bener Meriah & Pos Damkar Utama. Kabupaten tetangga, ±10 km dari sentra Ketol/Kute Panang (relevan untuk asap lokal).",
+      "locations": [
+        "ketol",
+        "kutepanang"
+      ],
+      "areaHa": 1,
+      "emergencyStatus": null,
+      "source": "https://www.bnpb.go.id/berita/perkembangan-situasi-dan-penanganan-bencana-di-tanah-air-tanggal-2-juni-2026"
+    },
+    {
+      "id": "2026-01-03-burni-telong-level-ii",
+      "type": "vulkanik",
+      "hazard": "vulkanik",
+      "date": "2026-01-03",
+      "year": 2026,
+      "district": "Bener Meriah",
+      "title": "Burni Telong diturunkan ke Level II (Waspada) dari Level III (Siaga)",
+      "summary": "Unrest Okt 2025 → Normal 1 Nov 2025 → naik hingga Level III (Siaga) → Level II pada 3 Jan 2026; per 1 Jun & 14 Okt 2026 masih Level II (MAGMA), radius rekomendasi 3 km → 2 km. Jarak ke sentra: Ketol 8 km, Kute Panang 10,5 km, Kebayakan 13,6 km, Takengon 15,7 km.",
+      "locations": [
+        "ketol",
+        "kutepanang",
+        "kebayakan",
+        "takengon",
+        "bebesan"
+      ],
+      "volcanoLevel": "II",
+      "emergencyStatus": null,
+      "source": "https://www.tempo.co/lingkungan/pvmbg-turunkan-radius-zona-rekomendasi-gunung-burni-telong-2217739",
+      "sourceLive": "https://magma.esdm.go.id/v1/gunung-api/tingkat-aktivitas"
+    },
+    {
+      "id": "2025-12-30-status-tanggap-darurat-banjir",
+      "type": "banjir",
+      "hazard": "banjir",
+      "date": "2025-12-30",
+      "year": 2025,
+      "district": "Aceh Tengah",
+      "title": "Perpanjangan status tanggap darurat pasca-banjir bandang",
+      "summary": "Aceh Tengah termasuk 11 kabupaten/kota yang memperpanjang status tanggap darurat; status provinsi berakhir 8 Jan 2026 (Pospenas BNPB).",
+      "locations": [
+        "takengon",
+        "bebesan",
+        "kebayakan",
+        "luttawar",
+        "bintang",
+        "silihnara"
+      ],
+      "emergencyStatus": "tanggap darurat",
+      "source": "https://www.bnpb.go.id/berita/enam-wilayah-administrasi-aceh-berstatus-transisi-darurat-ke-pemulihan"
     },
     {
       "id": "2025-12-banjir-susulan",
@@ -58,8 +124,72 @@
       "district": "Aceh Tengah",
       "title": "Banjir susulan & isolasi Takengon",
       "summary": "Banjir bandang dan longsor kembali melanda Aceh Tengah; dua jembatan darurat ambruk dan Kota Takengon sempat terisolasi.",
-      "locations": ["takengon", "bebesan", "luttawar", "bintang"],
-      "source": "https://nu.or.id/daerah/banjir-bandang-kembali-terjang-aceh-tengah-jembatan-ambruk-dan-desa-terisolasi-O8auR"
+      "locations": [
+        "takengon",
+        "bebesan",
+        "luttawar",
+        "bintang"
+      ],
+      "source": "https://nu.or.id/daerah/banjir-bandang-kembali-terjang-aceh-tengah-jembatan-ambruk-dan-desa-terisolasi-O8auR",
+      "hazard": "banjir",
+      "emergencyStatus": null
+    },
+    {
+      "id": "2025-11-26-banjir-bandang",
+      "type": "banjir",
+      "date": "2025-11-26",
+      "year": 2025,
+      "district": "Aceh Tengah",
+      "title": "Banjir bandang & longsor susulan",
+      "summary": "Banjir bandang melanda sebagian besar Aceh Tengah; 12.638 ha lahan kopi arabika terdampak dan 295 desa di 14 kecamatan terisolasi.",
+      "locations": [
+        "takengon",
+        "bebesan",
+        "kebayakan",
+        "luttawar",
+        "pegasing",
+        "silihnara"
+      ],
+      "source": "https://www.merahputih.com/post/read/12-ribu-hektare-lahan-kopi-di-aceh-tengah-rusak-akibat-banjir",
+      "hazard": "banjir",
+      "emergencyStatus": null
+    },
+    {
+      "id": "2025-11-26-longsor-hulu",
+      "type": "longsor",
+      "date": "2025-11-26",
+      "year": 2025,
+      "district": "Aceh Tengah",
+      "title": "Longsor lereng Gayo pasca hujan ekstrem",
+      "summary": "Longsor di lereng-lereng hulu memutus jalur nasional Takengon–Blangkejeren dan menutup akses antar-kecamatan.",
+      "locations": [
+        "celala",
+        "silihnara",
+        "kebayakan",
+        "jagongjeget",
+        "atulintang"
+      ],
+      "source": "https://www.bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/2025%20Buletin%20Info%20Bencana/2025%20Desember/Buletin%20Info%20Bencana%20Desember%202025.pdf",
+      "hazard": "longsor",
+      "emergencyStatus": null
+    },
+    {
+      "id": "2024-10-longsor",
+      "type": "longsor",
+      "date": "2024-10-01",
+      "year": 2024,
+      "district": "Aceh Tengah",
+      "title": "Longsor bulanan (BNPB)",
+      "summary": "BNPB mencatat kejadian tanah longsor di Aceh Tengah pada Oktober 2024 dalam rekap bencana nasional.",
+      "locations": [
+        "bies",
+        "kutepanang",
+        "pegasing",
+        "celala"
+      ],
+      "source": "https://www.metrotvnews.com/read/b7WCgXOX-bnpb-catat-2-107-bencana-sepanjang-2024",
+      "hazard": "longsor",
+      "emergencyStatus": null
     },
     {
       "id": "2023-11-banjir-jalur-tengah",
@@ -69,8 +199,37 @@
       "district": "Aceh Tengah",
       "title": "Banjir jalur tengah Aceh",
       "summary": "Banjir berulang musiman di jalur tengah Aceh (Takengon–Kutacane) merusak badan jalan dan lahan pertanian di dataran Lembah Gayo.",
-      "locations": ["takengon", "bebesan", "kebayakan", "silihnara"],
-      "source": "https://www.bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/Buku%20Data%20Bencana%202024/20250613_Buku%20Data%202024.pdf"
+      "locations": [
+        "takengon",
+        "bebesan",
+        "kebayakan",
+        "silihnara"
+      ],
+      "source": "https://www.bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/Buku%20Data%20Bencana%202024/20250613_Buku%20Data%202024.pdf",
+      "hazard": "banjir",
+      "emergencyStatus": null
+    },
+    {
+      "id": "2013-07-02-gempa-gayo-m6.1",
+      "type": "gempa",
+      "hazard": "gempa",
+      "date": "2013-07-02",
+      "year": 2013,
+      "district": "Aceh Tengah & Bener Meriah",
+      "title": "Gempa Gayo M6,1 (Sesar Sumatra segmen Aceh–Tripa)",
+      "summary": "Gempa dangkal MMI VII: 43 tewas, 2.532 luka, > 3.000 rumah hancur; longsor memusnahkan Kampung Bah & Serempah (Ketol); Bener Meriah & Aceh Tengah terdampak paling parah.",
+      "locations": [
+        "ketol",
+        "kutepanang",
+        "kebayakan",
+        "takengon",
+        "bebesan",
+        "silihnara",
+        "bies"
+      ],
+      "magnitude": 6.1,
+      "emergencyStatus": "tanggap darurat",
+      "source": "https://id.wikipedia.org/wiki/Gempa_bumi_Aceh_2013"
     }
   ]
 }
