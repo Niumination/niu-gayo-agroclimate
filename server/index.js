@@ -191,8 +191,10 @@ const server = http.createServer(async (req, res) => {
       const token = process.env.ALERTS_CRON_TOKEN
       if (token && req.headers['x-cron-token'] !== token) return json(res, 403, { error: 'token cron tidak cocok' })
       const dryRun = ['1', 'true'].includes(url.searchParams.get('dryRun'))
-      const all = await hazardsAllGet()
-      const result = await runAlertCycle(all, { dryRun })
+      const [all, bmkg] = await Promise.all([hazardsAllGet(), bmkgGet().catch(() => null)])
+      // ADR-22: rujukan peringatan resmi BMKG yang aktif untuk Aceh disertakan di setiap pesan
+      const official = bmkg?.active ? (bmkg.alerts ?? []).filter((a) => a.isAceh !== false).slice(0, 3).map((a) => ({ authority: 'BMKG', title: a.title, link: a.link, pubDate: a.pubDate })) : []
+      const result = await runAlertCycle(all, { dryRun, official })
       return json(res, 200, result)
     }
     if (path === '/api/consensus') {

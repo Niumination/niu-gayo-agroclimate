@@ -17,6 +17,7 @@ Dataran Tinggi Gayo (Kabupaten Aceh Tengah) merupakan produsen kopi Arabika orga
 ## Fitur (PRD F1–F8)
 - Konsensus multi-model (F1), antecedent rainfall index (F2), PWA offline + i18n id-ID/Gayo + mode terang-gelap (F3), riwayat bencana per sentra (F4), nowcast resmi BMKG (F5), diseminasi Telegram (F6), kalender risiko musiman (F7), lapor warga dengan relay Telegram (F8).
 - **v2 (Fase 1, dalam pengembangan):** kartu **Kabut Asap & Kualitas Udara** — ISPU estimasi (Permen LHK P.14/2020) dari CAMS global via `GET /api/air-quality`, proksi kabut asap dari jarak pandang siang, anjuran kesehatan 4 kelompok; kartu **Bahaya Kebakaran** — FWI System operasional (pengamatan 12.00 WIB, spin-up arsip ERA5 90 hari, proyeksi 2 hari) × hotspot NASA FIRMS (butuh `FIRMS_MAP_KEY`, degraded tanpa kunci) × HTH via `GET /api/fire-danger` + `GET /api/hotspots`; kartu **Kekeringan** — Hari Tanpa Hujan kelas BMKG, proyeksi, neraca air 30 hari via `GET /api/drought`; laporan warga tipe `asap`/`kebakaran`; status penjemuran "Tunda (asap)". Lihat [`docs/THRESHOLDS.md`](docs/THRESHOLDS.md) §7–12.
+- **v2 (Sprint 3):** **Panel Indeks Bahaya** (`HazardPanel`) dari hazard registry 7 bahaya dengan level seragam, anjuran 4 kelompok, tombol **Bagikan** (WhatsApp/SMS/salin) dan **Tentang data & batasan** (sumber, lisensi, batasan, privasi); **peringatan CAP** + cron Telegram dengan anti-kebisingan; **banner konteks iklim** (ENSO/IOD + verifikasi lokal); **riwayat kejadian** 12 peristiwa & **kontak darurat**; laporan warga `kekeringan`/`badai`; **peta skematik SVG** (batas kecamatan, sentra berwarna level, hotspot, radius Burni Telong). Semua tetap *informasi pendukung berbasis model — bukan peringatan resmi*. Lihat §13–14.
 
 ### Endpoint API (server/index.js, :7455)
 | Endpoint | Isi | Cache |
@@ -26,6 +27,13 @@ Dataran Tinggi Gayo (Kabupaten Aceh Tengah) merupakan produsen kopi Arabika orga
 | `/api/hotspots?location=<id>` | hotspot FIRMS 48 jam ≤ 50 km dari sentra + ringkasan radius; `degraded` tanpa `FIRMS_MAP_KEY` | 30 menit |
 | `/api/fire-danger?location=<id>\|all` | kode FWI hari ini + riwayat 7 hari + proyeksi D+1–2, hotspot, HTH, level & anjuran | 30 menit |
 | `/api/drought?location=<id>\|all` | HTH (kelas BMKG, proyeksi), neraca air 30 hari, deret hujan 30 hari | 12 jam (ikut arsip) |
+| `/api/hazards?location=<id>\|all` | **hazard registry**: 7 bahaya (longsor, banjir, angin, karat, asap, kebakaran, kekeringan) dengan level seragam, metrik, anjuran, sumber; `all` = ringkasan 15 sentra untuk peta | 10 menit (`HAZARDS_TTL_MIN`) |
+| `/api/alerts/feed[?format=cap&id=]` | peringatan aktif bergaya CAP 1.2 (JSON; per-id sebagai CAP XML untuk ekspor) | — |
+| `POST /api/alerts/run[?dryRun=1]` | satu siklus diseminasi (anti-kebisingan → Telegram); header `x-cron-token` wajib dari luar loopback | — |
+| `/api/disaster-history?location=<id>[&hazard=<id>]` | riwayat kejadian terdokumentasi per sentra (+ hitungan per bahaya) | statis |
+| `/healthz` | versi, fitur aktif, status per sumber data (umur cache, degraded) | — |
+
+**Cron peringatan (Fase 1.8):** `node scripts/alerts-cron.mjs --dry-run` untuk uji; produksi: salin `server/agroclimate-alerts.{service,timer}` ke `~/.config/systemd/user/`, isi `TELEGRAM_BOT_TOKEN`, `TELEGRAM_HOME_CHANNEL`, `ALERTS_CRON_TOKEN` di EnvironmentFile server, lalu `systemctl --user enable --now agroclimate-alerts.timer` (tiap 30 menit). Aturan anti-kebisingan: [`docs/THRESHOLDS.md`](docs/THRESHOLDS.md) §13–14.
 - Detail status & desain: repo `niu-gayo-agroclimate-docs` (DISASTER-DATA-RESEARCH.md, PLAN.md).
 
 ## 🌐 Live Site
@@ -51,6 +59,9 @@ npm test
 
 # Build production
 npm run build
+
+# Anggaran ukuran bundle (JS utama ≤ 150 kB gzip)
+npm run check:bundle
 ```
 
 ## Rencana pengembangan multi-bahaya

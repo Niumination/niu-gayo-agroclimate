@@ -11,7 +11,7 @@
 import { LEVEL_ORDER, LEVEL_LABEL, normalizeLevel } from './hazards/levels.js'
 
 export const SENDER = 'Niu Gayo Agro-Climate (informasi pendukung)'
-export const SENDER_ID = 'agroclimate@niumination.id'
+export const SENDER_ID = 'agroclimate@cuaca.abstract.biz.id'
 export const MIN_INTERVAL_H = 6
 export const DEFAULT_EXPIRES_H = { longsor: 6, banjir: 6, angin: 6, asap: 6, kebakaran: 12, kekeringan: 24, karat: 24 }
 
@@ -89,7 +89,7 @@ export function decideDispatch({ level, last, now, minIntervalH = MIN_INTERVAL_H
 /**
  * Bangun objek peringatan (bentuk CAP 1.2 yang dipadatkan ke JSON). `result` = HazardResult ternormalisasi (registry).
  */
-export function buildAlert({ result, location, now, msgType = 'Alert', references = [], expiresH, url }) {
+export function buildAlert({ result, location, now, msgType = 'Alert', references = [], expiresH, url, official = [] }) {
   const level = normalizeLevel(result.level)
   const hazardId = result.id
   const sent = new Date(now).toISOString()
@@ -130,6 +130,8 @@ export function buildAlert({ result, location, now, msgType = 'Alert', reference
       web: url ?? null,
       parameters: (result.metrics ?? []).filter((m) => m.value != null).map((m) => ({ valueName: m.key, value: `${m.value}${m.unit ? ` ${m.unit}` : ''}` })),
       sources: (result.sources ?? []).map((s) => s.name),
+      // ADR-22: rujukan peringatan RESMI yang sedang aktif (BMKG nowcast dsb.) — wajib disertakan bila ada
+      official: (official ?? []).map((o) => ({ authority: o.authority ?? 'BMKG', title: o.title, url: o.link ?? o.url ?? null, pubDate: o.pubDate ?? null })),
       area: {
         areaDesc: `Sentra kopi ${location.name}, Kabupaten Aceh Tengah`,
         circle: location.lat != null && location.lon != null ? `${location.lat},${location.lon} 5` : null, // radius 5 km (sentra ≈ kecamatan)
@@ -143,11 +145,11 @@ export function buildAlert({ result, location, now, msgType = 'Alert', reference
  * Peringatan gabungan untuk beberapa sentra (bahaya, level, msgType sama). `items` = [{ result, location }].
  * Headline & deskripsi memakai sentra berskor tertinggi; area memuat semua sentra (CAP mengizinkan banyak <area>).
  */
-export function buildGroupAlert({ items, now, msgType = 'Alert', references = [], url }) {
+export function buildGroupAlert({ items, now, msgType = 'Alert', references = [], url, official = [] }) {
   const sorted = [...items].sort((a, b) => (b.result.score ?? 0) - (a.result.score ?? 0))
   const lead = sorted[0]
   const names = sorted.map((i) => i.location.name)
-  const base = buildAlert({ result: lead.result, location: lead.location, now, msgType, references, url })
+  const base = buildAlert({ result: lead.result, location: lead.location, now, msgType, references, url, official })
   const level = base.level
   const label = lead.result.label?.id ?? EVENT[lead.result.id] ?? lead.result.id
   const groupLoc = { id: `multi-${sorted.map((i) => i.location.id).join('+')}`.slice(0, 80), name: `${names.length} sentra`, lat: null, lon: null }
@@ -200,7 +202,7 @@ export function toCapXml(alert) {
     <effective>${capTime(i.effective)}</effective>
     <expires>${capTime(i.expires)}</expires>
 ${params}
-    <parameter><valueName>disclaimer</valueName><value>${esc(i.disclaimer)}</value></parameter>
+    <parameter><valueName>disclaimer</valueName><value>${esc(i.disclaimer)}</value></parameter>${(i.official ?? []).map((o) => `\n    <parameter><valueName>officialReference</valueName><value>${esc(`${o.authority}: ${o.title}${o.url ? ` ${o.url}` : ''}`)}</value></parameter>`).join('')}
     <area>
       <areaDesc>${esc(i.area.areaDesc)}</areaDesc>${i.area.circle ? `\n      <circle>${i.area.circle}</circle>` : ''}${(i.area.circles ?? []).map((c) => `\n      <circle>${c}</circle>`).join('')}
     </area>
@@ -220,6 +222,7 @@ export function renderTelegram(alert) {
     if (i.instruction) lines.push(`➡️ ${i.instruction}`)
   }
   if (i.sources?.length) lines.push(`Sumber: ${i.sources.join(' · ')}`)
+  if (i.official?.length) lines.push(`⚠️ Peringatan resmi aktif: ${i.official.map((o) => `${o.authority} — ${o.title}${o.url ? ` (${o.url})` : ''}`).join('; ')}`)
   lines.push(`_${i.disclaimer}_`)
   if (i.web) lines.push(i.web)
   return lines.join('\n')

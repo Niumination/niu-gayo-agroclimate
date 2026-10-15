@@ -22,6 +22,8 @@ Hasil **10 iterasi riset → pembaruan dokumen** (14 Okt 2026) untuk memperluas 
 ## Aset siap pakai di repo (lihat `09`)
 `tests/fixtures/hazards/` (13 respons nyata + dataset uji FWI) · `scripts/fetch-hazard-fixtures.mjs` · `src/data/geo/kecamatan.json` · `src/data/hazards/{healthAdvice,climateOutlook,disasterHistory.additions,sentraKecamatan}.json` + `contacts.hazards.js` · `.env.example` · `tests/hazardData.test.js`.
 
+**Status Sprint 3 (15 Okt 2026):** semua aset di atas sudah dipakai produksi — `healthAdvice` (kartu udara & registry), `climateOutlook` (`ClimateBanner`), `disasterHistory.additions` (sudah **digabung** ke `src/data/disasterHistory.json`, file tambahan dipertahankan sebagai sumber), `sentraKecamatan` (kontak & peta), `kecamatan.json` (`SchematicMap`), kontak dipindah ke **`src/data/contacts.js`** (`contacts.hazards.js` tinggal shim, hapus pada v2.1). Ringkasan kemajuan per item: `03-ROADMAP.md` (Fase 0 ✅; Fase 1 tersisa 1.9 faskes, 1.10b arsip harian, rilis 2.0.0).
+
 ## Bahaya yang dicakup (ID → prioritas)
 H-ASAP kabut asap/kualitas udara (P0) · H-API kebakaran hutan & lahan (P0) · H-LONGSOR (ada) · H-BANJIR+ luapan & banjir bandang (P1) · H-ANGIN+ (ada, diperluas) · H-PETIR/konvektif incl. hujan es & puting beliung (P1) · H-VULKANIK Burni Telong (P1) · H-GEMPA Sesar Sumatra (P1) · H-KERING kekeringan/HTH (P2) · H-SUHU stres dingin/embun upas & panas (P2) · H-KESEHATAN anjuran asap (lintas, P0).
 

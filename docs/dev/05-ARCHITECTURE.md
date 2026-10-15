@@ -69,6 +69,8 @@ Kedua jalur memakai **modul domain yang sama** (ESM dibagi, seperti `seasonal.js
 
 ## 3. ADR
 
+> **Status implementasi (Sprint 3, 15 Okt 2026):** ADR-12 ✅ (`src/domain/hazards/index.js`, 7 modul, `evaluateAll`), ADR-13 ✅, ADR-14 ✅, ADR-15 ✅ (degraded tanpa MAP_KEY), ADR-16 ✅ (`levels.js`), ADR-22 ✅ (lihat catatan), ADR-24 tahap 1 ✅ (`SchematicMap.jsx`), ADR-25 sebagian (`scripts/check-bundle.mjs`; CI belum), ADR-26 sebagian (atribusi & privasi di `AboutData.jsx`; arsip harian belum).
+
 ### ADR-12 — Hazard Registry sebagai titik ekstensi tunggal
 - **Konteks:** 9 hazard baru akan masuk bertahap; UI & service saat ini hard-coded.
 - **Keputusan:** registry array terurut + kontrak §2.1; `HazardPanel` generik; `/api/hazards` di server.
@@ -118,6 +120,7 @@ Kedua jalur memakai **modul domain yang sama** (ESM dibagi, seperti `seasonal.js
 - **Konteks:** pesan saat ini dirakit ad-hoc per cron; akan ada 10 hazard × 4 kanal.
 - **Keputusan:** registry → `Alert` (field CAP 1.2: urgency/severity/certainty/headline/instruction/area/references) → renderer kanal. `sender` selalu "Niu Gayo Agro-Climate (informasi pendukung)"; `references.official` wajib terisi bila ada peringatan resmi. Tidak menerbitkan CAP XML publik.
 - **Konsekuensi:** test template; state dedupe; kemudahan migrasi bila BPBD ingin menerbitkan CAP resmi dari data yang sama.
+- **Catatan implementasi (Sprint 3):** `GET /api/alerts/feed?format=cap&id=` menghasilkan CAP 1.2 XML **per peringatan untuk ekspor/interoperabilitas** (uji BPBD, bukan feed publik yang dipromosikan atau didaftarkan ke agregator); `senderName` + parameter `disclaimer` menegaskan bukan peringatan resmi, dan `info.official[]` memuat peringatan BMKG aktif (judul + URL CAP BMKG) — memenuhi butir "`references.official` wajib". Perubahan field: `references` dipakai untuk peringatan NGA sebelumnya (rantai Update/Cancel), `official` untuk otoritas.
 
 ### ADR-23 — Web Push sebagai dependensi opsional server
 - **Keputusan:** server tetap berjalan tanpa `web-push`; bila paket tersedia & VAPID diset, endpoint `/api/push/subscribe` aktif. Menjaga prinsip "tanpa dependensi wajib".

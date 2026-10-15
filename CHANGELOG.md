@@ -1,6 +1,31 @@
 # Changelog
 
-## [Unreleased] — v2.0-dev "Asap & Kebakaran" Sprint 2 (Fase 1: 1.4, 1.5, 1.6, 1.7, 1.9, 1.9b)
+## [Unreleased] — v2.0-dev "Asap & Kebakaran" Sprint 3 (Fase 0: 0.2–0.5 · Fase 1: 1.6b, 1.8, 1.8b, 1.9c, 1.9d, FR-X-4/5/8/9)
+
+### Fitur
+- **Hazard registry (ADR-12/16)** `src/domain/hazards/{index,levels,features,landslide,watershed,wind,rust,airQuality,fireWeather,drought}.js`: 7 modul murni (`longsor, banjir, angin, karat, asap, kebakaran, kekeringan`) dengan kontrak seragam `{id,label{id,gayo},group,level,score,headline,detail,metrics[],advice{umum,rentan,kebun,sekolah},sources[],flags,degraded,validUntil,evaluatedAt}`; `evaluateAll(ctx)` → `{results[] terurut level, worst, active[], counts}`; skala level seragam `n/a < rendah < waspada < bahaya < ekstrem` (docs/THRESHOLDS.md §13). Logika kartu lama tidak diubah — registry memakai fungsi domain yang sama.
+- **`HazardPanel.jsx`** (menggantikan tempat `DisasterWarning` sebagai panel utama; ringkasan lama tetap): daftar hazard terurut level, kelompok hidromet/atmosfer-kebakaran/agro, akordeon detail + metrik + anjuran 4 kelompok + sumber & waktu, tombol **Bagikan** (`ShareButton.jsx`: WhatsApp / SMS ≤ 160 karakter / salin — `src/domain/share.js`, selalu dengan disclaimer & nomor darurat) dan **Tentang data & batasan**. Feature flag: server `HAZARDS_ENABLED` (`'*'` atau daftar id), klien `VITE_HAZARDS_ENABLED` + `localStorage nga.hiddenHazards` (`src/lib/prefs.js`).
+- **Diseminasi (ADR-22)** `src/domain/alert.js`: objek `Alert` CAP 1.2 per hazard × sentra (identifier, msgType Alert/Update/Cancel, severity Moderate/Severe/Extreme, urgency, certainty Observed/Likely/Possible, expires, area lingkaran 5 km, `official[]` = peringatan BMKG aktif), renderer **Telegram / WhatsApp-teks / SMS / CAP XML**, anti-kebisingan (`PUSH_POLICY` per hazard, jeda 6 jam kecuali naik level, `Cancel` saat turun, penggabungan ≥ 3 sentra, maks 12 pesan/siklus — docs/THRESHOLDS.md §14).
+- **Server** `server/hazards.js` + `server/alerts.js`: `GET /api/hazards?location=<id>|all` (ctx 15 sentra dari cuaca, AQ, FWI, arsip, laporan; TTL `HAZARDS_TTL_MIN`), `GET /api/alerts/feed[?format=cap&id=]`, `POST /api/alerts/run[?dryRun=1]` (header `x-cron-token` = `ALERTS_CRON_TOKEN`; state `server/data/alert-state.json`; kirim Telegram `TELEGRAM_*`), `GET /healthz` (versi, fitur, status per sumber cache: umur, degraded). Cron: `scripts/alerts-cron.mjs` + unit systemd `server/agroclimate-alerts.{service,timer}` (tiap 30 menit).
+- **Banner konteks iklim** `ClimateBanner.jsx` (`src/domain/climate.js`): El Niño/IOD/status musim dari `climateOutlook.json` + verifikasi lokal dari `/api/drought` (basah/sedang/kering); peringatan "perlu pembaruan" setelah `validUntil`.
+- **Riwayat kejadian** `src/data/disasterHistory.json` digabung dengan tambahan 2013–2026 (12 kejadian, skema `hazard`, `emergencyStatus`, `sources[]`); `GET /api/disaster-history?location=<id>&hazard=<id>` → `{count, hazard, byHazard, lastEvents}`; kartu `DisasterHistoryCard.jsx`.
+- **Kontak darurat** `src/data/contacts.js` (`contactsFor(hazard, kecamatan)`; hanya nomor terverifikasi: 112, BPBD Aceh Tengah (0643) 21113, Damkar 113, Halo Kemenkes 1500567; nomor kecamatan menunggu verifikasi H-5) + kartu `EmergencyContacts.jsx` (tautan `tel:`).
+- **"Tentang data & batasan"** `AboutData.jsx` (modal dari HazardPanel & footer): 8 sumber + lisensi (Open-Meteo CC BY 4.0, CAMS/ERA5 Copernicus, FIRMS, BMKG, FWI/cffdrs, BNPB/BPBD, GADM non-komersial), estimasi vs pengukuran, arti level, batasan, privasi (tanpa PII; IP hanya untuk rate-limit laporan), kontak koreksi.
+- **Laporan warga** tipe baru `kekeringan` (tanda: sumur kering / daun layu / sungai surut) dan `badai` (jenis: petir / hujan es / puting beliung) — validasi `server/reports.js`, isian `ReportButton.jsx`.
+- **Peta skematik** `SchematicMap.jsx` (`src/domain/geo.js`, ADR-24 tahap 1): batas 22 kecamatan Aceh Tengah + Bener Meriah (GADM, 21 kB), 15 sentra berwarna level tertinggi (`weatherService.hazardsAll` ← `/api/hazards?location=all`), hotspot FIRMS ≤ 25 km, segitiga + radius 3 km Burni Telong (PVMBG Level II), label anti-tumpang-tindih, klik → pilih sentra. Mobile: tab Lokasi; desktop: baris bawah.
+- **Angin**: `WIND_GUST.ekstrem = 75 km/jam` (≈ Beaufort 9) untuk skala seragam; `WIND_GUST.bmkgEkstrem = 45` → penanda `flags.bmkgExtreme` (docs/THRESHOLDS.md §4).
+- Alat: `npm run check:bundle` (`scripts/check-bundle.mjs`, gagal bila JS utama > 150 kB gzip; saat ini ≈ 114 kB); `.env.example` + `HAZARDS_ENABLED`, `HAZARDS_TTL_MIN`, `ALERTS_CRON_TOKEN`, `PUBLIC_URL`, `API_BASE`, `VITE_HAZARDS_ENABLED`.
+
+### Test
+- +38 test (`tests/hazards.contract.test.js`, `share.test.js`, `alert.test.js`, `climate.test.js`, `geo.test.js`, tambahan di `reports.test.js`, `seasonal.test.js`) → total **236** lulus; `npm run build` OK.
+
+### Utang teknis / catatan (dibawa ke Sprint 4)
+- Modul `longsor`: jendela "48 jam terakhir" masih sebagian prakiraan (klien tanpa `past_days`; `rain72 == rain24` pada ctx klien) — sama dengan perilaku kartu lama; perbaikan = ctx dari arsip (1.10b).
+- `fetchAllAlerts` memakai `precip.slice(-24)` (= D+2) untuk ringkasan lama; `/api/alerts/run` memakai registry, bukan jalur ini.
+- `hazardsAll` di klien best-effort (peta tetap tampil abu-abu bila gagal); `climateOutlook.json` wajib diperbarui manual (`validUntil` 2026-11-30); nomor kontak kecamatan `null` sampai H-5; koordinat sentra Rusip Antara di luar poligon kecamatannya (H-2).
+- Tag `v1.2.0` (H-6) dan `FIRMS_MAP_KEY` (H-1) masih menunggu; aktivasi cron produksi (H-7): isi `TELEGRAM_BOT_TOKEN`, `TELEGRAM_HOME_CHANNEL`, `ALERTS_CRON_TOKEN`, lalu `systemctl --user enable --now agroclimate-alerts.timer`.
+
+## v2.0-dev Sprint 2 (Fase 1: 1.4, 1.5, 1.6, 1.7, 1.9, 1.9b)
 
 ### Fitur
 - **Arsip cuaca 90 hari** `server/archive.js`: Open-Meteo Archive (ERA5) harian + jam-an per sentra, 92 hari s.d. kemarin WIB, celah ≤ 7 hari diisi prakiraan ECMWF `past_days=7&forecast_days=3`, deret gabungan diberi `source[]` = `archive | model | forecast`; TTL 12 jam (`ARCHIVE_TTL_MIN`), salinan file `server/data/archive-<id>.json` sebagai cadangan saat upstream gagal; degraded bila lag arsip > 7 hari.

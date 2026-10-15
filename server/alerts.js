@@ -10,7 +10,7 @@ import { readToken } from './reports.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export const DEFAULT_DATA_DIR = path.join(__dirname, 'data')
-export const PUBLIC_URL = process.env.PUBLIC_URL || 'https://niumination.id/agroclimate/'
+export const PUBLIC_URL = process.env.PUBLIC_URL || 'https://cuaca.abstract.biz.id/'
 
 function stateFile(dir) { return path.join(dir, 'alert-state.json') }
 function logFile(dir) { return path.join(dir, 'alert-log.jsonl') }
@@ -74,7 +74,7 @@ export async function sendTelegram(text, { fetchImpl = fetch, token = readToken(
  * mengirim (kecuali dryRun), memperbarui state & log.
  * @returns {{ now, decided: object[], sent: object[], skipped: number, summary, errors: string[] }}
  */
-export async function runAlertCycle(all, { now = new Date().toISOString(), dryRun = false, dir = DEFAULT_DATA_DIR, send = sendTelegram, minIntervalH = MIN_INTERVAL_H, maxPerCycle = 12, groupMin = GROUP_MIN, url = PUBLIC_URL } = {}) {
+export async function runAlertCycle(all, { now = new Date().toISOString(), dryRun = false, dir = DEFAULT_DATA_DIR, send = sendTelegram, minIntervalH = MIN_INTERVAL_H, maxPerCycle = 12, groupMin = GROUP_MIN, url = PUBLIC_URL, official = [] } = {}) {
   const state = loadState(dir)
   const decided = [] // { key, result, location, last, msgType }
   for (const row of all._full ?? []) {
@@ -99,13 +99,13 @@ export async function runAlertCycle(all, { now = new Date().toISOString(), dryRu
     if (!groups.has(g)) groups.set(g, [])
     groups.get(g).push(d)
   }
-  const refsOf = (items) => items.filter((d) => d.last?.identifier).map((d) => `${d.last.sender ?? 'agroclimate@niumination.id'},${d.last.identifier},${d.last.sentAt}`)
+  const refsOf = (items) => items.filter((d) => d.last?.identifier).map((d) => `${d.last.sender ?? 'agroclimate@cuaca.abstract.biz.id'},${d.last.identifier},${d.last.sentAt}`)
   const messages = []
   for (const items of groups.values()) {
     if (items.length >= groupMin) {
-      messages.push({ keys: items.map((d) => d.key), alert: buildGroupAlert({ items, now, msgType: items[0].msgType, references: refsOf(items), url }) })
+      messages.push({ keys: items.map((d) => d.key), alert: buildGroupAlert({ items, now, msgType: items[0].msgType, references: refsOf(items), url, official }) })
     } else {
-      for (const d of items) messages.push({ keys: [d.key], alert: buildAlert({ result: d.result, location: d.location, now, msgType: d.msgType, references: refsOf([d]), url }) })
+      for (const d of items) messages.push({ keys: [d.key], alert: buildAlert({ result: d.result, location: d.location, now, msgType: d.msgType, references: refsOf([d]), url, official }) })
     }
   }
   // Prioritas: level tertinggi dulu, lalu Alert > Update > Cancel; batasi per siklus agar tidak membanjiri kanal.

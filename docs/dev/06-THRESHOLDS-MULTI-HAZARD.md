@@ -70,7 +70,7 @@ Level UI modul = maksimum dari FFMC & FWI; **ekstrem** bila FWI > 13 **dan** hot
 | Longsor (lama) | skor 0–100 | < 40 | 40–69 | ≥ 70 | ≥ 70 + BMKG aktif |
 | DAS (lama) | indeks mm | < 30 | 30–49 | ≥ 50 | — |
 | Debit GloFAS (baru) | rasio debit prakiraan / median klimatologi hari itu | < 2 | ≥ 2 | ≥ 3 atau > p95 | ≥ 5 |
-| Angin (lama + BMKG) | gusts km/jam | < 40 | 40–44 | ≥ 45 (kriteria ekstrem BMKG) / ≥ 60 | ≥ 80 atau puting beliung (konvektif bahaya + ≥ 45) |
+| Angin (lama + BMKG) | gusts km/jam | < 40 | 40–59 | ≥ 60 | ≥ 75 (**diimplementasikan Sprint 3**, `WIND_GUST.ekstrem`; ≥ 45 = penanda `bmkgExtreme`, bukan level) · target akhir: puting beliung (konvektif bahaya + ≥ 45) |
 | Gempa | MMI BMKG di kota terdekat / indikatif | tidak terasa (I) | II–III | IV–V | ≥ VI |
 | Vulkanik | Tingkat aktivitas PVMBG | Level I Normal | Level II Waspada | Level III Siaga | Level IV Awas |
 | Petir/konvektif | CAPE ECMWF, LI GFS, kode WMO, gusts | CAPE < 1.000 & LI > −3 | CAPE ≥ 1.000 atau LI ≤ −3 | CAPE ≥ 2.000 atau kode 95–99 atau LI ≤ −6 | bahaya + (gusts ≥ 45 atau hujan ≥ 20 mm/jam atau BMKG nowcast aktif) |
@@ -123,6 +123,17 @@ Sektor di bawah angin: arah **menuju** = arah angin 10 m + 180°; sentra dalam �
 | Angin | > 25 knot ≈ 45 km/jam | H-ANGIN+, konvektif |
 | Suhu | menyimpang ± 3 °C dari normal setempat | H-SUHU (pembanding terhadap klimatologi ERA5 30 hari) |
 | Jarak pandang | < 1.000 m | H-ASAP (ekstrem), kabut |
+
+## 8b. Anti-kebisingan diseminasi — nilai final Sprint 3 (menggantikan draft di 02-PRD FR-DIS-3)
+| Aturan | Nilai | Implementasi |
+|---|---|---|
+| Ambang kirim per hazard | longsor/banjir/angin/asap/kebakaran ≥ waspada · kekeringan ≥ bahaya · karat tidak dikirim | `PUSH_POLICY` (`src/domain/alert.js`) |
+| Jeda minimum per (sentra × hazard) | 6 jam, kecuali level naik (→ `Update` segera) | `decideDispatch`, state `server/data/alert-state.json` |
+| Pembatalan | level turun di bawah ambang kirim → `Cancel` sekali; `n/a` (data hilang) tidak membatalkan | `decideDispatch` |
+| Penggabungan | ≥ 3 sentra, hazard + level + msgType sama → 1 pesan gabungan | `GROUP_MIN`, `buildGroupAlert` |
+| Batas per siklus | 12 pesan; sisanya siklus berikutnya; gagal kirim → state tidak berubah | `runAlertCycle({ maxPerCycle })` |
+| Rujukan resmi | peringatan BMKG aktif (Aceh) selalu dilampirkan (`info.official[]`) | `/api/alerts/run` membaca cache nowcast |
+Rincian pemetaan severity/certainty/expires ada di `docs/THRESHOLDS.md` §13–14.
 
 ## 9. H-PETIR — detail (iterasi 6)
 | Elemen | Aturan |

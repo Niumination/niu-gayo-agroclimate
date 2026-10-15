@@ -60,12 +60,12 @@ Level: indeks ≥ 50 mm → **Bahaya Luapan DAS**, ≥ 30 mm → **Waspada Luapa
 
 ## 4. Angin (M3: memakai gusts)
 
-| Sumber | Waspada | Bahaya |
-|---|---|---|
-| `wind_speed_10m` (km/jam) | ≥ 20 | ≥ 35 |
-| `wind_gusts_10m` (km/jam) | ≥ 40 | ≥ 60 |
+| Sumber | Waspada | Bahaya | Ekstrem (Sprint 3) |
+|---|---|---|---|
+| `wind_speed_10m` (km/jam) | ≥ 20 | ≥ 35 | — |
+| `wind_gusts_10m` (km/jam) | ≥ 40 | ≥ 60 | ≥ 75 (`WIND_GUST.ekstrem`, ≈ Beaufort 9 *strong gale*, kerusakan struktur ringan) |
 
-Gusts lebih relevan untuk risiko pohon peneduh roboh.
+Gusts lebih relevan untuk risiko pohon peneduh roboh. Tambahan Sprint 3: hembusan **≥ 45 km/jam (≥ 25 knot)** = kriteria cuaca ekstrem BMKG (Perka KEP.009/2010) → **penanda** `flags.bmkgExtreme` pada modul `angin` (ditampilkan di detail kartu/pesan), **bukan** pemicu level — level tetap 40/60/75 agar tidak menaikkan frekuensi "ekstrem" di dataran tinggi yang sering berangin.
 
 ## 5. Keyakinan Ensemble (S3/M3)
 
@@ -176,6 +176,52 @@ Level hotspot per sentra: ≤ 10 km → **bahaya**, ≤ 25 km → **waspada**, l
 | Neraca air 30 hari | Σ(P − ET0): **≤ −60 mm waspada**, **≤ −120 mm bahaya** (`WATER_BALANCE`) | indikatif; ET0 FAO-56 Open-Meteo; kalibrasi lokal menyusul (FR-KER-3) |
 
 Level kartu "Kekeringan" = maksimum(level HTH, level neraca air).
+
+## 13. Skala level seragam, hazard registry & Alert CAP (Sprint 3, item 0.3–0.5, 1.8, 1.8b)
+
+**Registry** `src/domain/hazards/index.js` menjalankan 7 modul murni (`longsor, banjir, angin, karat, asap, kebakaran, kekeringan`) dengan kontrak ADR-12. Pemetaan skala domain → level seragam (`levels.js`: `n/a < rendah < waspada < bahaya < ekstrem`):
+
+| Modul | Skala asal | rendah | waspada | bahaya | ekstrem | `n/a` |
+|---|---|---|---|---|---|---|
+| longsor | skor 0–100 (§2) | < 40 | 40–69 | ≥ 70 | ≥ 70 **dan** BMKG nowcast aktif | — |
+| banjir (DAS Peusangan) | indeks mm (§3) | < 30 | 30–49 | ≥ 50 | — | lokasi tanpa bobot DAS |
+| angin | gusts km/jam (§4) | < 40 | 40–59 | 60–74 | ≥ 75 | — |
+| karat | risiko 0–100 (§6) | < 40 | 40–69 | ≥ 70 | — | — |
+| asap | ISPU (§7) + proksi kabut (§8) + eskalasi laporan | Baik/Sedang | Tidak Sehat | Sangat Tidak Sehat | Berbahaya **atau** jarak pandang < 1 km | AQ gagal |
+| kebakaran | FWI/FDRS (§9–11) | Rendah | Sedang | Tinggi | Ekstrem (FWI > 13 & hotspot ≤ 25 km) | — |
+| kekeringan | HTH & neraca air (§12) | HTH ≤ 10 | 11–20 atau Σ ≤ −60 | 21–60 atau Σ ≤ −120 | HTH > 60 | arsip gagal |
+
+Hasil `evaluateAll(ctx)` → `{results[] (terurut level), worst, active[] (≥ waspada), counts}`; dipakai `HazardPanel` (klien) dan `/api/hazards` (server). Feature flag: server `HAZARDS_ENABLED` (`'*'` atau daftar id), klien `VITE_HAZARDS_ENABLED` + `localStorage nga.hiddenHazards`.
+
+**Alert CAP (`src/domain/alert.js`, ADR-22)** — satu objek per hazard × sentra:
+
+| Field CAP 1.2 | Aturan |
+|---|---|
+| `identifier` | `nga-<lokasi>-<hazard>-YYYYMMDDTHHMMSS` (gabungan: `nga-multi<N>-…`) |
+| `msgType` | `Alert` pertama kali · `Update` bila level naik atau pengingat ≥ 6 jam · `Cancel` saat turun di bawah ambang kirim (`n/a` tidak pernah men-`Cancel`) |
+| `severity` | waspada → **Moderate** · bahaya → **Severe** · ekstrem → **Extreme** (rendah → Minor) |
+| `urgency` | `Immediate` (Cancel → `Past`) |
+| `certainty` | **Observed** bila ada pengamatan (siaga lokal FFMC+hotspot, eskalasi laporan warga, hotspot ≤ 25 km) · **Possible** bila payload *degraded* · selain itu **Likely** (model) |
+| `expires` | +6 jam (kebakaran 12 h; kekeringan & karat 24 h) |
+| `area` | lingkaran 5 km di koordinat sentra (`circle "lat,lon 5"`) |
+| `sender` | `Niu Gayo Agro-Climate (informasi pendukung)` + parameter `disclaimer` |
+| `official[]` | rujukan peringatan **resmi** BMKG yang aktif untuk Aceh saat siklus berjalan (judul + URL CAP BMKG) — wajib ikut bila ada |
+
+Renderer: Telegram (Markdown), WhatsApp-teks, SMS ≤ 160 karakter (`NGA <Sentra> HH:MM: <LEVEL> <bahaya>. <anjuran> Info model,bkn resmi. Darurat 112`), CAP XML (`/api/alerts/feed?format=cap&id=`, untuk ekspor/interoperabilitas BPBD — bukan feed publik yang dipromosikan).
+
+## 14. Anti-kebisingan diseminasi (Sprint 3, item 1.8b)
+
+| Parameter | Nilai | Catatan |
+|---|---|---|
+| Ambang kirim `PUSH_POLICY` | longsor/banjir/angin/asap/kebakaran **≥ waspada** · kekeringan **≥ bahaya** · karat **tidak pernah** (agronomis, bukan darurat) | `shouldPush(hazardId, level)` |
+| Jeda minimum | **6 jam** per (sentra × hazard) kecuali level naik | `MIN_INTERVAL_H`; state `server/data/alert-state.json` |
+| Penggabungan | ≥ **3** sentra dengan hazard + level + msgType sama dalam satu siklus → 1 pesan gabungan | `GROUP_MIN` |
+| Batas per siklus | **12** pesan (sisanya dicoba siklus berikutnya; state tidak diperbarui bila kirim gagal) | `maxPerCycle` |
+| Siklus | timer systemd `agroclimate-alerts.timer` tiap 30 menit → `POST /api/alerts/run` (header `x-cron-token`) | `scripts/alerts-cron.mjs` |
+
+**Banner konteks iklim (1.9c)** — `climateOutlook.json` ditampilkan dengan verifikasi lokal dari `/api/drought`: hujan 30 hari **≥ 150 mm & HTH ≤ 5** → "basah, prospek kemarau regional belum terasa (asap kemungkinan kiriman)"; hujan 30 hari **< 60 mm atau HTH > 20** → "kering, selaras prospek"; selain itu "sedang". Lewat `validUntil` → banner meminta pembaruan manual.
+
+**Peta skematik (1.6b)** — warna sentra = level tertinggi dari `/api/hazards?location=all`; lingkaran radius **3 km** Burni Telong (PVMBG Level II) hanya penanda zona rekomendasi, bukan pemodelan bahaya; hotspot ≤ 25 km dari sentra terpilih diplot bila FIRMS aktif.
 
 ## Disclaimer
 
