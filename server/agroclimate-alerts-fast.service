@@ -1,0 +1,10 @@
+[Unit]
+Description=Niu Gayo Agroclimate — siklus peringatan cepat (hanya gempa & vulkanik)
+After=network-online.target agroclimate-api.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/niu-gayo-agroclimate
+EnvironmentFile=-%h/niu-gayo-agroclimate/.env
+ExecStart=/usr/bin/node scripts/alerts-cron.mjs --only gempa,vulkanik

@@ -24,7 +24,15 @@ export function readToken(name) {
 }
 
 // v2 Fase 1 (FR-ASAP-6): tipe `asap` (wajib skala jarak pandang) & `kebakaran`. Sprint 3 (FR-X-5): `kekeringan`, `badai` (sub-jenis konvektif).
-const VALID_TYPES = new Set(['longsor', 'banjir', 'angin', 'karat', 'asap', 'kebakaran', 'kekeringan', 'badai'])
+// Fase 2.2b (FR-VULK-4): `abu` (hujan abu tipis/tebal) & `gas` (bau belerang).
+// Fase 2.1 (FR-GEMPA-5 / FR-X-5): `gempa` = laporan "dirasakan" dengan `kind` skala MMI awam (lemah | sedang | kuat).
+const VALID_TYPES = new Set(['longsor', 'banjir', 'angin', 'karat', 'asap', 'kebakaran', 'kekeringan', 'badai', 'abu', 'gas', 'gempa'])
+const QUAKE_KINDS = new Set(['lemah', 'sedang', 'kuat'])
+export const QUAKE_LABEL = { lemah: 'getaran lemah (II–III MMI: terasa oleh sebagian orang, benda gantung bergoyang)', sedang: 'getaran sedang (IV–V MMI: banyak orang terbangun, barang jatuh)', kuat: 'getaran kuat (≥ VI MMI: orang berlarian keluar, dinding retak)' }
+export const ASH_KINDS = new Set(['tipis', 'tebal'])
+export const ASH_LABEL = { tipis: 'hujan abu tipis (debu di daun/kendaraan)', tebal: 'hujan abu tebal (jarak pandang turun, atap tertutup)' }
+export const GAS_KINDS = new Set(['ringan', 'menyengat'])
+export const GAS_LABEL = { ringan: 'bau belerang ringan', menyengat: 'bau belerang menyengat / perih mata-tenggorokan' }
 export const STORM_KINDS = new Set(['petir', 'hujan_es', 'puting_beliung'])
 export const STORM_LABEL = { petir: 'petir/kilat dekat', hujan_es: 'hujan es', puting_beliung: 'puting beliung / angin puyuh' }
 export const DROUGHT_SIGNS = new Set(['sumur_kering', 'daun_layu', 'sungai_surut'])
@@ -86,6 +94,18 @@ export function validateReport(body) {
     const list = Array.isArray(signs) ? signs.filter((x) => DROUGHT_SIGNS.has(x)) : []
     report.signs = list
   }
+  if (type === 'abu') {
+    if (!ASH_KINDS.has(kind)) return { error: "laporan 'abu' wajib menyertakan 'kind': tipis | tebal" }
+    report.kind = kind
+  }
+  if (type === 'gas') {
+    if (!GAS_KINDS.has(kind)) return { error: "laporan 'gas' wajib menyertakan 'kind': ringan | menyengat" }
+    report.kind = kind
+  }
+  if (type === 'gempa') {
+    if (!QUAKE_KINDS.has(kind)) return { error: "laporan 'gempa' wajib menyertakan 'kind': lemah | sedang | kuat" }
+    report.kind = kind
+  }
   return { report }
 }
 
@@ -128,6 +148,9 @@ export function reportDetail(report) {
   if (report.type === 'asap') return `\nSkala: ${VISIBILITY_LABEL[report.visibility] ?? report.visibility}${report.smell ? ', bau asap menyengat' : ''}`
   if (report.type === 'kebakaran' && report.active != null) return `\nApi: ${report.active ? 'masih menyala' : 'sudah padam/tidak terlihat'}`
   if (report.type === 'badai') return `\nJenis: ${STORM_LABEL[report.kind] ?? report.kind}`
+  if (report.type === 'abu') return `\nTebal: ${ASH_LABEL[report.kind] ?? report.kind}`
+  if (report.type === 'gas') return `\nBau: ${GAS_LABEL[report.kind] ?? report.kind}`
+  if (report.type === 'gempa') return `\nDirasakan: ${QUAKE_LABEL[report.kind] ?? report.kind}`
   if (report.type === 'kekeringan' && report.signs?.length) return `\nTanda: ${report.signs.map((x) => DROUGHT_LABEL[x] ?? x).join(', ')}`
   return ''
 }

@@ -38,3 +38,24 @@ export const FIRMS_API = process.env.FIRMS_API || 'https://firms.modaps.eosdis.n
 export const HAZARDS_ENABLED = process.env.HAZARDS_ENABLED ?? '*'
 // Fase 1.10b — arsip harian level bahaya per sentra (server/data/hazard-archive/YYYY-MM-DD.json), TTL evaluasi gabungan.
 export const HAZARDS_TTL_MIN = Number(process.env.HAZARDS_TTL_MIN || 10)
+// Fase 2.1 H-GEMPA — data terbuka BMKG TEWS (gempadirasakan/autogempa/gempaterkini), cache 2 menit, radius relevansi 300 km.
+export const BMKG_QUAKE_BASE = process.env.BMKG_QUAKE_BASE || 'https://data.bmkg.go.id/DataMKG/TEWS/'
+export const QUAKE_TTL_MIN = Number(process.env.QUAKE_TTL_MIN || 2)
+export const QUAKE_RADIUS_KM = Number(process.env.QUAKE_RADIUS_KM || 300)
+// Fase 2.2b H-VULKANIK — halaman publik MAGMA Indonesia (PVMBG), cache 60 menit; fallback nilai terakhir (server/data/volcano-last.json).
+export const MAGMA_URL = process.env.MAGMA_URL || 'https://magma.esdm.go.id/v1/gunung-api/tingkat-aktivitas'
+export const VOLCANO_TTL_MIN = Number(process.env.VOLCANO_TTL_MIN || 60)
+// Fase 2.3 H-PETIR — CAPE/LI GFS (gfs_seamless) + CAPE/kode cuaca ECMWF per lokasi, cache 30 menit (FR-KONV-1).
+export const CONVECTIVE_TTL_MIN = Number(process.env.CONVECTIVE_TTL_MIN || 30)
+// Fase 2.4 H-BANJIR+ — GloFAS v4 via Open-Meteo Flood API, 4 sel DAS Peusangan hulu (FR-BJR-1), 1 call/sel/6 jam.
+export const OPEN_METEO_FLOOD = process.env.OPEN_METEO_FLOOD || 'https://flood-api.open-meteo.com/v1/flood'
+export const FLOOD_TTL_MIN = Number(process.env.FLOOD_TTL_MIN || 360)
+export const FLOOD_CELLS = [
+  { id: 'outlet', name: 'Outlet Lut Tawar (Peusangan hulu)', lat: 4.625, lon: 96.875 },
+  { id: 'takengon', name: 'Takengon', lat: 4.625, lon: 96.825 },
+  { id: 'bintang', name: 'Bintang', lat: 4.575, lon: 96.925 },
+  { id: 'angkup', name: 'Angkup (Silih Nara)', lat: 4.625, lon: 96.725 },
+]
+// Fase 2.4b — PetaBencana.id (CC BY-NC 4.0), laporan Aceh, saring Aceh Tengah/Bener Meriah/Gayo Lues + radius 60 km, cache 10 menit (FR-BJR-6).
+export const PETABENCANA_API = process.env.PETABENCANA_API || 'https://data.petabencana.id/reports'
+export const PETABENCANA_TTL_MIN = Number(process.env.PETABENCANA_TTL_MIN || 10)

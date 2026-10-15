@@ -3,7 +3,9 @@
  * Setiap modul: { id, group, label, requires[], evaluate(ctx) → HazardResult } (fungsi murni, tanpa fetch, tanpa className).
  * id modul = tipe laporan warga = kunci i18n = feature flag (`HAZARDS_ENABLED`).
  *
- * ctx = { location, now, weather (weatherFeatures), ari, airQuality, fireDanger, drought, reports, bmkgNowcast }
+ * ctx = { location, now, weather (weatherFeatures), ari, airQuality, fireDanger, drought, reports, bmkgNowcast,
+ *         quakes (/api/quakes?location=), volcano (/api/volcano), convective (/api/convective?location=), flood (/api/flood),
+ *         temperature (/api/temperature?location= — Tmin/Tmax/Td/awan/angin harian, Fase 3.2) }
  */
 import landslide from './landslide.js'
 import watershed from './watershed.js'
@@ -12,10 +14,15 @@ import rust from './rust.js'
 import airQuality from './airQuality.js'
 import fireWeather from './fireWeather.js'
 import drought from './drought.js'
+import quake from './quake.js'
+import volcano from './volcano.js'
+import convective from './convective.js'
+import temperature from './temperature.js'
 import { LEVEL_ORDER, LEVEL_LABEL, normalizeLevel, maxLevel } from './levels.js'
+import { applyInteractions } from './interactions.js'
 
 /** Urutan default (dipakai saat level sama). */
-export const HAZARDS = [landslide, watershed, wind, airQuality, fireWeather, drought, rust]
+export const HAZARDS = [landslide, watershed, wind, convective, airQuality, fireWeather, drought, quake, volcano, temperature, rust]
 export const HAZARD_IDS = HAZARDS.map((h) => h.id)
 export const GROUP_LABEL = { hidromet: 'Hidrometeorologi', atmosfer: 'Atmosfer & kebakaran', geologi: 'Geologi', agro: 'Agro-kopi' }
 
@@ -60,10 +67,10 @@ export function normalizeResult(mod, raw, ctx) {
  * Jalankan semua modul aktif untuk satu lokasi. Tidak pernah throw: modul yang gagal → n/a + degraded.
  * @returns {{ results: object[], worst: string, active: object[], counts: object }} terurut: level tertinggi dulu, lalu urutan registry.
  */
-export function evaluateAll(ctx, { enabled = null, hidden = [] } = {}) {
+export function evaluateAll(ctx, { enabled = null, hidden = [], interactions: withInteractions = true } = {}) {
   const allowed = new Set(enabled ?? HAZARD_IDS)
   const hide = new Set(hidden ?? [])
-  const results = []
+  let results = []
   HAZARDS.forEach((mod, order) => {
     if (!allowed.has(mod.id) || hide.has(mod.id)) return
     let raw
@@ -75,10 +82,17 @@ export function evaluateAll(ctx, { enabled = null, hidden = [] } = {}) {
     }
     results.push({ ...normalizeResult(mod, raw, ctx), order })
   })
+  // Fase 2.5 — aturan interaksi lintas-bahaya (gempa × tanah jenuh, asap × hujan lebat, kekeringan × FFMC, …)
+  let interactions = []
+  if (withInteractions) {
+    const applied = applyInteractions(results, ctx)
+    results = applied.results.map((r) => ({ ...r, levelLabel: LEVEL_LABEL[r.level] }))
+    interactions = applied.interactions
+  }
   results.sort((a, b) => (LEVEL_ORDER[b.level] - LEVEL_ORDER[a.level]) || (a.order - b.order))
   const active = results.filter((r) => LEVEL_ORDER[r.level] >= LEVEL_ORDER.waspada)
-  const counts = { total: results.length, active: active.length, degraded: results.filter((r) => r.degraded).length }
-  return { results, worst: maxLevel(results.map((r) => r.level)), active, counts }
+  const counts = { total: results.length, active: active.length, degraded: results.filter((r) => r.degraded).length, interactions: interactions.length }
+  return { results, worst: maxLevel(results.map((r) => r.level)), active, counts, interactions }
 }
 
 /** Ringkasan sangat ringkas (untuk daftar 15 sentra / peta / arsip harian). */
@@ -88,6 +102,7 @@ export function summarize(evaluated) {
     levels: Object.fromEntries(evaluated.results.map((r) => [r.id, r.level])),
     active: evaluated.active.map((r) => ({ id: r.id, level: r.level, headline: r.headline })),
     degraded: evaluated.counts.degraded,
+    interactions: (evaluated.interactions ?? []).map((i) => i.id),
   }
 }
 

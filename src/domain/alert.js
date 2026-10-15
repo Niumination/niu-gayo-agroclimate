@@ -13,13 +13,13 @@ import { LEVEL_ORDER, LEVEL_LABEL, normalizeLevel } from './hazards/levels.js'
 export const SENDER = 'Niu Gayo Agro-Climate (informasi pendukung)'
 export const SENDER_ID = 'agroclimate@cuaca.abstract.biz.id'
 export const MIN_INTERVAL_H = 6
-export const DEFAULT_EXPIRES_H = { longsor: 6, banjir: 6, angin: 6, asap: 6, kebakaran: 12, kekeringan: 24, karat: 24 }
+export const DEFAULT_EXPIRES_H = { longsor: 6, banjir: 6, angin: 6, asap: 6, kebakaran: 12, kekeringan: 24, karat: 24, gempa: 24, vulkanik: 24, badai: 6, suhu: 12 }
 
 /**
  * Kebijakan push (anti-bising, docs/dev/06 §9): level minimum agar suatu bahaya dikirim ke kanal (Telegram/SMS).
  * null = tidak pernah di-push (hanya tampil di UI & feed) — karat daun adalah anjuran agronomi, bukan bencana.
  */
-export const PUSH_POLICY = { longsor: 'waspada', banjir: 'waspada', angin: 'waspada', asap: 'waspada', kebakaran: 'waspada', kekeringan: 'bahaya', karat: null }
+export const PUSH_POLICY = { longsor: 'waspada', banjir: 'waspada', angin: 'waspada', asap: 'waspada', kebakaran: 'waspada', kekeringan: 'bahaya', karat: null, gempa: 'waspada', vulkanik: 'bahaya', badai: 'bahaya', suhu: 'bahaya' }
 export function shouldPush(hazardId, level) {
   const min = PUSH_POLICY[hazardId]
   if (!min) return false
@@ -29,8 +29,8 @@ export function shouldPush(hazardId, level) {
 export const GROUP_MIN = 3
 
 export const SEVERITY = { rendah: 'Minor', waspada: 'Moderate', bahaya: 'Severe', ekstrem: 'Extreme', 'n/a': 'Unknown' }
-export const CATEGORY = { longsor: 'Geo', banjir: 'Met', angin: 'Met', asap: 'Env', kebakaran: 'Fire', kekeringan: 'Met', karat: 'Env' }
-export const URGENCY = { longsor: 'Expected', banjir: 'Expected', angin: 'Immediate', asap: 'Expected', kebakaran: 'Expected', kekeringan: 'Future', karat: 'Future' }
+export const CATEGORY = { longsor: 'Geo', banjir: 'Met', angin: 'Met', asap: 'Env', kebakaran: 'Fire', kekeringan: 'Met', karat: 'Env', gempa: 'Geo', vulkanik: 'Geo', badai: 'Met', suhu: 'Met' }
+export const URGENCY = { longsor: 'Expected', banjir: 'Expected', angin: 'Immediate', asap: 'Expected', kebakaran: 'Expected', kekeringan: 'Future', karat: 'Future', gempa: 'Immediate', vulkanik: 'Expected', badai: 'Immediate', suhu: 'Expected' }
 export const EVENT = {
   longsor: 'Potensi tanah longsor',
   banjir: 'Potensi luapan DAS Peusangan',
@@ -39,8 +39,12 @@ export const EVENT = {
   kebakaran: 'Bahaya kebakaran lahan',
   kekeringan: 'Kekeringan (HTH)',
   karat: 'Risiko karat daun kopi',
+  gempa: 'Gempa bumi dirasakan',
+  vulkanik: 'Aktivitas Gunung Burni Telong',
+  badai: 'Petir / badai konvektif',
+  suhu: 'Suhu ekstrem untuk kopi',
 }
-const EMOJI = { longsor: '⛰️', banjir: '🌊', angin: '🌬️', asap: '🌫️', kebakaran: '🔥', kekeringan: '☀️', karat: '🍂' }
+const EMOJI = { longsor: '⛰️', banjir: '🌊', angin: '🌬️', asap: '🌫️', kebakaran: '🔥', kekeringan: '☀️', karat: '🍂', gempa: '🌐', vulkanik: '🌋', badai: '⛈️', suhu: '🌡️' }
 const LEVEL_EMOJI = { waspada: '🟡', bahaya: '🟠', ekstrem: '🔴', rendah: '🟢' }
 
 const pad = (n) => String(n).padStart(2, '0')
@@ -73,7 +77,7 @@ export function identifierFor({ locationId, hazardId, now }) {
  * Aturan anti-bising. `last` = status kiriman terakhir { level, sentAt, identifier } untuk pasangan (sentra, bahaya).
  * @returns {'Alert'|'Update'|'Cancel'|null} msgType yang harus dikirim sekarang (null = diam)
  */
-export function decideDispatch({ level, last, now, minIntervalH = MIN_INTERVAL_H }) {
+export function decideDispatch({ level, last, now, minIntervalH = MIN_INTERVAL_H, eventId = null }) {
   const lv = normalizeLevel(level)
   const active = LEVEL_ORDER[lv] >= LEVEL_ORDER.waspada
   const lastLv = last ? normalizeLevel(last.level) : null
@@ -81,6 +85,8 @@ export function decideDispatch({ level, last, now, minIntervalH = MIN_INTERVAL_H
   const ageH = last?.sentAt ? (new Date(now).getTime() - new Date(last.sentAt).getTime()) / 3_600_000 : Infinity
   if (!active) return lastActive ? 'Cancel' : null
   if (!lastActive) return 'Alert'
+  // FR-GEMPA-6 — kejadian baru (id gempa / tingkat PVMBG berbeda) dikirim segera sebagai Alert baru, tanpa menunggu jeda.
+  if (eventId && last?.eventId && last.eventId !== eventId) return 'Alert'
   if (LEVEL_ORDER[lv] > LEVEL_ORDER[lastLv]) return 'Update' // naik level → segera
   if (ageH >= minIntervalH) return LEVEL_ORDER[lv] === LEVEL_ORDER[lastLv] ? 'Update' : 'Update' // pengingat berkala / turun tapi masih aktif
   return null

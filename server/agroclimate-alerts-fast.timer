@@ -1,0 +1,12 @@
+[Unit]
+Description=Niu Gayo Agroclimate — siklus cepat gempa & gunung api (tiap 5 menit; FR-GEMPA-6 ≤ 5 menit)
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+RandomizedDelaySec=20
+Persistent=false
+Unit=agroclimate-alerts-fast.service
+
+[Install]
+WantedBy=timers.target

@@ -60,5 +60,9 @@ test('validateReport: badai wajib kind; kekeringan menyaring tanda tak dikenal; 
   const k2 = validateReport({ location: 'linge', type: 'kekeringan' })
   assert.deepEqual(k2.report.signs, [])
   assert.equal(reportDetail(k2.report), '')
-  assert.match(validateReport({ location: 'linge', type: 'gempa' }).error, /kekeringan, badai/)
+  assert.match(validateReport({ location: 'linge', type: 'tsunami' }).error, /kekeringan, badai/)
+  // Fase 2.1 FR-GEMPA-5: laporan gempa dirasakan wajib kind lemah|sedang|kuat
+  assert.match(validateReport({ location: 'linge', type: 'gempa' }).error, /lemah \| sedang \| kuat/)
+  assert.equal(validateReport({ location: 'linge', type: 'gempa', kind: 'sedang' }).report.kind, 'sedang')
+  assert.match(reportDetail({ type: 'gempa', kind: 'kuat' }), /Dirasakan: getaran kuat/)
 })

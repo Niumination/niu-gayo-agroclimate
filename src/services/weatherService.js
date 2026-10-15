@@ -108,10 +108,15 @@ export async function getAgroClimateData(location) {
   let fireDanger = null
   let drought = null
   let hazardsAll = null
+  let quakes = null
+  let volcano = null
+  let convective = null
+  let flood = null
+  let externalReports = null
   try {
     const base = import.meta.env.BASE_URL || '/agroclimate/'
     const api = (p) => `${base.replace(/\/$/, '')}/api/${p}`
-    const [cRes, bRes, hRes, sRes, aRes, fRes, dRes] = await Promise.allSettled([
+    const [cRes, bRes, hRes, sRes, aRes, fRes, dRes, qRes, vRes, kRes, gRes, pRes] = await Promise.allSettled([
       fetch(api(`consensus?location=${encodeURIComponent(location.id)}`)),
       fetch(api('bmkg-nowcast')),
       fetch(api(`disaster-history?location=${encodeURIComponent(location.id)}`)),
@@ -121,6 +126,13 @@ export async function getAgroClimateData(location) {
       // H-API (Sprint 2) — FWI harian + hotspot FIRMS + HTH; H-KERING — HTH & neraca air (best-effort)
       fetch(api(`fire-danger?location=${encodeURIComponent(location.id)}`)),
       fetch(api(`drought?location=${encodeURIComponent(location.id)}`)),
+      // Fase 2 — gempa BMKG, Burni Telong (MAGMA), konvektif (CAPE/LI), debit GloFAS (best-effort)
+      fetch(api(`quakes?location=${encodeURIComponent(location.id)}`)),
+      fetch(api('volcano')),
+      fetch(api(`convective?location=${encodeURIComponent(location.id)}`)),
+      fetch(api('flood')),
+      // Fase 2.4b — laporan warga PetaBencana.id (CC BY-NC, best-effort)
+      fetch(api('external-reports')),
     ])
     // 1.6b — ringkasan level 15 sentra untuk peta skematik (best-effort)
     const hzAllP = fetch(api('hazards?location=all')).then((r) => (r.ok ? r.json() : null)).catch(() => null)
@@ -137,6 +149,11 @@ export async function getAgroClimateData(location) {
     if (aRes.status === 'fulfilled' && aRes.value.ok) airQuality = await aRes.value.json()
     if (fRes.status === 'fulfilled' && fRes.value.ok) fireDanger = await fRes.value.json()
     if (dRes.status === 'fulfilled' && dRes.value.ok) drought = await dRes.value.json()
+    if (qRes.status === 'fulfilled' && qRes.value.ok) quakes = await qRes.value.json()
+    if (vRes.status === 'fulfilled' && vRes.value.ok) volcano = await vRes.value.json()
+    if (kRes.status === 'fulfilled' && kRes.value.ok) convective = await kRes.value.json()
+    if (gRes.status === 'fulfilled' && gRes.value.ok) flood = await gRes.value.json()
+    if (pRes.status === 'fulfilled' && pRes.value.ok) externalReports = await pRes.value.json()
     // FR-ASAP-5 — dampak asap ke jendela penjemuran (ISPU ≥ 101 atau AOD ≥ 1 & DNI < 300 → "Tunda (asap)")
     const aq = airQuality?.assessment
     if (aq?.ispu) {
@@ -167,6 +184,10 @@ export async function getAgroClimateData(location) {
         drought,
         bmkgNowcast,
         reports: communityReports?.reports ?? [],
+        quakes,
+        volcano,
+        convective,
+        flood,
       },
       { enabled: import.meta.env.VITE_HAZARDS_ENABLED ? String(import.meta.env.VITE_HAZARDS_ENABLED).split(',').map((x) => x.trim()).filter(Boolean) : null, hidden: getHiddenHazards() }
     )
@@ -227,5 +248,12 @@ export async function getAgroClimateData(location) {
     hazards,
     // 1.6b — ringkasan level 15 sentra dari server (/api/hazards?location=all) untuk peta skematik
     hazardsAll,
+    // Fase 2 — payload mentah untuk kartu khusus (gempa, Burni Telong, petir & badai, debit DAS)
+    quakes,
+    volcano,
+    convective,
+    flood,
+    // Fase 2.4b — laporan warga PetaBencana.id (Gayo, 7 hari) — atribusi wajib CC BY-NC 4.0
+    externalReports,
   }
 }

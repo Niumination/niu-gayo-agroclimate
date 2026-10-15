@@ -8,6 +8,7 @@ import { weatherFeatures } from '../src/domain/hazards/features.js'
 import { evaluateAll, summarize, parseEnabled, HAZARD_IDS } from '../src/domain/hazards/index.js'
 import { assessDrought } from '../src/domain/hazards/drought.js'
 import { HAZARDS_ENABLED } from './config.js'
+import { computeSpi } from './spi.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export const DEFAULT_ARCHIVE_DIR = path.join(__dirname, 'data', 'hazard-archive')
@@ -17,20 +18,25 @@ const settle = (p) => Promise.resolve(p).then((value) => ({ ok: true, value }), 
 /**
  * Evaluasi semua bahaya untuk satu sentra.
  * @param {string} id lokasi
- * @param {object} deps { weatherGet, aqGet, fireGet, archiveGet, reportsGet, now, enabled }
+ * @param {object} deps { weatherGet, aqGet, fireGet, archiveGet, reportsGet, quakesGet, volcanoGet, convectiveGet, floodGet, nowcastGet, spiBaseline, now, enabled }
  */
 export async function getHazardsForLocation(id, deps = {}) {
-  const { weatherGet, aqGet, fireGet, archiveGet, reportsGet, now = new Date().toISOString(), enabled = parseEnabled(HAZARDS_ENABLED) } = deps
+  const { weatherGet, aqGet, fireGet, archiveGet, reportsGet, quakesGet, volcanoGet, convectiveGet, floodGet, nowcastGet, spiBaseline = null, now = new Date().toISOString(), enabled = parseEnabled(HAZARDS_ENABLED) } = deps
   const location = LOCATIONS.find((l) => l.id === id)
   const retrievedAt = new Date().toISOString()
   if (!location) return { location: null, retrievedAt, degraded: true, error: `Lokasi tidak dikenal: ${id}` }
 
-  const [w, aq, fire, arch, rep] = await Promise.all([
+  const [w, aq, fire, arch, rep, qk, vol, conv, fld, nc] = await Promise.all([
     weatherGet ? settle(weatherGet(id)) : { ok: false, error: new Error('weatherGet tidak tersedia') },
     aqGet ? settle(aqGet(id)) : { ok: false },
     fireGet ? settle(fireGet(id)) : { ok: false },
     archiveGet ? settle(archiveGet(id)) : { ok: false },
     reportsGet ? settle(reportsGet(id)) : { ok: false },
+    quakesGet ? settle(quakesGet(id)) : { ok: false },       // Fase 2.1 H-GEMPA
+    volcanoGet ? settle(volcanoGet()) : { ok: false },       // Fase 2.2b H-VULKANIK
+    convectiveGet ? settle(convectiveGet(id)) : { ok: false }, // Fase 2.3 H-PETIR
+    floodGet ? settle(floodGet()) : { ok: false },           // Fase 2.4 H-BANJIR+ (GloFAS)
+    nowcastGet ? settle(nowcastGet()) : { ok: false },       // F5 BMKG nowcast (pengubah ekstrem badai/longsor)
   ])
   const warnings = []
   const raw = w.ok ? w.value?.raw ?? w.value : null
@@ -38,11 +44,16 @@ export async function getHazardsForLocation(id, deps = {}) {
   if (!weather) warnings.push(`cuaca: ${w.error?.message ?? 'deret kosong'}`)
   let drought = null
   if (arch.ok && arch.value?.daily) {
-    const assessment = assessDrought(arch.value.daily, { today: arch.value.today })
-    drought = { location, retrievedAt, source: arch.value.source, degraded: !assessment || arch.value.degraded, archive: { archiveEnd: arch.value.archiveEnd, lagDays: arch.value.lagDays }, assessment }
+    const assessment = assessDrought(arch.value.daily, { today: arch.value.today, hourly: arch.value.hourly })
+    const spi = computeSpi(arch.value.daily, spiBaseline?.locations?.[id], { today: arch.value.today })
+    drought = { location, retrievedAt, source: arch.value.source, degraded: !assessment || arch.value.degraded, archive: { archiveEnd: arch.value.archiveEnd, lagDays: arch.value.lagDays }, assessment, spi }
   } else warnings.push(`arsip: ${arch.error?.message ?? 'tidak tersedia'}`)
   if (!aq.ok) warnings.push(`udara: ${aq.error?.message ?? 'tidak tersedia'}`)
   if (!fire.ok) warnings.push(`kebakaran: ${fire.error?.message ?? 'tidak tersedia'}`)
+  if (quakesGet && !qk.ok) warnings.push(`gempa: ${qk.error?.message ?? 'tidak tersedia'}`)
+  if (volcanoGet && !vol.ok) warnings.push(`vulkanik: ${vol.error?.message ?? 'tidak tersedia'}`)
+  if (convectiveGet && !conv.ok) warnings.push(`konvektif: ${conv.error?.message ?? 'tidak tersedia'}`)
+  if (floodGet && !fld.ok) warnings.push(`debit: ${fld.error?.message ?? 'tidak tersedia'}`)
 
   const nowIso = weather?.nowTime ? toIsoWib(weather.nowTime) : now
   const ctx = {
@@ -54,6 +65,11 @@ export async function getHazardsForLocation(id, deps = {}) {
     fireDanger: fire.ok ? fire.value : null,
     drought,
     reports: rep.ok ? rep.value?.reports ?? rep.value ?? [] : [],
+    quakes: qk.ok ? qk.value : null,
+    volcano: vol.ok ? vol.value : null,
+    convective: conv.ok ? conv.value : null,
+    flood: fld.ok ? fld.value : null,
+    bmkgNowcast: nc.ok ? nc.value : null,
   }
   const evaluated = evaluateAll(ctx, { enabled })
   return {

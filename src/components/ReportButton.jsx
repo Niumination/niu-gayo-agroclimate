@@ -13,12 +13,33 @@ const TYPES = [
   // Sprint 3 (FR-X-5): kekeringan (tanda di lapangan) & badai konvektif (sub-jenis)
   { value: 'kekeringan', label: 'Kekeringan / sumber air surut' },
   { value: 'badai', label: 'Badai: petir / hujan es / puting beliung' },
+  // Fase 2.2b (FR-VULK-4): hujan abu & bau belerang (Burni Telong)
+  { value: 'abu', label: 'Hujan abu vulkanik' },
+  { value: 'gas', label: 'Bau belerang / gas vulkanik' },
+  // Fase 2.1 (FR-GEMPA-5): gempa dirasakan (skala awam → MMI)
+  { value: 'gempa', label: 'Gempa dirasakan' },
 ]
-const STORM_KINDS = [
-  { value: 'petir', label: 'Petir / kilat sangat dekat' },
-  { value: 'hujan_es', label: 'Hujan es' },
-  { value: 'puting_beliung', label: 'Puting beliung / angin puyuh' },
-]
+// Sub-pilihan generik per tipe (field `kind`)
+const KIND_OPTIONS = {
+  badai: { label: 'Jenis badai', options: [
+    { value: 'petir', label: 'Petir / kilat sangat dekat' },
+    { value: 'hujan_es', label: 'Hujan es' },
+    { value: 'puting_beliung', label: 'Puting beliung / angin puyuh' },
+  ] },
+  abu: { label: 'Ketebalan abu', options: [
+    { value: 'tipis', label: 'Tipis — debu di daun / kendaraan' },
+    { value: 'tebal', label: 'Tebal — jarak pandang turun, atap tertutup' },
+  ] },
+  gas: { label: 'Kekuatan bau', options: [
+    { value: 'ringan', label: 'Ringan — tercium sesekali' },
+    { value: 'menyengat', label: 'Menyengat — mata / tenggorokan perih' },
+  ] },
+  gempa: { label: 'Seberapa kuat terasa?', options: [
+    { value: 'lemah', label: 'Lemah — sebagian orang merasakan, lampu gantung bergoyang' },
+    { value: 'sedang', label: 'Sedang — banyak orang terbangun, barang jatuh' },
+    { value: 'kuat', label: 'Kuat — orang berlarian keluar, dinding retak' },
+  ] },
+}
 const DROUGHT_SIGNS = [
   { value: 'sumur_kering', label: 'Sumur / mata air mengering' },
   { value: 'daun_layu', label: 'Daun kopi layu / gugur' },
@@ -34,6 +55,9 @@ const PLACEHOLDER = {
   kebakaran: 'cth: api di semak dekat kebun, arah angin ke kampung',
   kekeringan: 'cth: sumur kampung tinggal 1 m, bibit baru tanam mulai layu',
   badai: 'cth: hujan es sebesar kelereng ±10 menit, atap seng beterbangan',
+  abu: 'cth: abu tipis di daun kopi sejak subuh, arah dari Burni Telong',
+  gas: 'cth: bau belerang kuat di lembah saat mendung, beberapa warga pusing',
+  gempa: 'cth: terasa ±5 detik pukul 03.10, piring bergetar, tidak ada kerusakan',
 }
 
 export default function ReportButton({ location, onSubmitted, className = '' }) {
@@ -44,6 +68,10 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
   const [smell, setSmell] = useState(false)
   const [active, setActive] = useState(true)
   const [kind, setKind] = useState('petir')
+  useEffect(() => {
+    const opts = KIND_OPTIONS[type]?.options
+    if (opts && !opts.some((o) => o.value === kind)) setKind(opts[0].value)
+  }, [type]) // eslint-disable-line react-hooks/exhaustive-deps
   const [signs, setSigns] = useState([])
   const [status, setStatus] = useState(null) // 'sending' | 'ok' | 'error'
   const dialogRef = useRef(null)
@@ -83,7 +111,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
           note,
           ...(type === 'asap' ? { visibility, smell } : {}),
           ...(type === 'kebakaran' ? { active } : {}),
-          ...(type === 'badai' ? { kind } : {}),
+          ...(KIND_OPTIONS[type] ? { kind } : {}),
           ...(type === 'kekeringan' ? { signs } : {}),
         }),
       })
@@ -177,10 +205,10 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                   Api masih menyala saat ini
                 </label>
               )}
-              {type === 'badai' && (
+              {KIND_OPTIONS[type] && (
                 <div>
                   <label htmlFor="report-kind" className="block text-[13px] font-medium text-ink/70 dark:text-mist/60">
-                    Jenis badai
+                    {KIND_OPTIONS[type].label}
                   </label>
                   <select
                     id="report-kind"
@@ -188,7 +216,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                     onChange={(e) => setKind(e.target.value)}
                     className="mt-1 w-full min-h-[44px] rounded-lg border border-ink/15 dark:border-mist/15 bg-transparent px-3 text-[14px] text-ink dark:text-mist"
                   >
-                    {STORM_KINDS.map((k) => (
+                    {KIND_OPTIONS[type].options.map((k) => (
                       <option key={k.value} value={k.value}>{k.label}</option>
                     ))}
                   </select>

@@ -13,10 +13,15 @@
 //   /api/hazards       — v2 registry bahaya (ADR-12): 7 bahaya per lokasi terurut level / ?location=all ringkasan 15 sentra (TTL HAZARDS_TTL_MIN)
 //   /api/alerts/feed   — 1.8b feed peringatan CAP-JSON 24 jam terakhir (?hours, ?location, ?hazard; ?format=cap&id=<identifier> → CAP 1.2 XML)
 //   /api/alerts/run    — 1.8 POST siklus peringatan (anti-bising 6 jam, Telegram topik cron); ?dryRun=1 tanpa kirim/simpan; header x-cron-token bila ALERTS_CRON_TOKEN diset
-//   /api/drought       — H-KERING HTH kelas BMKG + neraca air 30 hari per lokasi (arsip ERA5 TTL 12 jam)
+//   /api/drought       — H-KERING HTH kelas BMKG + neraca air 30 hari + SPI-1/3 (baseline 1991–2020) per lokasi (arsip ERA5 TTL 12 jam)
+//   /api/quakes        — H-GEMPA gempa BMKG relevan (?location= → jarak/MMI indikatif per sentra)
+//   /api/volcano       — H-VULKANIK tingkat aktivitas Burni Telong (MAGMA) + sektor bawah angin
+//   /api/convective    — H-PETIR indeks konvektif ECMWF+GFS per lokasi (TTL 30 menit)
+//   /api/flood         — H-BANJIR+ debit GloFAS 4 sel DAS Peusangan + anomali klimatologi (TTL 6 jam)
+//   /api/external-reports — laporan warga PetaBencana.id untuk Gayo (CC BY-NC, TTL 10 menit)
 import http from 'node:http'
 import fs from 'node:fs'
-import { PORT, PROXY_TTL_MIN, ENSEMBLE_TTL_MIN, ALERTS_TTL_MIN, WN2_TTL_MIN, BMKG_TTL_MIN, AQ_TTL_MIN, ARCHIVE_TTL_MIN, FIRMS_TTL_MIN, FIRMS_MAP_KEY, HAZARDS_TTL_MIN, HAZARDS_ENABLED } from './config.js'
+import { PORT, PROXY_TTL_MIN, ENSEMBLE_TTL_MIN, ALERTS_TTL_MIN, WN2_TTL_MIN, BMKG_TTL_MIN, AQ_TTL_MIN, ARCHIVE_TTL_MIN, FIRMS_TTL_MIN, FIRMS_MAP_KEY, HAZARDS_TTL_MIN, HAZARDS_ENABLED, QUAKE_TTL_MIN, VOLCANO_TTL_MIN, CONVECTIVE_TTL_MIN, FLOOD_TTL_MIN, PETABENCANA_TTL_MIN } from './config.js'
 import { cached, clearCache, cacheStats, peek } from './cache.js'
 import { getWeatherForLocation, fetchEnsemble, fetchAllAlerts, computeConsensus } from './openMeteo.js'
 import { fetchBmkgNowcast } from './bmkg.js'
@@ -25,11 +30,18 @@ import { getArchiveForLocation } from './archive.js'
 import { getHotspots, hotspotsForLocation } from './firms.js'
 import { getFireDanger, getFireDangerSummary } from './fireWeather.js'
 import { assessDrought } from '../src/domain/hazards/drought.js'
-import { seasonalInfo } from '../src/domain/seasonal.js'
+import { seasonalInfoExtended } from '../src/domain/seasonal.js'
+import climateOutlook from '../src/data/hazards/climateOutlook.json' with { type: 'json' }
 import disasterHistory from '../src/data/disasterHistory.json' with { type: 'json' }
 import { validateReport, rateLimited, submitReport, recentReports, readToken } from './reports.js'
 import { getHazardsForLocation, getHazardsAll, archiveSnapshot } from './hazards.js'
 import { runAlertCycle, readFeed } from './alerts.js'
+import { getQuakes, quakesForLocation } from './bmkgQuake.js'
+import { getVolcanoStatus } from './magma.js'
+import { getConvective } from './convective.js'
+import { getFlood } from './flood.js'
+import { getExternalReports } from './petabencana.js'
+import { computeSpi, loadSpiBaseline } from './spi.js'
 import { toCapXml } from '../src/domain/alert.js'
 import { parseEnabled } from '../src/domain/hazards/index.js'
 import { LOCATIONS } from '../src/data/locations.js'
@@ -91,9 +103,38 @@ const PKG_VERSION = (() => {
     return null
   }
 })()
+// Fase 2.1 / 2.2b — gempa BMKG (TTL 2 menit) & Burni Telong MAGMA (TTL 60 menit); payload degraded tidak di-cache lama.
+const quakesAllGet = () =>
+  cached('quakes:all', QUAKE_TTL_MIN * 60_000, async () => {
+    const data = await getQuakes()
+    if (data.degraded && !data.quakes?.length) throw new Error(data.error || 'quakes degraded')
+    return data
+  }).catch((err) => ({ retrievedAt: new Date().toISOString(), degraded: true, error: err.message, quakes: [], latest: null }))
+const quakesGet = (id) => quakesAllGet().then((all) => quakesForLocation(all, LOCATIONS.find((l) => l.id === id)))
+const volcanoGet = () =>
+  cached('volcano:status', VOLCANO_TTL_MIN * 60_000, async () => {
+    const data = await getVolcanoStatus()
+    if (!data.volcano) throw new Error(data.error || 'volcano degraded')
+    return data
+  }).catch((err) => ({ retrievedAt: new Date().toISOString(), degraded: true, error: err.message, volcano: null, wind: null, downwind: [] }))
+// Fase 2.3 / 2.4 / 2.4b — konvektif per lokasi (TTL 30 menit), GloFAS 4 sel (TTL 6 jam, nilai terakhir bila gagal), PetaBencana (TTL 10 menit).
+const convectiveGet = (id) =>
+  cached(`convective:${id}`, CONVECTIVE_TTL_MIN * 60_000, async () => {
+    const data = await getConvective(id)
+    if (!data.hourly) throw new Error(data.error || 'convective degraded')
+    return data
+  }).catch((err) => ({ location: { id }, retrievedAt: new Date().toISOString(), degraded: true, error: err.message, sources: [], hourly: null }))
+const floodGet = () =>
+  cached('flood:all', FLOOD_TTL_MIN * 60_000, async () => {
+    const data = await getFlood()
+    if (!data.cells?.length) throw new Error(data.degradedCells?.join('; ') || 'flood degraded')
+    return data
+  }).catch((err) => ({ retrievedAt: new Date().toISOString(), degraded: true, error: err.message, cells: [], worst: null }))
+const externalReportsGet = () => cached('petabencana:aceh', PETABENCANA_TTL_MIN * 60_000, () => getExternalReports())
+const SPI_BASELINE = loadSpiBaseline()
 const hazardsGet = (id) =>
   cached(`hazards:${id}`, HAZARDS_TTL_MIN * 60_000, () =>
-    getHazardsForLocation(id, { weatherGet, aqGet, fireGet, archiveGet, reportsGet: async (l) => ({ reports: recentReports(l) }), enabled: HAZARDS_ON })
+    getHazardsForLocation(id, { weatherGet, aqGet, fireGet, archiveGet, reportsGet: async (l) => ({ reports: recentReports(l) }), quakesGet, volcanoGet, convectiveGet, floodGet, nowcastGet: bmkgGet, spiBaseline: SPI_BASELINE, enabled: HAZARDS_ON })
   )
 const hazardsAllGet = () =>
   cached('hazards:all', HAZARDS_TTL_MIN * 60_000, async () => {
@@ -130,7 +171,7 @@ const server = http.createServer(async (req, res) => {
         uptime: process.uptime(),
         cache: cacheStats(),
         features: { hazardsEnabled: HAZARDS_ON, firmsKey: !!FIRMS_MAP_KEY, telegram: !!readToken('TELEGRAM_BOT_TOKEN'), cronToken: !!process.env.ALERTS_CRON_TOKEN },
-        sources: { alerts: src('alerts:all'), bmkgNowcast: src('bmkg:nowcast'), airQuality: src('aq:all'), hotspots: src('firms:all'), fireDanger: src('fire:all'), hazards: src('hazards:all') },
+        sources: { alerts: src('alerts:all'), bmkgNowcast: src('bmkg:nowcast'), airQuality: src('aq:all'), hotspots: src('firms:all'), fireDanger: src('fire:all'), hazards: src('hazards:all'), quakes: src('quakes:all'), volcano: src('volcano:status'), flood: src('flood:all'), petabencana: src('petabencana:aceh') },
       })
     }
     if (path === '/api/weather') {
@@ -191,11 +232,39 @@ const server = http.createServer(async (req, res) => {
       const token = process.env.ALERTS_CRON_TOKEN
       if (token && req.headers['x-cron-token'] !== token) return json(res, 403, { error: 'token cron tidak cocok' })
       const dryRun = ['1', 'true'].includes(url.searchParams.get('dryRun'))
+      // FR-GEMPA-6: ?only=gempa,vulkanik → siklus cepat (timer 5 menit) hanya mengevaluasi bahaya kejadian-segera
+      const only = (url.searchParams.get('only') || '').split(',').map((x) => x.trim()).filter(Boolean)
       const [all, bmkg] = await Promise.all([hazardsAllGet(), bmkgGet().catch(() => null)])
       // ADR-22: rujukan peringatan resmi BMKG yang aktif untuk Aceh disertakan di setiap pesan
       const official = bmkg?.active ? (bmkg.alerts ?? []).filter((a) => a.isAceh !== false).slice(0, 3).map((a) => ({ authority: 'BMKG', title: a.title, link: a.link, pubDate: a.pubDate })) : []
-      const result = await runAlertCycle(all, { dryRun, official })
+      const result = await runAlertCycle(all, { dryRun, official, only })
       return json(res, 200, result)
+    }
+    // Fase 2.1 H-GEMPA — FR-GEMPA-1: gempa relevan (≤ 300 km / disebut Aceh) + jarak per sentra bila ?location=
+    if (path === '/api/quakes') {
+      const id = url.searchParams.get('location')
+      const all = await quakesAllGet()
+      if (!id) return json(res, 200, all)
+      if (!VALID_LOCATIONS.has(id)) return json(res, 400, { error: "parameter 'location' harus id lokasi yang valid" })
+      return json(res, 200, quakesForLocation(all, LOCATIONS.find((l) => l.id === id)))
+    }
+    // Fase 2.2b H-VULKANIK — FR-VULK-1/2: tingkat aktivitas Burni Telong (MAGMA) + angin puncak + sentra di bawah angin
+    if (path === '/api/volcano') {
+      return json(res, 200, await volcanoGet())
+    }
+    // Fase 2.3 H-PETIR — FR-KONV-1: CAPE/LI/CIN GFS + CAPE/kode cuaca/hembusan ECMWF per lokasi
+    if (path === '/api/convective') {
+      const id = url.searchParams.get('location')
+      if (!id || !VALID_LOCATIONS.has(id)) return json(res, 400, { error: "parameter 'location' wajib dan harus id lokasi yang valid" })
+      return json(res, 200, await convectiveGet(id))
+    }
+    // Fase 2.4 H-BANJIR+ — FR-BJR-1/2/3: debit GloFAS 4 sel DAS Peusangan + anomali vs klimatologi
+    if (path === '/api/flood') {
+      return json(res, 200, await floodGet())
+    }
+    // Fase 2.4b — FR-BJR-6: laporan warga PetaBencana.id (CC BY-NC 4.0) tersaring Gayo
+    if (path === '/api/external-reports') {
+      return json(res, 200, await externalReportsGet())
     }
     if (path === '/api/consensus') {
       const id = url.searchParams.get('location')
@@ -248,7 +317,8 @@ const server = http.createServer(async (req, res) => {
       } catch (err) {
         return json(res, 200, { location: { id }, retrievedAt: new Date().toISOString(), degraded: true, error: err.message, assessment: null })
       }
-      const assessment = assessDrought(archive.daily, { today: archive.today })
+      const assessment = assessDrought(archive.daily, { today: archive.today, hourly: archive.hourly })
+      const spi = computeSpi(archive.daily, SPI_BASELINE?.locations?.[id], { today: archive.today })
       return json(res, 200, {
         location: archive.location,
         retrievedAt: new Date().toISOString(),
@@ -257,6 +327,7 @@ const server = http.createServer(async (req, res) => {
         warnings: archive.warnings,
         archive: { archiveEnd: archive.archiveEnd, lagDays: archive.lagDays, today: archive.today, fromFile: archive.fromFile },
         assessment,
+        spi,
       })
     }
     // F7 — kalender musiman (bulan WIB saat ini)
@@ -265,7 +336,8 @@ const server = http.createServer(async (req, res) => {
         new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta', month: 'numeric' }).format(new Date())
       )
       if (!(month >= 1 && month <= 12)) return json(res, 400, { error: "parameter 'month' harus 1–12" })
-      return json(res, 200, seasonalInfo(month))
+      // Fase 3.4 — kalender diperluas: fase kering + jendela embun upas + penyesuaian ENSO/IOD (climateOutlook.json)
+      return json(res, 200, seasonalInfoExtended(month, { outlook: climateOutlook }))
     }
     // F4 — riwayat bencana per sentra (statis terkurasi; upgrade DIBI API menunggu endpoint)
     if (path === '/api/disaster-history') {

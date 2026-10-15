@@ -69,24 +69,32 @@ export async function sendTelegram(text, { fetchImpl = fetch, token = readToken(
   }
 }
 
+/** id kejadian (flags.eventId) dari hasil yang mendasari pesan `m` untuk kunci `key` (sentra:bahaya). */
+function eventIdOf(m, key) {
+  const d = (m.decided ?? []).find((x) => x.key === key)
+  return d?.result?.flags?.eventId ?? null
+}
+
 /**
  * Satu siklus: `all` = hasil getHazardsAll (dengan `_full`). Menentukan msgType per (sentra, bahaya), membangun CAP,
  * mengirim (kecuali dryRun), memperbarui state & log.
  * @returns {{ now, decided: object[], sent: object[], skipped: number, summary, errors: string[] }}
  */
-export async function runAlertCycle(all, { now = new Date().toISOString(), dryRun = false, dir = DEFAULT_DATA_DIR, send = sendTelegram, minIntervalH = MIN_INTERVAL_H, maxPerCycle = 12, groupMin = GROUP_MIN, url = PUBLIC_URL, official = [] } = {}) {
+export async function runAlertCycle(all, { now = new Date().toISOString(), dryRun = false, dir = DEFAULT_DATA_DIR, send = sendTelegram, minIntervalH = MIN_INTERVAL_H, maxPerCycle = 12, groupMin = GROUP_MIN, url = PUBLIC_URL, official = [], only = null } = {}) {
   const state = loadState(dir)
+  const onlySet = only && only.length ? new Set(only) : null // FR-GEMPA-6: siklus cepat (timer 5 menit) hanya untuk gempa/vulkanik
   const decided = [] // { key, result, location, last, msgType }
   for (const row of all._full ?? []) {
     const location = LOCATIONS.find((l) => l.id === row.id) ?? { id: row.id, name: row.name }
     for (const result of row.hazards ?? []) {
       if (result.level === 'n/a') continue // data tidak ada / tidak berlaku → tidak pernah memicu Cancel palsu
+      if (onlySet && !onlySet.has(result.id)) continue
       const key = `${row.id}:${result.id}`
       const last = state[key] ?? null
       // Kebijakan push: level di bawah ambang kirim diperlakukan seperti "tidak aktif" (dapat memicu Cancel bila sebelumnya terkirim).
       const effectiveLevel = shouldPush(result.id, result.level) ? result.level : 'rendah'
       if (!last && effectiveLevel === 'rendah') continue
-      const msgType = decideDispatch({ level: effectiveLevel, last, now, minIntervalH })
+      const msgType = decideDispatch({ level: effectiveLevel, last, now, minIntervalH, eventId: result.flags?.eventId ?? null })
       if (!msgType) continue
       decided.push({ key, result, location, last, msgType })
     }
@@ -103,9 +111,9 @@ export async function runAlertCycle(all, { now = new Date().toISOString(), dryRu
   const messages = []
   for (const items of groups.values()) {
     if (items.length >= groupMin) {
-      messages.push({ keys: items.map((d) => d.key), alert: buildGroupAlert({ items, now, msgType: items[0].msgType, references: refsOf(items), url, official }) })
+      messages.push({ keys: items.map((d) => d.key), decided: items, alert: buildGroupAlert({ items, now, msgType: items[0].msgType, references: refsOf(items), url, official }) })
     } else {
-      for (const d of items) messages.push({ keys: [d.key], alert: buildAlert({ result: d.result, location: d.location, now, msgType: d.msgType, references: refsOf([d]), url, official }) })
+      for (const d of items) messages.push({ keys: [d.key], decided: [d], alert: buildAlert({ result: d.result, location: d.location, now, msgType: d.msgType, references: refsOf([d]), url, official }) })
     }
   }
   // Prioritas: level tertinggi dulu, lalu Alert > Update > Cancel; batasi per siklus agar tidak membanjiri kanal.
@@ -126,9 +134,10 @@ export async function runAlertCycle(all, { now = new Date().toISOString(), dryRu
     }
     for (const key of m.keys) {
       if (m.alert.msgType === 'Cancel') delete state[key]
-      else state[key] = { level: m.alert.level, sentAt: now, identifier: m.alert.identifier, sender: m.alert.sender, msgType: m.alert.msgType }
+      else state[key] = { level: m.alert.level, sentAt: now, identifier: m.alert.identifier, sender: m.alert.sender, msgType: m.alert.msgType, eventId: eventIdOf(m, key) }
     }
     sent.push({ ...m.alert, keys: m.keys, telegram: res.ok && !res.dryRun, dryRun: !!dryRun })
+    delete m.decided
   }
   if (!dryRun) {
     saveState(state, dir)
@@ -136,6 +145,7 @@ export async function runAlertCycle(all, { now = new Date().toISOString(), dryRu
   }
   return {
     now,
+    only: onlySet ? [...onlySet] : null,
     decided: decided.map((d) => ({ key: d.key, msgType: d.msgType, level: d.result.level })),
     messages: messages.length,
     sent,

@@ -55,8 +55,8 @@ test('levels: urutan, normalisasi label lama, max/bump/compare', () => {
   assert.ok(compareLevel('n/a', 'rendah') < 0)
 })
 
-test('registry: 7 modul, id unik = tipe laporan, kontrak field lengkap', () => {
-  assert.deepEqual(HAZARD_IDS, ['longsor', 'banjir', 'angin', 'asap', 'kebakaran', 'kekeringan', 'karat'])
+test('registry: 11 modul (Fase 1–3), id unik = tipe laporan, kontrak field lengkap', () => {
+  assert.deepEqual(HAZARD_IDS, ['longsor', 'banjir', 'angin', 'badai', 'asap', 'kebakaran', 'kekeringan', 'gempa', 'vulkanik', 'suhu', 'karat'])
   assert.equal(new Set(HAZARD_IDS).size, HAZARDS.length)
   for (const mod of HAZARDS) {
     assert.match(mod.id, /^[a-z]+$/)
@@ -76,10 +76,11 @@ test('evaluate pada ctx kosong → n/a + degraded, tidak throw', () => {
     assert.equal(r.degraded, true, mod.id)
   }
   const all = evaluateAll({})
-  assert.equal(all.results.length, 7)
+  assert.equal(all.results.length, HAZARD_IDS.length)
   assert.equal(all.worst, 'n/a')
-  assert.equal(all.counts.degraded, 7)
+  assert.equal(all.counts.degraded, HAZARD_IDS.length)
   assert.equal(all.active.length, 0)
+  assert.deepEqual(all.interactions, [])
 })
 
 test('evaluateAll: modul yang throw → n/a, modul lain tetap jalan', () => {
