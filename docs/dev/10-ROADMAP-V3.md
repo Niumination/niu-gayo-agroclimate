@@ -30,10 +30,10 @@
 ## 2b. Hutang teknis & pengerasan (rilis v2.1, hasil audit 2026-10-16)
 | # | Item | Alasan / sumber |
 |---|---|---|
-| A-1 | Naikkan lompatan mayor: Tailwind 4 (menghapus rantai `chokidar→braces`, sekaligus menutup CVE-2026-93687 yang belum ada patch di Tailwind 3), Vite 8, `@vitejs/plugin-react` 6, lucide-react 1.x | audit F-07; Dependabot sengaja mengabaikan mayor — butuh staging & uji visual |
+| A-1 | Naikkan lompatan mayor: Tailwind 4, Vite 8, `@vitejs/plugin-react` 6, lucide-react 1.x | ✅ **SELESAI v2.1.0 (2026-10-16)** — Tailwind 4.3.3 (rantai `chokidar→braces` hilang, `npm audit` **0**), Vite 8.3.4 (Rolldown; `manualChunks`→`advancedChunks`), plugin-react 6.1.2 (Oxc), lucide 1.58. Lihat CHANGELOG 2.1.0; catatan kompatibilitas browser (Safari 16.4+/Chrome 111+) ada di README |
 | A-2 | Ambang cakupan uji (`test:coverage`) + laporan tren; mulai dari modul kritis (hazards, alert, thresholds) | audit F-10 — cakupan terukur 96,6% baris / 83,8% cabang (306 uji, 2026-10-16); ambang gagal menyusul |
 | A-3 | Tag rilis bertanda tangan / attestation (`git tag -s` atau Sigstore) | audit F-06 — butuh kunci GPG/identitas penerbit (tugas manusia H-10) |
-| A-4 | Pantau advisory `braces` (`micromatch/braces#70`); evaluasi alternatif tooling CSS bila patch tak kunjung ada | audit F-01/SECURITY.md — dev-only, tanpa jalur eksploitasi runtime |
+| A-4 | ~~Pantau advisory `braces`~~ | ✅ **SELESAI v2.1.0** — rantai dependensinya sudah tidak ada (A-1) |
 | A-5 | Pisahkan `docs/` mengikuti empat kuadran Diátaxis (tutorial/how-to/reference/explanation) bila dokumentasi bertambah | audit F-15 catatan struktur |
 
 ## 3. Yang sengaja tidak dilakukan

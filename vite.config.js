@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   base: '/',
   plugins: [
+    tailwindcss(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -59,13 +61,16 @@ export default defineConfig({
     }),
   ],
   build: {
-    // F-11: pisahkan vendor agar cache lebih baik & tiap berkas lebih kecil
-    // (anggaran di check-bundle tetap berlaku pada total gzip).
+    // F-11 (v2.0.1) diperbarui untuk Vite 8/Rolldown: `manualChunks` (objek) tidak lagi
+    // didukung — API penggantinya adalah `advancedChunks.groups`.
+    // Pisahkan vendor agar cache lebih baik & tiap berkas lebih kecil (anggaran total gzip tetap berlaku).
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-icons': ['lucide-react'],
+        advancedChunks: {
+          groups: [
+            { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+            { name: 'vendor-icons', test: /node_modules[\\/]lucide-react[\\/]/ },
+          ],
         },
       },
     },

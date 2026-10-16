@@ -82,7 +82,7 @@ export function StormCard({ hazards }) {
         <div>
           <div className="flex gap-[2px] h-6" role="img" aria-label="Level konvektif per jam 12 jam ke depan">
             {hours.map((h) => (
-              <span key={h.time} title={`${hhmm(h.time)} WIB: ${LEVEL_LABEL[h.level]} · CAPE ${num(h.capeEcmwf)} J/kg${h.li != null ? ` · LI ${h.li}` : ''}${h.gust ? ` · hembusan ${num(h.gust)} km/jam` : ''}`} className="flex-1 rounded-sm" style={{ backgroundColor: FILL[h.level], opacity: h.level === 'rendah' ? 0.35 : 0.9 }} />
+              <span key={h.time} title={`${hhmm(h.time)} WIB: ${LEVEL_LABEL[h.level]} · CAPE ${num(h.capeEcmwf)} J/kg${h.li != null ? ` · LI ${h.li}` : ''}${h.gust ? ` · hembusan ${num(h.gust)} km/jam` : ''}`} className="flex-1 rounded-xs" style={{ backgroundColor: FILL[h.level], opacity: h.level === 'rendah' ? 0.35 : 0.9 }} />
             ))}
           </div>
           <div className="flex justify-between text-[10px] text-ink/45 dark:text-mist/40 mt-1">

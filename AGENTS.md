@@ -29,7 +29,10 @@ Niu Gayo Agro-Climate adalah dashboard web presisi tinggi untuk memantau mikrokl
 - Cakupan: `npm run test:coverage` (laporan cakupan node:test; informatif, belum jadi gerbang)
 - Kesegaran outlook: `npm run check:outlook` (gagal bila `climateOutlook.json` kedaluwarsa; perbarui dari BMKG/NOAA CPC)
 - Inventaris Gayo: `npm run check:i18n` (daftar label `[?]` yang menunggu tinjauan penutur asli — tugas manusia H-4)
-- Build: `npm run build` (menghasilkan bundle production Vite di `dist/`)
+- Build: `npm run build` (Vite 8/Rolldown; bundle production di `dist/`; ~0,4 dtk)
+- Toolchain v2.1.0: Vite 8 + `@vitejs/plugin-react` 6 (Oxc) + **Tailwind 4 CSS-first** — konfigurasi tema/varian ada di `src/index.css` (`@theme`, `@custom-variant dark`), BUKAN lagi di `tailwind.config.js` (dihapus). Node ≥ 20.19 (lihat `engines`).
+- Pemisahan chunk vendor memakai `build.rollupOptions.output.advancedChunks` (Rolldown); bentuk objek `manualChunks` v3 tidak didukung lagi.
+- Pemasangan: `npm ci` normal. Bila menaikkan dependensi dari lockfile lama dan npm 10.x gagal `edgesOut`, jalankan sekali `npm install --legacy-peer-deps`, lalu lanjut normal.
 - Dev Server: `npm run dev` (berjalan di port 5188)
 - Production: `npm run build` → `dist/` di-serve `scripts/serve.py` (:7444); API `server/index.js` (:7455)
 - Akses publik: `https://cuaca.abstract.biz.id` (Cloudflare Tunnel) — `/api/*` + `/healthz` forward ke :7455

@@ -9,8 +9,8 @@ Dataran Tinggi Gayo (Kabupaten Aceh Tengah) merupakan produsen kopi Arabika orga
 3. Melindungi warga dan petani dari bencana hidrometeorologi (tanah longsor di lereng perkebunan dan banjir luapan Danau Lut Tawar).
 
 ## Teknologi
-- **Framework:** React 19 + Vite 6 (PWA)
-- **Styling:** Tailwind CSS
+- **Framework:** React 19 + Vite 8 (Rolldown/Oxc) + PWA
+- **Styling:** Tailwind CSS 4 (konfigurasi CSS-first) — membutuhkan browser **Safari 16.4+ / Chrome 111+ / Firefox 128+** (Maret 2023 ke atas); perangkat lebih lama tetap dapat memakai rilis **v2.0.1** (tag git tersedia)
 - **Data Engine:** Integrasi stream meteorologi resolusi tinggi ECMWF / WeatherNext 2–3; nowcast resmi BMKG (RSS CAP); NASA IMERG Late (sumber primer antecedent rainfall index, fallback model)
 - **Test:** Native Node.js Test Runner
 

@@ -31,13 +31,16 @@ Di luar cakupan: endpoint pihak ketiga (BMKG, MAGMA, USGS, Open-Meteo, FIRMS, Pe
 - Header keamanan dasar (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`) pada semua respons API.
 - Token cron (`x-cron-token`) dibandingkan dengan `crypto.timingSafeEqual`.
 
-## Advisori dependensi dev-only yang diketahui (belum ada patch hulu)
+## Advisori dependensi (status)
 
-| Paket | Advisori | Dampak nyata | Mitigasi |
-|---|---|---|---|
-| `braces` ≤ 3.0.3 | CVE-2026-93687 (GHSA-vfj7-8cjw-p6xm) — stack-overflow DoS via pola bersarang | **Hanya saat build/dev** melalui rantai `tailwindcss@3 → chokidar → braces`; tidak pernah dipanggil pada runtime produksi, dan pola glob sepenuhnya dikendalikan repositori (bukan penyerang) | Belum ada versi patch (per 2026-10). `npm audit --omit=dev` bersih; pantau https://github.com/micromatch/braces/issues/70 dan migrasi Tailwind 4 (menghapus rantai chokidar) ada di roadmap. |
+**Per 2026-10-16, v2.1.0: `npm audit` bersih (0 kerentanan) pada seluruh pohon dependensi.** Riwayat yang perlu diketahui:
 
-Seluruh 7 temuan `npm audit` saat audit 2026-10-16 berada pada dependensi **dev** (rantai tooling build). Pohon dependensi produksi (`react`, `react-dom`, `lucide-react`) **0 kerentanan** — dijaga oleh langkah CI `npm audit --omit=dev --audit-level=high`.
+| Paket | Advisori | Status |
+|---|---|---|
+| `braces` ≤ 3.0.3 | CVE-2026-93687 (GHSA-vfj7-8cjw-p6xm) — stack-overflow DoS via pola bersarang; **tidak pernah ada versi patch** | **Selesai di v2.1.0** — rantai `tailwindcss@3 → chokidar → braces` dihapus oleh migrasi Tailwind 4 (yang tidak lagi memakai chokidar/braces). Tidak ada lagi salinan `braces` pada pohon dependensi. |
+| `postcss-selector-parser` < 7.1.6 | GHSA-rj75-hqrm-r3gf (quadratic CPU saat build) | Ditutup v2.0.1 lewat override `^7.1.6`; rantai induknya (`postcss-nested`) juga hilang di v2.1.0. |
+
+Kebijakan yang berjalan: CI menolak kerentanan pada **dependensi produksi** (`npm audit --omit=dev --audit-level=high`), Dependabot mingguan menjaga pembaruan, dan setiap advisori dev-only wajib dicatat di berkas ini dengan penilaian dampak nyata.
 
 ## Kunci/token yang perlu dikelola pengguna
 

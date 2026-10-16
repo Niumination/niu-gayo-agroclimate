@@ -1,6 +1,47 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind CSS 4 (CSS-first config) — migrasi A-1, 2026-10-16.
+   Catatan kompatibilitas browser: v4 menargetkan Safari 16.4+, Chrome 111+, Firefox 128+
+   (memakai @property & color-mix). Lihat CHANGELOG 2.1.0 bila perlu dukungan perangkat lama. */
+@import "tailwindcss";
+
+/* Dark mode berbasis kelas (setara darkMode: 'class' di v3) — <html class="dark"> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Palet kopi (kompatibilitas komponen lama) */
+  --color-coffee-50: #fbf7f4;
+  --color-coffee-100: #f5eee8;
+  --color-coffee-200: #eddcd1;
+  --color-coffee-300: #dfc2b1;
+  --color-coffee-400: #cea28c;
+  --color-coffee-500: #bc846a;
+  --color-coffee-600: #a86c52;
+  --color-coffee-700: #8c5541;
+  --color-coffee-800: #734637;
+  --color-coffee-900: #5e3a2f;
+  --color-coffee-950: #341d17;
+
+  /* "Stasiun Cuaca Kebun" — palet lapangan kopi Arabika Gayo */
+  --color-soil: #1A1512;        /* dasar gelap, coklat vulkanik hangat */
+  --color-mist: #E8E3DA;        /* kabut dataran tinggi — teks di gelap */
+  --color-leaf: #4E7A52;        /* hijau daun arabika — primer/aman */
+  --color-leaf-soft: #8FBE93;   /* tint leaf untuk teks kecil di mode gelap (AA) */
+  --color-leaf-deep: #2F5A35;   /* shade leaf untuk teks di mode terang (AA) */
+  --color-cherry: #A8392B;      /* ceri matang — bahaya/karat */
+  --color-cherry-soft: #E08B7E;
+  --color-cherry-deep: #8A2A1F;
+  --color-husk: #C9A227;        /* kulit kopi kering — waspada/penjemuran */
+  --color-husk-soft: #E6C868;
+  --color-husk-deep: #7A6110;
+  --color-rain: #3E6B8A;        /* biru hujan — info */
+  --color-rain-soft: #8FB6CE;
+  --color-rain-deep: #2C5069;
+  --color-surface: #FAF7F2;     /* kertas penjemuran (mode terang) */
+  --color-ink: #221C18;         /* teks mode terang */
+
+  --font-data: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --max-width-shell: 1400px;
+  --radius-card: 16px;
+}
 
 :root {
   --app-bg: #faf7f2;

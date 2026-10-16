@@ -55,7 +55,7 @@ function RainBars({ series, rainDayMm }) {
           <span
             key={s.date}
             title={`${shortDate(s.date)}: ${num(v, 1)} mm`}
-            className={`flex-1 rounded-sm ${dry ? 'bg-husk/50 dark:bg-husk/40' : 'bg-rain/70 dark:bg-rain/60'}`}
+            className={`flex-1 rounded-xs ${dry ? 'bg-husk/50 dark:bg-husk/40' : 'bg-rain/70 dark:bg-rain/60'}`}
             style={{ height: `${h}px` }}
           />
         )

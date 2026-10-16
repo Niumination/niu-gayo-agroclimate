@@ -1,5 +1,36 @@
 # Changelog
 
+## [2.1.0] — 2026-10-16 · Migrasi toolchain mayor (roadmap A-1 — menutup advisori `braces`)
+
+Hasil akhir butir **A-1** pada `docs/dev/10-ROADMAP-V3.md`: seluruh lompatan mayor yang ditunda saat audit 2.0.1 dikerjakan sekaligus, dan `npm audit` kini **0 kerentanan** (sebelumnya 5 high dev-only).
+
+### Tailwind CSS 3.4.19 → 4.3.3
+- Konfigurasi **CSS-first**: `src/index.css` kini memakai `@import "tailwindcss"` + blok `@theme` (palet Gayo `soil/mist/leaf/cherry/husk/rain`, `font-data`, `max-w-shell`, `rounded-card`) dan `@custom-variant dark (&:where(.dark, .dark *))` untuk dark mode berbasis kelas.
+- `tailwind.config.js` dan `postcss.config.js` **dihapus**; plugin baru `@tailwindcss/vite`; `autoprefixer` & `postcss` dilepas (v4 menangani vendor prefix lewat Lightning CSS).
+- **Rantai `chokidar → braces` + `postcss-nested → postcss-selector-parser` hilang total** → CVE-2026-93687 (yang belum punya patch di hulu, lihat SECURITY.md 2.0.1) tidak lagi relevan. `npm audit --omit=dev` tetap 0.
+- Penyesuaian kecil: `rounded-sm` → `rounded-xs` di 2 komponen peta/grafik agar radius tetap 0,125 rem sesuai skala v3 (v4 menggeser arti `-sm`).
+- Verifikasi khusus: 301 token kelas dari `src/` diuji satu per satu terhadap CSS keluaran — **0 utility hilang**; `.bg-soil`, `.text-ink`, `.rounded-card`, `.bg-husk/50`, `.divide-ink/10`, dan varian `dark:` semuanya ter-generate.
+
+### Vite 6.4.4 → 8.3.4 (Rolldown)
+- Bundler produksi berganti Rollup → **Rolldown (Rust)**; build 3,6 s → **0,42 s**.
+- API `manualChunks` (objek) tidak lagi didukung → diganti `advancedChunks.groups` (pemisahan `vendor-react` & `vendor-icons` tetap).
+- `@vitejs/plugin-react` 4.7 → **6.1.2** (Oxc, tanpa Babel — proyek tidak memakai plugin Babel sehingga transparan).
+- `engines.node` dinaikkan `>=20.19.0` (syarat Vite 8); CI tetap Node 22.
+- `vite-plugin-pwa` 2.0.0 sudah mendukung Vite 8 (tanpa perubahan konfigurasi PWA).
+
+### lucide-react 0.546 → 1.58
+- Seluruh ikon yang dipakai (`AlertTriangle`, `CloudRain`, `CloudSun`, `MapPin`, `RefreshCw`) masih tersedia di v1; tidak ada ikon merek (yang dihapus di v1) di proyek.
+
+### Hasil ukur (sebelum → sesudah)
+- JS total gzip **133,3 → 131,6 kB**; chunk terbesar **127,4 → 65,8 kB** (anggaran 200/150 tetap lolos dengan margin besar).
+- CSS gzip 5,66 → 8,09 kB (konsekuensi wajar v4: `@property`/`color-mix`; total halaman tetap jauh di bawah anggaran 3G).
+- 306 uji hijau · smoke lolos (16 endpoint + 3 penjaga) · render klien terverifikasi (SSR-smoke 5,6 kB HTML, ikon menjadi SVG) · cakupan tetap ~96,6 % baris.
+
+### Catatan penting
+- **Kompatibilitas browser:** Tailwind v4 menargetkan Safari 16.4+ / Chrome 111+ / Firefox 128+ (Maret 2023+). Untuk perangkat kebun yang lebih lama, rilis **v2.0.1** tetap tersedia sebagai tag.
+- **Pemasangan dari lockfile lama:** npm 10.8.2 sempat gagal (`Cannot read properties of null (reading 'edgesOut')`) saat resolusi pertama; cukup sekali `npm install --legacy-peer-deps` — setelah `package-lock.json` baru terbentuk, `npm ci` berjalan normal (terverifikasi).
+
+
 ## [2.0.1] — 2026-10-16 · Pengerasan pasca-audit (18 temuan, tanpa perubahan perilaku fitur)
 
 Audit menyeluruh terhadap upstream `fa33bfb` (10 iterasi riset: OpenSSF Scorecard, OWASP API Security Top 10, OASIS CAP 1.2, advisory Vite/esbuild 2025–2026, probing langsung 8 sumber data). Rilis ini menutup seluruh temuan yang dapat diselesaikan di kode; dua temuan bersifat tugas manusia (tag bertanda tangan, terjemahan Gayo) dan satu advisory dev-only belum punya patch hulu.
