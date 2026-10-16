@@ -34,7 +34,7 @@
 | A-2 | Ambang cakupan uji (`test:coverage`) + laporan tren; mulai dari modul kritis (hazards, alert, thresholds) | ✅ **SELESAI v2.1.0 (2026-10-16)** — `scripts/check-coverage.mjs` + `npm run check:coverage`: gagal bila baris < 95 % / cabang < 80 % / fungsi < 92 %, baseline tren terversi `scripts/coverage-baseline.json` (96,42 / 83,78 / 95,96 pada 321 uji), 15 uji baru, CI memakai gerbang ini (audit F-10 ditutup) |
 | A-3 | Tag rilis bertanda tangan / attestation (`git tag -s` atau Sigstore) | audit F-06 — butuh kunci GPG/identitas penerbit (tugas manusia H-10) |
 | A-4 | ~~Pantau advisory `braces`~~ | ✅ **SELESAI v2.1.0** — rantai dependensinya sudah tidak ada (A-1) |
-| A-5 | Pisahkan `docs/` mengikuti empat kuadran Diátaxis (tutorial/how-to/reference/explanation) bila dokumentasi bertambah | ✅ **SELESAI v2.1.0 (2026-10-16)** — `docs/README.md` (peta + perutean) · `docs/tutorials/` · `docs/how-to/` (7 panduan) · `docs/reference/` (ENDPOINT-API, KONFIGURASI-ENV, SKRIP-NPM + THRESHOLDS/VALIDATION yang dipindah) · `docs/explanation/README.md`; arsip riset tetap di `docs/dev/` (audit F-15 catatan struktur) |
+| A-5 | Pisahkan `docs/` mengikuti empat kuadran Diátaxis (tutorial/how-to/reference/explanation) bila dokumentasi bertambah | ✅ **SELESAI v2.1.0 (2026-10-16)** — `docs/README.md` (peta + perutean) · `docs/tutorials/` · `docs/how-to/` (8 panduan, termasuk aktivasi hotspot FIRMS) · `docs/reference/` (ENDPOINT-API, KONFIGURASI-ENV, SKRIP-NPM + THRESHOLDS/VALIDATION yang dipindah) · `docs/explanation/README.md`; arsip riset tetap di `docs/dev/` (audit F-15 catatan struktur) |
 
 ## 3. Yang sengaja tidak dilakukan
 - Memberi label "peringatan dini resmi" pada keluaran apa pun — mandat BMKG/BPBD/PVMBG.

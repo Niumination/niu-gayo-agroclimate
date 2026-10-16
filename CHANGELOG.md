@@ -35,8 +35,14 @@ Hasil akhir butir **A-1** pada `docs/dev/10-ROADMAP-V3.md`: seluruh lompatan may
 ### Struktur dokumentasi Diátaxis (roadmap A-5 — catatan audit F-15)
 - `docs/` kini diorganisasi menurut **kebutuhan pembaca**: `tutorials/` (belajar), `how-to/` (tugas), `reference/` (tabel), `explanation/` (alasan) — dengan peta & perutean di `docs/README.md`.
 - Berkas dipindah: `docs/THRESHOLDS.md` → **`docs/reference/THRESHOLDS.md`**; `docs/VALIDATION.md` → **`docs/reference/VALIDATION.md`** (tabel riwayat tautan ada di `docs/README.md`; seluruh rujukan di repo — termasuk komentar kode dan teks UI “Tentang data” — sudah diperbarui).
-- Berkas baru: tutorial menjalankan lokal; 7 panduan how-to (deploy produksi, peringatan Telegram, perawatan outlook musiman, perubahan ambang, penambahan sumber data, pengumpulan data validasi, peninjauan label Gayo); 3 referensi baru (endpoint API, variabel `.env`, perintah npm & gerbang); peta kuadran explanation. `docs/dev/` sengaja dibiarkan sebagai arsip riset bernomor.
+- Berkas baru: tutorial menjalankan lokal; 8 panduan how-to (deploy produksi, peringatan Telegram, perawatan outlook musiman, perubahan ambang, penambahan sumber data, pengumpulan data validasi, peninjauan label Gayo); 3 referensi baru (endpoint API, variabel `.env`, perintah npm & gerbang); peta kuadran explanation. `docs/dev/` sengaja dibiarkan sebagai arsip riset bernomor.
 - `AGENTS.md` menetapkan aturan penempatan agar kuadran tidak tercampur pada perubahan berikutnya.
+
+### Hotspot NASA FIRMS aktif (tugas manusia H-1 selesai)
+- Kunci FIRMS diterima & diverifikasi langsung terhadap API pada 16 Okt 2026: `/healthz` `features.firmsKey: true`, `/api/hotspots?location=takengon` → `degraded:false`, `sources.hotspots.state: ok`. Kartu “Bahaya Kebakaran” tidak lagi menampilkan catatan “kunci belum diatur”.
+- **Temuan uji langsung → perbaikan kode:** API FIRMS Area hanya menerima rentang hari **1–5** (`Invalid day range. Expects [1..5]`, HTTP 400). Sebelumnya `.env.example` & dokumen menyebut 1–10, dan nilai di luar rentang akan menggagalkan **semua** sumber sehingga hotspot jatuh *degraded* tanpa sebab yang jelas. Kini `clampFirmsDays()` (`server/firms.js`) menjepit di satu tempat — nilai mustahil → default 2, sebagai ganti kegagalan senyap.
+- **Fixture nyata** (bukan sintetis) ditambahkan dan dipakai uji: `firms-viirs-snpp-gayo-2d.csv` (header saja — keadaan nyata “nol hotspot” di bbox Gayo) dan `firms-viirs-aceh-5d-REAL.csv` (2 deteksi VIIRS nyata di Aceh Utara, di luar radius 50 km). +6 uji (321 → **327**).
+- Dokumentasi: **`docs/how-to/08-aktifkan-hotspot-firms.md`** (pemasangan kunci, verifikasi 3 tingkat, batas 1–5 hari & kuota, arti “nol hotspot”, penyegaran fixture, troubleshooting); `.env.example`, `reference/KONFIGURASI-ENV.md`, `reference/ENDPOINT-API.md`, `dev/04-DATA-SOURCES.md`, `dev/09-DATA-PREP.md` dikoreksi.
 
 ### Catatan penting
 - **Kompatibilitas browser:** Tailwind v4 menargetkan Safari 16.4+ / Chrome 111+ / Firefox 128+ (Maret 2023+). Untuk perangkat kebun yang lebih lama, rilis **v2.0.1** tetap tersedia sebagai tag.

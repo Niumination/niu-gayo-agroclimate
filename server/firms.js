@@ -18,8 +18,24 @@ export const FIRMS_SOURCE = {
   note: SOURCE_NOTE,
 }
 
+/**
+ * Batas API FIRMS Area (terverifikasi langsung 2026-10-16): rentang hari hanya 1..5 —
+ * nilai lain dijawab HTTP 400 "Invalid day range. Expects [1..5]", yang membuat SEMUA
+ * sumber gagal dan hotspot jatuh ke degraded tanpa sebab yang jelas bagi pengguna.
+ * Karena itu nilai env dijepit di sini (satu tempat), bukan hanya didokumentasikan.
+ */
+export const FIRMS_DAYS_MAX = 5
+export const FIRMS_DAYS_DEFAULT = 2
+
+/** Jepit rentang hari ke 1..5; nilai tak masuk akal → default 2 (bukan diam-diam jadi 1). */
+export function clampFirmsDays(days) {
+  const n = Math.round(Number(days))
+  if (!Number.isFinite(n)) return FIRMS_DAYS_DEFAULT
+  return Math.min(FIRMS_DAYS_MAX, Math.max(1, n))
+}
+
 export function buildFirmsUrl(source, { mapKey = FIRMS_MAP_KEY, bbox = FIRMS_BBOX, days = FIRMS_DAYS, api = FIRMS_API } = {}) {
-  return `${api}/${mapKey}/${source}/${bbox}/${days}`
+  return `${api}/${mapKey}/${source}/${bbox}/${clampFirmsDays(days)}`
 }
 
 async function getText(url, fetchImpl, label) {
@@ -40,7 +56,7 @@ export async function getHotspots({ fetchImpl = fetch, now = new Date(), mapKey 
     retrievedAt,
     source: FIRMS_SOURCE,
     bbox,
-    days,
+    days: clampFirmsDays(days),
     window: { mainHours: HOTSPOT.windowHours, trendHours: HOTSPOT.trendHours },
     thresholds: { bahayaKm: HOTSPOT.radiusBahayaKm, waspadaKm: HOTSPOT.radiusWaspadaKm, infoKm: HOTSPOT.radiusInfoKm, frpIntenseMw: HOTSPOT.frpIntenseMw },
   }

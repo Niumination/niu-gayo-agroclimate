@@ -17,7 +17,7 @@ Kriteria pemilihan: gratis · publik · dapat diotomasi (JSON/CSV/XML) · lisens
 |---|---|---|---|---|---|---|
 | **Open-Meteo Air Quality** (CAMS global) | `air-quality-api.open-meteo.com/v1/air-quality?domains=cams_global` | `pm2_5, pm10, carbon_monoxide, aerosol_optical_depth, dust, us_aqi, european_aqi` current + hourly 5 hari | 0,4° (~45 km), 3-jam-an diinterpolasi jam-an; CAMS global update 12 jam | CC BY 4.0; 10.000/hari, 600/menit | ✅ 14 Okt: PM2.5 17,1 · AOD 1,06 · CO 401 | **Estimasi model, bukan pengukuran**; AOD/CO pendamping |
 | **Open-Meteo Forecast `best_match`** | `api.open-meteo.com/v1/forecast` (tanpa `models=`) | `visibility` (m), `cape` | jam-an | idem | ✅ 4.140–8.460 m | ECMWF tidak punya `visibility` |
-| **NASA FIRMS Area API** | `firms.modaps.eosdis.nasa.gov/api/area/csv/{MAP_KEY}/{VIIRS_SNPP_NRT\|VIIRS_NOAA20_NRT\|VIIRS_NOAA21_NRT\|MODIS_NRT}/{bbox}/{days}` | lat, lon, bright_ti4, frp, confidence, acq_date/time, daynight | VIIRS 375 m / MODIS 1 km; NRT ≈ 3 jam setelah lintasan | Gratis; MAP_KEY; 5.000 transaksi/10 menit | ⚠️ butuh kunci (`Invalid MAP_KEY` tanpa kunci) | bbox Aceh Tengah + 50 km ≈ `96.1,3.9,97.5,5.2` |
+| **NASA FIRMS Area API** | `firms.modaps.eosdis.nasa.gov/api/area/csv/{MAP_KEY}/{VIIRS_SNPP_NRT\|VIIRS_NOAA20_NRT\|VIIRS_NOAA21_NRT\|MODIS_NRT}/{bbox}/{days}` | lat, lon, bright_ti4, frp, confidence, acq_date/time, daynight | VIIRS 375 m / MODIS 1 km; NRT ≈ 3 jam setelah lintasan | Gratis; MAP_KEY; 5.000 transaksi/10 menit; **`days` 1–5 saja** (di luar itu HTTP 400 — dijepit kode sejak v2.1.0) | ✅ 16 Okt 2026: kunci diperoleh & diverifikasi (kontrol negatif kunci salah → `Invalid MAP_KEY`) | bbox Aceh Tengah + 50 km ≈ `96.1,3.9,97.5,5.2` |
 | **FWI System in-house** | dihitung dari Open-Meteo ECMWF harian | FFMC, DMC, DC, ISI, BUI, FWI | harian (jam 12–13 WIB) | — | — | Spin-up via Open-Meteo **Archive API** (ERA5) 60 hari |
 | **Open-Meteo Archive (ERA5-Land/ERA5)** | `archive-api.open-meteo.com/v1/archive?daily=precipitation_sum,temperature_2m_max,temperature_2m_min,relative_humidity_2m_mean,wind_speed_10m_max,et0_fao_evapotranspiration` | Deret harian historis | 0,1° (ERA5-Land), tertinggal ~2–5 hari | idem | ✅ 14 Okt: 73 hari (1 Agu–12 Okt 2026) lengkap; Agu 74,7 mm, Sep 245,6 mm | Spin-up FWI 60 hari, HTH, neraca air, SPI (baseline 1991–2020) |
 | SiPongi KLHK | `sipongi.menlhk.go.id` (UI, XLSX/KMZ) | Hotspot 4 satelit + status lahan | 30 menit | Publik, tanpa API | — | **Rujukan/atribusi**, bukan sumber mesin |
@@ -63,7 +63,7 @@ Lihat `08-STAKEHOLDERS-GOVERNANCE.md` §4 (Open-Meteo CC BY 4.0; FIRMS bebas; BM
 | Kelompok | Status |
 |---|---|
 | Open-Meteo (AQ, best_match, GFS, ECMWF konvektif, Archive, Flood), BMKG gempa ×3, USGS, MAGMA HTML, PetaBencana, BMKG nowcast RSS | ✅ Fixture nyata tersimpan di `tests/fixtures/hazards/`; skrip pembaru `scripts/fetch-hazard-fixtures.mjs` |
-| NASA FIRMS | 🔑 Menunggu `FIRMS_MAP_KEY` (tugas manusia H-1); contoh sintetis untuk parser tersedia |
+| NASA FIRMS | ✅ **16 Okt 2026: kunci diterima & diverifikasi** (H-1 selesai) — `/api/hotspots` `degraded:false`, sumber `state: ok`; bbox Gayo saat itu nol deteksi (normal); fixture nyata tersimpan (nol-hotspot + 2 deteksi Aceh) |
 | FWI in-house | ✅ Prototipe = dataset uji resmi `cffdrs` 48 hari (selisih ≤ 0,005) |
 | GADM kecamatan | ✅ `src/data/geo/kecamatan.json` (21 kB) |
 | Data statis kurasi (kesehatan, iklim, riwayat, kontak) | ✅ Draf di `src/data/hazards/`; kontak kecamatan & teks Gayo menunggu pengisian manusia |

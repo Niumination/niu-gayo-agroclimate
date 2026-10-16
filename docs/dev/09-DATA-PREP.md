@@ -16,7 +16,9 @@
 | Konteks iklim musiman | `src/data/hazards/climateOutlook.json` | El Niño sangat kuat (+3,44 dasarian; JAS +2,70), IOD +0,935, kemarau diperpanjang; `validUntil` 2026-11-10 | Test struktur; **perlu pembaruan tiap dasarian** |
 | Riwayat kejadian tambahan | `src/data/hazards/disasterHistory.additions.json` | 3 karhutla 2026 (Ketol, Celala, Wih Pesam), status tanggap darurat banjir Des 2025, Burni Telong Level III→II (3 Jan 2026), gempa Gayo 2013 M6,1; skema `hazard`, `emergencyStatus`, `areaHa`, `volcanoLevel`, `magnitude` | Test skema & lokasi; **belum digabung** ke file utama (langkah di `_meta.mergeSteps`) |
 | Kerangka kontak | `src/data/hazards/contacts.hazards.js` | Kontak nasional/kabupaten terverifikasi (BPBD 112/(0643) 21113, 112, BMKG 196, Halo Kemenkes 1500567) + slot Puskesmas/posko per kecamatan (kosong) + `contactsFor()` yang hanya menampilkan entri terverifikasi | Test |
-| Contoh FIRMS **sintetis** | `tests/fixtures/hazards/firms-viirs-sample-SYNTHETIC.csv` | Header resmi Area API (14 kolom) + 4 baris rekaan untuk test parser — **bukan data nyata** | — |
+| Contoh FIRMS **sintetis** | `tests/fixtures/hazards/firms-viirs-sample-SYNTHETIC.csv` | Header resmi Area API (14 kolom) + 4 baris rekaan untuk test parser — **bukan data nyata** (dipertahankan: uji lama bergantung pada nilai eksaknya) | — |
+| FIRMS **nyata — nol hotspot** | `tests/fixtures/hazards/firms-viirs-snpp-gayo-2d.csv` | Respons nyata bbox Gayo 2 hari (16 Okt 2026): header saja, **0 deteksi** — mengunci perilaku `degraded:false` + level `rendah`, yaitu keadaan “kunci aktif tapi tidak ada api” | — |
+| FIRMS **nyata — 2 deteksi** | `tests/fixtures/hazards/firms-viirs-aceh-5d-REAL.csv` | Respons nyata bbox Aceh 5 hari (16 Okt 2026): 2 baris VIIRS di Aceh Utara (> 50 km dari plato) — uji parser atas keluaran sungguhan + aturan radius/jendela | — |
 | Template env | `.env.example` | Semua variabel lama + baru (`FIRMS_MAP_KEY`, TTL per sumber, VAPID, `SENSOR_TOKENS`, `HAZARD_ARCHIVE_DIR`) | — |
 
 Hasil `npm test`: **98 lulus** (91 lama + 7 test aset baru). Tidak ada kode produksi yang berubah; file baru belum di-*import* oleh aplikasi.
@@ -25,7 +27,7 @@ Hasil `npm test`: **98 lulus** (91 lama + 7 test aset baru). Tidak ada kode prod
 
 | # | Tugas | Siapa | Kapan | Catatan |
 |---|---|---|---|---|
-| H-1 | **Daftar FIRMS MAP_KEY** (gratis, email) → isi `FIRMS_MAP_KEY` di env server; jalankan `node scripts/fetch-hazard-fixtures.mjs` untuk fixture hotspot nyata | Maintainer | **Sekarang** — modul hotspot sudah terpasang (Sprint 2) dan berjalan *degraded* | Tanpa ini: FWI/HTH tetap jalan, blok hotspot di kartu "Bahaya Kebakaran" menampilkan catatan "kunci belum diatur"; verifikasi setelah diisi: `curl -s 'http://127.0.0.1:7455/api/hotspots?location=takengon' \| head -c 400` harus `"degraded":false` |
+| H-1 | ~~**Daftar FIRMS MAP_KEY**~~ **✅ SELESAI 16 Okt 2026** — kunci diperoleh, diterapkan di server, dan **diverifikasi langsung**: `/healthz` `features.firmsKey: true`, `/api/hotspots` `degraded:false`, sumber `state: ok`. Prosedur: `docs/how-to/08-aktifkan-hotspot-firms.md` | Maintainer | — | Temuan uji langsung: API FIRMS Area membatasi rentang hari **1–5** (di luar itu HTTP 400) → kode v2.1.0 menjepit otomatis (`clampFirmsDays`) dan `.env.example`/`KONFIGURASI-ENV.md` dikoreksi dari 1–10 |
 | H-2 | **Verifikasi 4 koordinat sentra** yang jatuh di luar kecamatan nominal (§3) → perbarui `src/data/locations.js` | Maintainer + warga lokal | Sebelum peta & radius FIRMS | Pakai lokasi kampung/ibu kota kecamatan, bukan centroid |
 | H-3 | **Isi & verifikasi nomor Puskesmas/posko per kecamatan** dan IGD RSUD Datu Beru, Damkar, Manggala Agni, Pos PGA | Maintainer (telepon/situs Dinkes) | Fase 1 (kartu asap) | UI sudah dirancang hanya menampilkan `verified: true` |
 | H-4 | **Terjemahan Gayo** untuk `healthAdvice.json`, `climateOutlook.json` (`gay: null`) | Penutur asli | Sebelum rilis Fase 1 | R-06 di risk register |

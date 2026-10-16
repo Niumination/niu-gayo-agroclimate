@@ -28,6 +28,7 @@ Dua direktori di luar empat kuadran itu adalah **arsip & aset**, bukan bacaan:
 | menambah sumber data atau endpoint baru | [how-to/05-tambah-sumber-data.md](how-to/05-tambah-sumber-data.md) |
 | menyiapkan data untuk validasi musiman (POD/FAR) | [how-to/06-kumpulkan-data-validasi.md](how-to/06-kumpulkan-data-validasi.md) |
 | meninjau label bahasa Gayo `[?]` bersama penutur asli | [how-to/07-tinjau-label-gayo.md](how-to/07-tinjau-label-gayo.md) |
+| mengaktifkan & memverifikasi hotspot NASA FIRMS (kunci H-1) | [how-to/08-aktifkan-hotspot-firms.md](how-to/08-aktifkan-hotspot-firms.md) |
 | mencari daftar endpoint API | [reference/ENDPOINT-API.md](reference/ENDPOINT-API.md) |
 | mencari arti variabel `.env` | [reference/KONFIGURASI-ENV.md](reference/KONFIGURASI-ENV.md) |
 | mencari daftar perintah npm & gerbang CI | [reference/SKRIP-NPM.md](reference/SKRIP-NPM.md) |

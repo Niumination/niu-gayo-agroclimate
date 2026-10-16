@@ -47,7 +47,7 @@
 | `QUAKE_RADIUS_KM` | `300` | radius relevansi gempa per sentra |
 | `FIRMS_BBOX` | `96.1,3.9,97.5,5.2` | kotak batas hotspot |
 | `FIRMS_SOURCES` | `VIIRS_SNPP_NRT,VIIRS_NOAA20_NRT,VIIRS_NOAA21_NRT,MODIS_NRT` | sensor FIRMS |
-| `FIRMS_DAYS` | `2` | jendela hari hotspot (1–10) |
+| `FIRMS_DAYS` | `2` | jendela hari hotspot — **1–5** (batas API FIRMS Area; di luar rentang dijepit otomatis oleh `clampFirmsDays`, `server/firms.js`) |
 | `MAGMA_STALE_DAYS` | `7` | umur maksimum nilai MAGMA tersimpan yang boleh dipakai saat fetch gagal |
 | `VOLCANO_OVERRIDE_PATH` | *(kosong)* | JSON manual `{burniTelong:{level,asOf,source,force}}` bila parser MAGMA berubah |
 | `HAZARD_ARCHIVE_DIR` | *(kosong = `server/data/hazard-archive`)* | lokasi arsip harian untuk validasi |

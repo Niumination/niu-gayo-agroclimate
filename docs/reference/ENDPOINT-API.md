@@ -19,7 +19,7 @@ Semua endpoint menerima **GET** kecuali disebut lain. `location` = id sentra dar
 | Endpoint | Isi | TTL cache | Catatan |
 |---|---|---|---|
 | `/api/air-quality?location=<id>\|all` | ISPU estimasi CAMS + proksi kabut asap + anjuran | `AQ_TTL_MIN` (60) | `all` = ringkasan 15 sentra (dipakai peta) |
-| `/api/hotspots?location=<id>` | hotspot FIRMS 48 jam ≤ 50 km dari sentra | `FIRMS_TTL_MIN` (30) | *degraded* tanpa `FIRMS_MAP_KEY` |
+| `/api/hotspots?location=<id>` | hotspot FIRMS 48 jam ≤ 50 km dari sentra | `FIRMS_TTL_MIN` (30) | *degraded* tanpa `FIRMS_MAP_KEY`; **0 hotspot = `degraded:false`** + `summary` berlevel `rendah` (bukan error); `?all` memuat `counts` + `perLocation` 15 sentra |
 | `/api/fire-danger?location=<id>\|all` | kode FWI hari ini + 7 hari + proyeksi D+1–2 + HTH | `ARCHIVE_TTL_MIN` (720) | arsip ERA5 tertinggal 1–2 hari |
 | `/api/drought?location=<id>\|all` | HTH, neraca air 30 hari, deret hujan, **SPI-1/3**, VPD 7 hari | `ARCHIVE_TTL_MIN` | SPI dari `server/clim/spi-baseline.json` |
 | `/api/quakes[?location=<id>]` | gempa BMKG relevan (≤ 300 km / Aceh) + jarak & MMI indikatif | `QUAKE_TTL_MIN` (2) | radius: `QUAKE_RADIUS_KM` (300) |

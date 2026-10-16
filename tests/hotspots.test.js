@@ -6,6 +6,8 @@ import { LOCATIONS } from '../src/data/locations.js'
 import { HOTSPOT } from '../src/domain/thresholds.js'
 
 const viirsCsv = fs.readFileSync(new URL('./fixtures/hazards/firms-viirs-sample-SYNTHETIC.csv', import.meta.url), 'utf8')
+// Respons NYATA (VIIRS S-NPP, bbox Aceh, 5 hari, diambil 16 Okt 2026 dengan kunci sungguhan):
+const acehRealCsv = fs.readFileSync(new URL('./fixtures/hazards/firms-viirs-aceh-5d-REAL.csv', import.meta.url), 'utf8')
 const modisCsv = [
   'latitude,longitude,brightness,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_t31,frp,daynight',
   '4.6400,96.8600,312.5,1.1,1.0,2026-10-14,0355,Terra,MODIS,82,6.1NRT,290.2,25.3,D',
@@ -129,4 +131,34 @@ test('hotspotLevel: ≤ 10 km bahaya · ≤ 25 km waspada · lainnya rendah', ()
   assert.equal(hotspotLevel({ within10km24h: 0, within25km24h: 0, within50km24h: 9 }), 'rendah')
   assert.equal(hotspotLevel(null), 'rendah')
   assert.equal(HOTSPOT.radiusBahayaKm, 10)
+})
+
+test('parseFirmsCsv: respons NYATA Aceh (2 baris VIIRS) — kolom, keyakinan, waktu UTC terbaca utuh', () => {
+  const rows = parseFirmsCsv(acehRealCsv, { source: 'VIIRS_SNPP_NRT' })
+  assert.equal(rows.length, 2)
+  const [a, b] = rows
+  assert.equal(a.acqDate, '2026-10-13')
+  assert.equal(a.acqAt, '2026-10-13T18:58:00.000Z')
+  assert.equal(a.confidence, 'n')
+  assert.equal(a.brightness, 305.45)
+  assert.equal(a.frp, 0.51)
+  assert.equal(a.satelliteLabel, 'Suomi NPP')
+  assert.equal(a.daynight, 'N')
+  assert.equal(b.acqAt, '2026-10-15T20:02:00.000Z')
+  assert.equal(b.frp, 1.8)
+  assert.ok(rows.every(passesConfidence), 'keyakinan nominal lolos saringan (bukan low)')
+})
+
+test('mapHotspots: baris nyata jauh dari plato — jendela 24/48 jam tetap dihormati, ringkasan tetap nol', () => {
+  const rows = parseFirmsCsv(acehRealCsv, { source: 'VIIRS_SNPP_NRT' })
+  const mapped = mapHotspots(rows, LOCATIONS, { now: new Date('2026-10-16T12:00:00Z') })
+  assert.equal(mapped.counts.total, 2)
+  assert.equal(mapped.counts.accepted, 2)
+  assert.equal(mapped.counts.inWindow, 1) // baris 13 Okt (≈65 jam) di luar jendela 48 jam
+  assert.equal(mapped.counts.last24h, 1)  // baris 15 Okt 20.02 UTC (≈16 jam)
+  const tk = mapped.perLocation.takengon
+  assert.equal(tk.within50km48h, 0)
+  assert.equal(tk.within25km48h, 0)
+  assert.equal(tk.level, 'rendah')
+  assert.ok(mapped.hotspots[0].nearest.km > 50 && mapped.hotspots[0].nearest.km < 150, `jarak wajar (${mapped.hotspots[0].nearest.km} km)`)
 })
