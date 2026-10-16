@@ -9,12 +9,13 @@
 | `npm run dev` | Vite dev server (:5188) | UI + proxy `/api` ke `127.0.0.1:7455` |
 | `npm run build` | Vite 8 / Rolldown → `dist/` | bundle produksi, ± 0,5 detik |
 | `npm run preview` | Vite preview | menyajikan `dist/` (uji PWA/offline) |
-| `npm test` | `node --test tests/*.test.js` | **321 uji**, semua panggilan jaringan di-mock |
+| `npm test` | `node --test tests/*.test.js` | **338 uji**, semua panggilan jaringan di-mock |
 | `npm run test:coverage` | sama + `--experimental-test-coverage` | laporan cakupan mentah (tanpa ambang) |
 | **`npm run check:coverage`** | `scripts/check-coverage.mjs` | **gerbang cakupan**: baris ≥ 95 %, cabang ≥ 80 %, fungsi ≥ 92 % + tren vs baseline |
 | **`npm run check:bundle`** | `scripts/check-bundle.mjs` | JS utama ≤ 150 kB gzip · total ≤ 200 kB (atur lewat `BUNDLE_MAX_KB`/`BUNDLE_TOTAL_MAX_KB`) |
 | **`npm run check:outlook`** | `scripts/check-outlook.mjs` | **gagal** bila `src/data/hazards/climateOutlook.json` lewat `validUntil`; **peringatan** bila sisa ≤ 14 hari (`--warn-days N`) |
 | `npm run check:i18n` | `scripts/check-i18n.mjs` | inventaris placeholder Gayo `[?]` (kini **52**); `--strict` → keluar 1 bila masih ada |
+| `npm run check:contrast` | `scripts/check-contrast.mjs` | **gerbang kontras desain**: nilai pasangan token WCAG 2.2 AA dari `src/index.css` + pindai utilitas teks beropasitas di `src/` + hitungan teks < 16 px; `--strict` → keluar 1 bila ada temuan (pakai setelah paket P1–P4 di [`docs/dev/11-RENCANA-DESIGN-UX.md`](../dev/11-RENCANA-DESIGN-UX.md) selesai) |
 | **`npm run smoke`** | `scripts/smoke.mjs` | menyalakan server di port acak 7600–7899, memeriksa 16 endpoint GET + 3 penjaga (header keamanan, cache/flush, CAP); gagal hanya pada 5xx/non-JSON |
 | `npm run validate:season` | `scripts/validate-season.mjs` | POD/FAR dari arsip harian + kejadian terkurasi → lihat [VALIDATION.md](VALIDATION.md) |
 | `npm run clim:flood` | `scripts/build-flood-clim.mjs` | **jarang** (1×/tahun) — GloFAS 1984–tahun lalu → `server/clim/flood-clim.json` |
@@ -41,9 +42,11 @@
 
 ```
 npm ci → npm test → npm run check:coverage → npm audit --omit=dev --audit-level=high
-      → npm run check:outlook → npm run check:i18n → npm run build → npm run check:bundle → npm run smoke
+      → npm run check:outlook → npm run check:i18n → npm run check:contrast (informatif)
+      → npm run build → npm run check:bundle → npm run smoke
 ```
 
-Angka acuan saat rilis v2.1.0 (semua hijau): 321 uji · cakupan 96,42/83,78/95,96 · bundle 65,42 kB gzip (utama) & 131,6 kB (total) · CSS 8,10 kB gzip · outlook berlaku sampai 2026-11-12 · `npm audit` **0**.
+Angka acuan saat rilis v2.1.0 (semua hijau): 327 uji · cakupan 96,46/83,86/96,00 · bundle 65,8 kB gzip (utama) & 131,6 kB (total) · CSS 8,09 kB gzip · outlook berlaku sampai 2026-11-12 · `npm audit` **0**.
+Angka setelah fase design dokumen (praktik P6, 16 Okt 2026): **338 uji** · cakupan 95,68/84,05/95,88 % · 262 temuan kontras dilaporkan (informatif, turun ke 0 pada paket P1).
 
 Lihat juga: [ENDPOINT-API.md](ENDPOINT-API.md) · [KONFIGURASI-ENV.md](KONFIGURASI-ENV.md) · [`AGENTS.md`](../../AGENTS.md)

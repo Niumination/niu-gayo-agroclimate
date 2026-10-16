@@ -1,5 +1,20 @@
 # Changelog
 
+## [Belum dirilis] — Fase design/frontend/UX: dokumen rencana + gerbang kontras (P1–P6 belum diterapkan)
+
+Pembukaan fase penyempurnaan tampilan setelah v2.1.0 sinkron di upstream (`main` = `f9f8058`). Perubahan pada rilis ini **belum mengubah UI**; isinya audit, rencana, dan pengaman agar perbaikan berikutnya terukur.
+
+### Dokumen rencana (audit 26 komponen + riset 12 klaster + log 50 putaran)
+- **`docs/dev/11-RENCANA-DESIGN-UX.md`**: temuan A-1…A-9 (262 pemakaian teks < 4,5:1, tipografi 10–13 px, target sentuh, fokus, semantik tab, `aria-live`, motion, area aman, keadaan menunggu/basi), riset R-1…R-12 dengan implikasi, serta **paket kerja P1–P6** lengkap dengan berkas sasaran dan kriteria terima: P1 token & kontras · P2 aksesibilitas interaksi · P3 tipografi & font · P4 keadaan menunggu/kosong/basi/gagal · P5 gerak & area aman · P6 pengaman & tata kelola.
+- **`docs/reference/DESIGN-TOKENS.md`**: spesifikasi token siap-terap — 8 token teks (4 terang/4 gelap) yang lulus 4,5:1 **di tiga permukaan**, ramp level bahaya + tint + garis aksen, 5 seri grafik untuk dua tema, skala tipografi `caption/label/body-sm/body`, tabel durasi motion, aturan target sentuh/fokus/area aman, serta tabel pemetaan 12 opasitas lama → token baru.
+- Angka kontras dihitung dengan rumus WCAG 2.2 dan **disimulasikan terhadap buta warna (protanopia/deuteranopia)**; tiga pasangan seri grafik berjarak ΔE < 15 sehingga wajib dibedakan pola/penanda/label, bukan warna saja.
+
+### Gerbang kontras otomatis (tanpa browser)
+- **`scripts/check-contrast.mjs`** (`npm run check:contrast`): membaca token `@theme` dari `src/index.css`, menilai 23 pasangan peran terhadap ambang WCAG 2.2 AA (teks 4,5:1 · non-teks 3:1), memindai utilitas teks beropasitas di `src/` (kini **262 temuan di 21 berkas**), dan menghitung pemakaian teks < 16 px. Opsi `--strict`, `--json`, `--all`, `--css`, `--dir`.
+- **11 uji baru** (`tests/checkContrast.test.js`) → suite **338 uji**; cakupan 95,68 / 84,05 / 95,88 % (ambang 95/80/92).
+- CI: langkah *Gerbang kontras desain* ditambahkan dalam mode **informatif** (setara `check:i18n`) agar build tetap hijau sampai P1–P4 diterapkan; setelahnya diubah menjadi `--strict`.
+- Dokumen diperbarui: `docs/README.md`, `docs/dev/README.md`, `docs/reference/SKRIP-NPM.md`, `AGENTS.md`.
+
 ## [2.1.0] — 2026-10-16 · Migrasi toolchain mayor (A-1, menutup advisori `braces`) + gerbang cakupan uji (A-2)
 
 Hasil akhir butir **A-1** pada `docs/dev/10-ROADMAP-V3.md`: seluruh lompatan mayor yang ditunda saat audit 2.0.1 dikerjakan sekaligus, dan `npm audit` kini **0 kerentanan** (sebelumnya 5 high dev-only).

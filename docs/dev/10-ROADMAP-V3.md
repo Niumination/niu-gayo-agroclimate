@@ -35,6 +35,12 @@
 | A-3 | Tag rilis bertanda tangan / attestation (`git tag -s` atau Sigstore) | audit F-06 — butuh kunci GPG/identitas penerbit (tugas manusia H-10) |
 | A-4 | ~~Pantau advisory `braces`~~ | ✅ **SELESAI v2.1.0** — rantai dependensinya sudah tidak ada (A-1) |
 | A-5 | Pisahkan `docs/` mengikuti empat kuadran Diátaxis (tutorial/how-to/reference/explanation) bila dokumentasi bertambah | ✅ **SELESAI v2.1.0 (2026-10-16)** — `docs/README.md` (peta + perutean) · `docs/tutorials/` · `docs/how-to/` (8 panduan, termasuk aktivasi hotspot FIRMS) · `docs/reference/` (ENDPOINT-API, KONFIGURASI-ENV, SKRIP-NPM + THRESHOLDS/VALIDATION yang dipindah) · `docs/explanation/README.md`; arsip riset tetap di `docs/dev/` (audit F-15 catatan struktur) |
+| **D-1** | Token semantik + nol teks < 4,5:1 (262 pemakaian opasitas) | ✅ **TERPASANG 2026-10-16** — nilai token terukur di [`docs/reference/DESIGN-TOKENS.md`](../reference/DESIGN-TOKENS.md); gerbang `npm run check:contrast` (+11 uji) berjalan **informatif** di CI; penerapan ke komponen = paket **P1** [`docs/dev/11-RENCANA-DESIGN-UX.md`](11-RENCANA-DESIGN-UX.md) |
+| **D-2** | Aksesibilitas interaksi: target 44 px, fokus terlihat, semantik tab, `aria-live`, skip-link | paket **P2** — 12/24 tombol sudah 44 px, 0 aturan `focus:` eksplisit, 0 `aria-live` |
+| **D-3** | Skala tipografi (teks isi ≥ 16 px) + self-host JetBrains Mono subset | paket **P3** — saat ini 100× teks 11 px & 7× 10 px; font hanya dideklarasikan, tidak termuat |
+| **D-4** | Keadaan menunggu/kosong/basi/gagal (skeleton, ajakan tindakan, `aria-live`) | paket **P4** — status memuat masih teks polos; label basi tanpa tombol muat ulang |
+| **D-5** | Gerak (≤ 300 ms, umpan balik tekan) & area aman (`viewport-fit=cover`) | paket **P5** — `env(safe-area-inset-bottom)` saat ini bernilai 0 |
+| **D-6** | Pengaman: `check:contrast --strict` + ESLint `jsx-a11y` + uji browser manual (pa11y/axe) | paket **P6** |
 
 ## 3. Yang sengaja tidak dilakukan
 - Memberi label "peringatan dini resmi" pada keluaran apa pun — mandat BMKG/BPBD/PVMBG.

@@ -13,7 +13,7 @@ Dua direktori di luar empat kuadran itu adalah **arsip & aset**, bukan bacaan:
 
 | Lokasi | Isi |
 |---|---|
-| [`dev/`](dev/README.md) | arsip riset & perencanaan **10 iterasi** (14–15 Okt 2026): audit repo, log riset, PRD, roadmap 4 fase, katalog sumber data, arsitektur/ADR-12…26, ambang multi-bahaya, risk register, tata kelola, penyiapan data, roadmap v3. Bernomor & bertanggal — diperlakukan sebagai catatan sejarah, bukan dokumentasi hidup. |
+| [`dev/`](dev/README.md) | arsip riset & perencanaan **10 iterasi** (14–15 Okt 2026): audit repo, log riset, PRD, roadmap 4 fase, katalog sumber data, arsitektur/ADR-12…26, ambang multi-bahaya, risk register, tata kelola, penyiapan data, roadmap v3 — ditambah **[11 · Rencana Design/Frontend/UX](dev/11-RENCANA-DESIGN-UX.md)** (16 Okt 2026, audit 26 komponen + 50 putaran iterasi; acuan paket P1–P6). Bernomor & bertanggal — diperlakukan sebagai catatan sejarah, bukan dokumentasi hidup. |
 | [`templates/`](templates/) & [`validation/`](validation/) | draf surat pengantar BPBD; format & hasil validasi musiman |
 
 ## Mulai dari sini
@@ -32,6 +32,7 @@ Dua direktori di luar empat kuadran itu adalah **arsip & aset**, bukan bacaan:
 | mencari daftar endpoint API | [reference/ENDPOINT-API.md](reference/ENDPOINT-API.md) |
 | mencari arti variabel `.env` | [reference/KONFIGURASI-ENV.md](reference/KONFIGURASI-ENV.md) |
 | mencari daftar perintah npm & gerbang CI | [reference/SKRIP-NPM.md](reference/SKRIP-NPM.md) |
+| menyempurnakan tampilan, kontras, atau aksesibilitas | [reference/DESIGN-TOKENS.md](reference/DESIGN-TOKENS.md) · [dev/11-RENCANA-DESIGN-UX.md](dev/11-RENCANA-DESIGN-UX.md) |
 | mencari angka ambang & rumus per bahaya | [reference/THRESHOLDS.md](reference/THRESHOLDS.md) |
 | mengukur apakah indeks bahaya benar di lapangan | [reference/VALIDATION.md](reference/VALIDATION.md) |
 | memahami alasan di balik desain (arsitektur, CAP, anti-kebisingan) | [explanation/README.md](explanation/README.md) |

@@ -46,6 +46,11 @@ jobs:
       - name: Inventaris i18n Gayo
         run: npm run check:i18n
 
+      # Fase design/UX: kontras token & utilitas opasitas (informasi sampai paket P1–P4 selesai;
+      # ubah ke `npm run check:contrast -- --strict` setelah audit desain bersih agar regresi tertangkap)
+      - name: Gerbang kontras desain (informative sampai P1 selesai)
+        run: npm run check:contrast
+
       - name: Build production bundle
         run: npm run build
 

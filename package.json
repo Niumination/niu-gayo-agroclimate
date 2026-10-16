@@ -16,6 +16,7 @@
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:outlook": "node scripts/check-outlook.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
+    "check:contrast": "node scripts/check-contrast.mjs",
     "smoke": "node scripts/smoke.mjs",
     "validate:season": "node scripts/validate-season.mjs",
     "clim:flood": "node scripts/build-flood-clim.mjs",
