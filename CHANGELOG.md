@@ -20,7 +20,7 @@ Audit menyeluruh terhadap upstream `fa33bfb` (10 iterasi riset: OpenSSF Scorecar
 
 ### Struktur & keterlacakan
 - **F-09** Routing dipisah ke `server/routes.js` (handler memakai konteks `ctx` eksplisit); `server/index.js` 405 → 163 baris.
-- **F-10** `npm run test:coverage` + langkah CI (cakupan dilaporkan; ambang menyusul). Suite kini **295 uji** (9 uji baru untuk `check-outlook` & `check-i18n`).
+- **F-10** `npm run test:coverage` + langkah CI (cakupan dilaporkan; ambang menyusul). Suite kini **306 uji** (20 uji baru: `check-outlook`, `check-i18n`, lapisan `routes`, `MAGMA_STALE_DAYS`, `HAZARD_ARCHIVE_DIR`); cakupan terukur 96,6% baris.
 - **F-16** `npm run check:i18n` — inventaris 52 placeholder label Gayo (tugas manusia H-4; jalankan `--strict` setelah selesai).
 - **F-15** `/api/cache/flush` didokumentasikan di README.
 - **F-05** `engines.node >= 20`. **F-06** tag rilis bertanda tangan: tugas manusia (butuh kunci GPG). **F-07** hutang mayor (Tailwind 4, Vite 8, plugin-react 6, lucide 1.x) dijadwalkan v2.1; Dependabot sengaja mengabaikan lompatan mayor.

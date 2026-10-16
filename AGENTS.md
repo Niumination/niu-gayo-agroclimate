@@ -25,7 +25,7 @@ Niu Gayo Agro-Climate adalah dashboard web presisi tinggi untuk memantau mikrokl
 
 ## Verification Commands
 
-- Test: `npm test` (node test runner; 295 test, semua fetch upstream di-mock)
+- Test: `npm test` (node test runner; 306 test, semua fetch upstream di-mock)
 - Cakupan: `npm run test:coverage` (laporan cakupan node:test; informatif, belum jadi gerbang)
 - Kesegaran outlook: `npm run check:outlook` (gagal bila `climateOutlook.json` kedaluwarsa; perbarui dari BMKG/NOAA CPC)
 - Inventaris Gayo: `npm run check:i18n` (daftar label `[?]` yang menunggu tinjauan penutur asli — tugas manusia H-4)

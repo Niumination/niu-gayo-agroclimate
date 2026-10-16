@@ -66,6 +66,25 @@ try {
   const b = await r.json()
   console.log(`${r.ok ? '✓' : '✗'} ${r.status} POST /api/alerts/run?dryRun=1 → keputusan=${b.decided?.length ?? '?'} terkirim=${b.summary?.sent ?? '?'}`)
   if (!r.ok) failed++
+
+  // Audit 2026-10 (F-13): header keamanan wajib ada pada semua respons.
+  const hz = await fetch(`${base}/healthz`)
+  const needHeaders = { 'x-content-type-options': 'nosniff', 'x-frame-options': 'DENY', 'referrer-policy': 'no-referrer' }
+  const missing = Object.entries(needHeaders).filter(([k, v]) => hz.headers.get(k) !== v)
+  console.log(`${missing.length ? '✗' : '✓'} header keamanan ${missing.length ? `HILANG: ${missing.map(([k]) => k).join(', ')}` : 'nosniff + DENY + no-referrer ada'}`)
+  if (missing.length) failed++
+
+  // Operasional: POST /api/cache/flush harus 200 { ok: true }.
+  const fl = await fetch(`${base}/api/cache/flush`, { method: 'POST' })
+  const flb = await fl.json().catch(() => ({}))
+  console.log(`${fl.ok && flb.ok ? '✓' : '✗'} ${fl.status} POST /api/cache/flush`)
+  if (!(fl.ok && flb.ok)) failed++
+
+  // CAP XML: 404 (feed kosong) atau 200 XML — keduanya sah; bila 200 wajib bertipe cap+xml (F-13).
+  const cap = await fetch(`${base}/api/alerts/feed?hours=1&format=cap`)
+  const okCap = cap.status === 404 || (cap.status === 200 && (cap.headers.get('content-type') ?? '').includes('cap+xml'))
+  console.log(`${okCap ? '✓' : '✗'} ${cap.status} GET /api/alerts/feed?format=cap`)
+  if (!okCap) failed++
 } catch (err) {
   console.error(err.message)
   failed++
