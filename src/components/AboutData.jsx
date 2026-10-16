@@ -63,7 +63,7 @@ export default function AboutData({ open, onClose }) {
               <li><span className="inline-block w-2 h-2 rounded-full bg-cherry mr-2 animate-pulse" />Ekstrem — ambang resmi terlampaui jauh; prioritaskan keselamatan dan arahan petugas.</li>
               <li className="text-ink/55 dark:text-mist/50">“Tidak tersedia” = sumber data sedang gagal atau bahaya tidak berlaku di sentra ini (mis. indeks DAS hanya untuk hulu Peusangan).</li>
             </ul>
-            <p className="text-ink/60 dark:text-mist/55 mt-1">Ambang lengkap dan rujukannya: <code>docs/THRESHOLDS.md</code> di repositori.</p>
+            <p className="text-ink/60 dark:text-mist/55 mt-1">Ambang lengkap dan rujukannya: <code>docs/reference/THRESHOLDS.md</code> di repositori.</p>
           </section>
 
           <section>

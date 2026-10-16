@@ -186,6 +186,6 @@ scripts/{alerts-cron,smoke,validate-season,check-bundle,build-flood-clim,build-s
 | Leaflet lazy-load (ADR-24 tahap 2) | ditunda — SVG skematik mencukupi; bundel gzip ≈ 132 kB | V3-6 |
 | ADR-21 konvektif multi-model | ECMWF IFS 0,25° (CAPE, kode cuaca, hembusan) + GFS (CAPE, LI, CIN); level = sinyal terkuat, `agreement` flag | §9 di 06 |
 | ADR-25 CI | `.github/workflows/ci.yml`: test → build → check:bundle → smoke (server nyata, upstream degraded ditoleransi) | — |
-| ADR-26 arsip | `server/data/hazard-archive/YYYY-MM-DD.json` (1 snapshot/sentra/jam) + `validate-season.mjs` + `docs/VALIDATION.md` | — |
+| ADR-26 arsip | `server/data/hazard-archive/YYYY-MM-DD.json` (1 snapshot/sentra/jam) + `validate-season.mjs` + `docs/reference/VALIDATION.md` | — |
 
 *(ADR berikutnya tetap ADR-27.)*

@@ -86,6 +86,6 @@ Rencana validasi per fase: Fase 1 — *shadow mode* 1 musim (hitung tanpa notifi
 
 ## 7. Siklus tata kelola dokumen
 
-- `docs/dev/*` diperbarui setiap akhir fase; perubahan ambang wajib: PR + pembaruan `docs/THRESHOLDS.md` + test.
+- `docs/dev/*` diperbarui setiap akhir fase; perubahan ambang wajib: PR + pembaruan `docs/reference/THRESHOLDS.md` + test.
 - ADR baru setiap keputusan arsitektur (`05-ARCHITECTURE.md`, lanjut dari ADR-26).
 - Risk register (`07`) ditinjau tiap fase; KPI dilaporkan ringkas di `CHANGELOG.md` per musim.

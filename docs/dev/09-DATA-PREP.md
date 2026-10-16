@@ -45,7 +45,7 @@ Hasil `npm test`: **98 lulus** (91 lama + 7 test aset baru). Tidak ada kode prod
    Dampak: kecil untuk model 0,25°, tetapi **signifikan** untuk radius hotspot FIRMS 10 km, sel GloFAS 5 km, jarak ke Burni Telong, dan penempatan marker di peta. Dicatat sebagai utang teknis **T13** di `00-REPO-AUDIT.md`.
 2. GADM Bener Meriah masih 7 kecamatan (belum ada Bener Kelipah, Gajah Putih, Mesidah) — cukup untuk peta skematik; ganti dengan batas BIG bila butuh akurasi administratif.
 3. Fixture `best_match` menunjukkan **jarak pandang minimum 120 m** pada jam dini hari (kabut radiasi lembah) → ambang jarak pandang asap harus **dibatasi pada jam siang** dan dikombinasikan dengan PM2,5/AOD agar kabut pagi tidak terbaca sebagai asap (tambahan untuk `06-THRESHOLDS` §2.3). *Implementasi Sprint 1:* jendela **10–17 WIB** + penyaring RH ≥ 90 % + persistensi 2 jam (`src/domain/hazards/airQuality.js#assessHaze`); fixture berikutnya menyertakan `relative_humidity_2m` (skrip sudah diperbarui).
-4. Konstanta FFMC: gunakan **147,27723** (cffdrs/Wang et al. 2015) sebagai default produksi karena menyamai dataset uji resmi hingga 0,005; dokumentasikan di `docs/THRESHOLDS.md`.
+4. Konstanta FFMC: gunakan **147,27723** (cffdrs/Wang et al. 2015) sebagai default produksi karena menyamai dataset uji resmi hingga 0,005; dokumentasikan di `docs/reference/THRESHOLDS.md`.
 
 ## 4. Perintah cepat
 

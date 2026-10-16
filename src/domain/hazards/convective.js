@@ -2,7 +2,7 @@
  * H-PETIR / H-ANGIN+ (Fase 2.3, FR-KONV-2/3/4) — modul registry `badai` (petir, hujan es, puting beliung).
  * Input ctx.convective = payload /api/convective?location= ({ hourly:{ time[], capeEcmwf[], capeGfs[], liGfs[], weatherCode[], rain[], gusts[] }, degraded }).
  * Konsensus: level = sinyal TERKUAT di antara ECMWF (CAPE/kode cuaca) dan GFS (LI/CAPE) dalam horizon 12 jam; `agreement:false`
- * bila kedua model berbeda ≥ 1 tingkat (ditampilkan transparan di kartu). Lihat docs/THRESHOLDS.md §17.
+ * bila kedua model berbeda ≥ 1 tingkat (ditampilkan transparan di kartu). Lihat docs/reference/THRESHOLDS.md §17.
  */
 import { CONVECTIVE, WIND_GUST } from '../thresholds.js'
 

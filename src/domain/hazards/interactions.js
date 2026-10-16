@@ -3,7 +3,7 @@
  * Setiap aturan: { id, when(byId, ctx) → false | { targets[], bump?, note, severity } }.
  *  - `bump`: { id, max } → naikkan level hazard `id` satu tingkat (maks `max`) + flags.bumpedBy = rule id (level asli disimpan di flags.baseLevel).
  *  - Tanpa `bump` → hanya catatan (ditampilkan di HazardPanel & ikut ringkasan).
- * Lihat docs/THRESHOLDS.md §19.
+ * Lihat docs/reference/THRESHOLDS.md §19.
  */
 import { LEVEL_ORDER } from './levels.js'
 import { FLOOD_DISCHARGE } from '../thresholds.js'

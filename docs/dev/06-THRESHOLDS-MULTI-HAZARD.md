@@ -1,6 +1,6 @@
 # Threshold & Pemetaan Level — Hazard Baru
 
-Versi 1.0 (final — 10 iterasi riset) · 2026-10-14. Melengkapi `docs/THRESHOLDS.md` (hazard lama). Setelah implementasi, sumber kebenaran pindah ke `src/domain/thresholds.js` dan tabel ini wajib disinkronkan.
+Versi 1.0 (final — 10 iterasi riset) · 2026-10-14. Melengkapi `docs/reference/THRESHOLDS.md` (hazard lama). Setelah implementasi, sumber kebenaran pindah ke `src/domain/thresholds.js` dan tabel ini wajib disinkronkan.
 
 Skala UI seragam (ADR-16): **rendah · waspada · bahaya · ekstrem** (+ `n/a`).
 
@@ -133,7 +133,7 @@ Sektor di bawah angin: arah **menuju** = arah angin 10 m + 180°; sentra dalam �
 | Penggabungan | ≥ 3 sentra, hazard + level + msgType sama → 1 pesan gabungan | `GROUP_MIN`, `buildGroupAlert` |
 | Batas per siklus | 12 pesan; sisanya siklus berikutnya; gagal kirim → state tidak berubah | `runAlertCycle({ maxPerCycle })` |
 | Rujukan resmi | peringatan BMKG aktif (Aceh) selalu dilampirkan (`info.official[]`) | `/api/alerts/run` membaca cache nowcast |
-Rincian pemetaan severity/certainty/expires ada di `docs/THRESHOLDS.md` §13–14.
+Rincian pemetaan severity/certainty/expires ada di `docs/reference/THRESHOLDS.md` §13–14.
 
 ## 9. H-PETIR — detail (iterasi 6)
 | Elemen | Aturan |
@@ -148,13 +148,13 @@ Rincian pemetaan severity/certainty/expires ada di `docs/THRESHOLDS.md` §13–1
 - `docs/dev/prototypes/fwi.mjs`: 10 hari kering khas Gayo (T 24 °C, RH 60 %, angin 8 km/jam) → FFMC 86,6 (kelas "ekstrem") & FWI 7,6 ("tinggi"). **Implikasi:** kelas FFMC "ekstrem" (≥ 83) mudah tercapai di musim kemarau dataran tinggi → tampilkan "ekstrem" hanya bila **FFMC ≥ 83 DAN (hotspot ≤ 10 km ATAU HTH ≥ 21 hari)**; selain itu "tinggi". Tinjau ulang bersama Staklim Aceh setelah 1 musim arsip (ADR-26).
 - `docs/dev/prototypes/ispu.mjs`: PM2,5 17,1 µg/m³ (Takengon, 14 Okt 2026) → ISPU 53 "Sedang"; semua titik batas P.14/2020 lulus uji.
 - **Verifikasi resmi FWI (pasca-iterasi):** prototipe vs dataset uji 48 hari Van Wagner & Pickett 1985 dengan hasil harapan paket R `cffdrs` → selisih maksimum **0,005** pada FFMC/DMC/DC/ISI/BUI/FWI bila memakai konstanta FFMC **147,27723** (default produksi); 0,25 bila 147,2 asli. Fixture: `tests/fixtures/hazards/fwi-cffdrs-test_fwi-expected.csv`.
-- **Jarak pandang & kabut pagi:** fixture `best_match` 14 Okt menunjukkan visibility minimum 120 m pada dini hari (kabut radiasi lembah Takengon) → proksi jarak pandang asap (§2.3) hanya dievaluasi **jam 10–17 WIB** dan wajib dikombinasikan dengan PM2,5 ≥ 35 µg/m³ atau AOD ≥ 0,5; di luar itu dilabeli "kabut" bukan "asap". **Revisi Sprint 1 (15 Okt 2026):** data langsung menunjukkan kabut 220–1.200 m bertahan sampai **09:00 WIB** (RH 85 %) → jendela digeser ke 10–17, jam dengan **RH ≥ 90 %** dikecualikan, dan eskalasi ke "bahaya" menuntut **≥ 2 jam** jarak pandang < 2 km (`thresholds.HAZE`, `docs/THRESHOLDS.md` §8).
+- **Jarak pandang & kabut pagi:** fixture `best_match` 14 Okt menunjukkan visibility minimum 120 m pada dini hari (kabut radiasi lembah Takengon) → proksi jarak pandang asap (§2.3) hanya dievaluasi **jam 10–17 WIB** dan wajib dikombinasikan dengan PM2,5 ≥ 35 µg/m³ atau AOD ≥ 0,5; di luar itu dilabeli "kabut" bukan "asap". **Revisi Sprint 1 (15 Okt 2026):** data langsung menunjukkan kabut 220–1.200 m bertahan sampai **09:00 WIB** (RH 85 %) → jendela digeser ke 10–17, jam dengan **RH ≥ 90 %** dikecualikan, dan eskalasi ke "bahaya" menuntut **≥ 2 jam** jarak pandang < 2 km (`thresholds.HAZE`, `docs/reference/THRESHOLDS.md` §8).
 
-*(Dokumen final iterasi 10; perubahan ambang berikutnya lewat PR + `docs/THRESHOLDS.md` + test.)*
+*(Dokumen final iterasi 10; perubahan ambang berikutnya lewat PR + `docs/reference/THRESHOLDS.md` + test.)*
 
 ## 11. Status implementasi (Sprint 4 — 15 Okt 2026)
-Semua ambang di bawah **sudah diimplementasikan** di `src/domain/thresholds.js` dan menjadi acuan resmi di `docs/THRESHOLDS.md` (§ yang dirujuk). Bila terjadi perbedaan antara dokumen riset ini dan `docs/THRESHOLDS.md`, yang terakhir yang berlaku.
-| Bagian riset | Modul | `docs/THRESHOLDS.md` | Penyesuaian saat implementasi |
+Semua ambang di bawah **sudah diimplementasikan** di `src/domain/thresholds.js` dan menjadi acuan resmi di `docs/reference/THRESHOLDS.md` (§ yang dirujuk). Bila terjadi perbedaan antara dokumen riset ini dan `docs/reference/THRESHOLDS.md`, yang terakhir yang berlaku.
+| Bagian riset | Modul | `docs/reference/THRESHOLDS.md` | Penyesuaian saat implementasi |
 |---|---|---|---|
 | §1 ISPU/kabut asap | `asap` | §7–9 | jendela jarak pandang 10–17 WIB, RH ≥ 90 % dikecualikan |
 | §2 FWI & hotspot | `kebakaran` | §10–12 | kelas "ekstrem" butuh FFMC ≥ 83 **dan** (hotspot ≤ 10 km atau HTH ≥ 21) |

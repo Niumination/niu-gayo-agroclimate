@@ -1,6 +1,6 @@
 # Protokol validasi musiman — Niu Gayo Agro-Climate v2 (Fase 1.10b / 4.2)
 
-Dokumen ini menetapkan **cara mengukur** apakah indeks bahaya (longsor, banjir+, angin, badai, asap, kebakaran, kekeringan, gempa, vulkanik, suhu, karat) benar-benar berguna di lapangan, sebelum dipakai sebagai dasar keputusan mitigasi bersama BPBD Aceh Tengah. Semua indeks adalah **estimasi model/satelit**; validasi inilah yang menentukan kalibrasi lokal berikutnya (lihat `docs/THRESHOLDS.md`).
+Dokumen ini menetapkan **cara mengukur** apakah indeks bahaya (longsor, banjir+, angin, badai, asap, kebakaran, kekeringan, gempa, vulkanik, suhu, karat) benar-benar berguna di lapangan, sebelum dipakai sebagai dasar keputusan mitigasi bersama BPBD Aceh Tengah. Semua indeks adalah **estimasi model/satelit**; validasi inilah yang menentukan kalibrasi lokal berikutnya (lihat `docs/reference/THRESHOLDS.md`).
 
 ## 1. Data yang dikumpulkan otomatis
 | Data | Lokasi | Cara terisi |
@@ -42,7 +42,7 @@ npm run validate:season -- --days 120 --min waspada --events docs/validation/eve
 
 ## 5. Jadwal & tanggung jawab
 - **Tiap akhir musim** (Feb: puncak hujan; Sep: puncak kering): jalankan skrip, lampirkan tabel Markdown ke `docs/validation/laporan-<musim>.md`, bahas dengan BPBD/penyuluh (format rapat di `08-STAKEHOLDERS-GOVERNANCE.md`).
-- **Perubahan ambang** hanya melalui `src/domain/thresholds.js` + pembaruan `docs/THRESHOLDS.md` + test, dengan rujukan ke laporan validasi.
+- **Perubahan ambang** hanya melalui `src/domain/thresholds.js` + pembaruan `docs/reference/THRESHOLDS.md` + test, dengan rujukan ke laporan validasi.
 - Arsip berusia > 2 musim boleh dipadatkan (rata-rata harian) untuk menghemat disk.
 
 ## 6. Batasan

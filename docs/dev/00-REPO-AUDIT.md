@@ -14,7 +14,7 @@
 | CI (`.github/workflows/ci.yml`) | ✅ Ada | Node 22, `npm ci` → test → build |
 | Lisensi | ✅ MIT | Niumination / Afrizal Munthe |
 | Dependensi runtime | ✅ Minimal | `react`, `react-dom`, `lucide-react`; server **tanpa dependensi** (http murni) |
-| Dokumentasi | ⚠️ Sebagian | `docs/THRESHOLDS.md` ada; PRD/PLAN/ADR ada di repo **privat** `niu-gayo-agroclimate-docs` (tidak dapat diakses publik) |
+| Dokumentasi | ⚠️ Sebagian | `docs/reference/THRESHOLDS.md` ada; PRD/PLAN/ADR ada di repo **privat** `niu-gayo-agroclimate-docs` (tidak dapat diakses publik) |
 | Versi | ⚠️ Tidak sinkron | `package.json` = `1.0.0`, `CHANGELOG.md` = `1.2.0` |
 | Cakupan bahaya | ⚠️ Hidrometeorologi saja | Longsor, indeks hujan DAS, angin, karat daun. **Belum ada**: karhutla/asap, kualitas udara, gempa, kekeringan, suhu ekstrem/embun beku, petir, vulkanik |
 
@@ -28,7 +28,7 @@
 .
 ├── .github/workflows/ci.yml      # CI test + build
 ├── archive/prototype.html        # prototipe awal (1.264 baris, tidak dipakai)
-├── docs/THRESHOLDS.md            # tabel ambang & bobot (sumber kebenaran: src/domain/thresholds.js)
+├── docs/reference/THRESHOLDS.md            # tabel ambang & bobot (sumber kebenaran: src/domain/thresholds.js)
 ├── public/icons/                 # ikon PWA
 ├── scripts/serve.py              # static server dist/ (:7444)
 ├── server/                       # API proxy Node http murni (:7455)

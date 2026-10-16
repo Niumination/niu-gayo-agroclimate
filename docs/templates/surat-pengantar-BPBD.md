@@ -56,4 +56,4 @@ Tembusan:
 | Gunung api | MAGMA/PVMBG | Level I–IV | sektor bawah angin ditandai |
 | Suhu ekstrem kopi | Tmin/Tmax, titik embun, awan | rendah–ekstrem | embun upas plato |
 
-Protokol validasi lengkap: `docs/VALIDATION.md`. Ambang: `docs/THRESHOLDS.md`.
+Protokol validasi lengkap: `docs/reference/VALIDATION.md`. Ambang: `docs/reference/THRESHOLDS.md`.

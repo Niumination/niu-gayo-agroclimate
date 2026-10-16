@@ -188,5 +188,5 @@ export async function getVolcanoStatus({ fetchText = defaultFetchText, fetchJson
   }
 }
 
-/** Radius rekomendasi PVMBG (km) per tingkat — Level II Burni Telong: 3 km (rilis PVMBG; lihat docs/THRESHOLDS.md §16). Level III/IV: nilai umum, rujuk rilis terbaru. */
+/** Radius rekomendasi PVMBG (km) per tingkat — Level II Burni Telong: 3 km (rilis PVMBG; lihat docs/reference/THRESHOLDS.md §16). Level III/IV: nilai umum, rujuk rilis terbaru. */
 export const RADIUS_BY_LEVEL = { 1: 0, 2: 3, 3: 5, 4: 7 }

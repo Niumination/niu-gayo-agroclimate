@@ -47,7 +47,7 @@ export function quakeImpact({ mag, depthKm = 10, distKm = 0 }) {
   return { mmi, roman: ROMAN[n], label: MMI_LABEL[n], hypoKm: Math.round(hypo) }
 }
 
-/** Level seragam dari MMI indikatif (docs/THRESHOLDS.md §15). */
+/** Level seragam dari MMI indikatif (docs/reference/THRESHOLDS.md §15). */
 export function levelFromMmi(mmi) {
   if (mmi == null) return 'n/a'
   if (mmi >= QUAKE.mmi.ekstrem) return 'ekstrem'

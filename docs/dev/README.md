@@ -1,5 +1,7 @@
 # docs/dev — Paket Perencanaan Perluasan Multi-Bahaya
 
+> **Catatan (v2.1.0):** direktori ini adalah **arsip riset & perencanaan** (10 iterasi, 14–15 Okt 2026) dan sengaja dibiarkan bernomor. Dokumentasi hidup (tutorial, how-to, reference, explanation) ada di **[`docs/README.md`](../README.md)**; berkas `THRESHOLDS.md`/`VALIDATION.md` kini di `docs/reference/`.
+
 Hasil **10 iterasi riset → pembaruan dokumen** (14 Okt 2026) untuk memperluas Niu Gayo Agroclimate dari 3 bahaya hidrometeorologi (longsor, luapan DAS, angin) menjadi sistem informasi **multi-bahaya** untuk Aceh Tengah & sekitarnya, dengan prioritas **kabut asap karhutla** yang sedang berlangsung.
 
 | # | Dokumen | Isi | Pembaca utama |
@@ -32,4 +34,4 @@ H-ASAP kabut asap/kualitas udara (P0) · H-API kebakaran hutan & lahan (P0) · H
 - Nilai dari model (CAMS, GloFAS, FWI) selalu berlabel **estimasi** + sumber + waktu data.
 - Tidak pernah menampilkan "aman" eksplisit saat data parsial; pola *degraded* dipertahankan.
 - Nol dependensi baru di server; klien tetap ringan (bundle ≤ 400 kB gzip; peta SVG dahulu).
-- Semua ambang terpusat di `src/domain/thresholds.js` + `docs/THRESHOLDS.md` + test.
+- Semua ambang terpusat di `src/domain/thresholds.js` + `docs/reference/THRESHOLDS.md` + test.

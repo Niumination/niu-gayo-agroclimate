@@ -1,7 +1,7 @@
 /**
  * H-SUHU (Fase 3.2, FR-SUHU-1/2/3) — modul registry `suhu`: stres dingin/embun upas & stres panas/aborsi bunga kopi Arabika.
  * Input: ctx.weather.thermal (features.thermalSummary — Tmin/Tmax 3 hari + kondisi malam + VPD siang), ctx.location.elevation, ctx.now (bulan → fase bunga).
- * Fungsi murni coldStress()/heatStress() diekspor untuk test (skenario Jagong Jeget/Atu Lintang). Ambang: docs/THRESHOLDS.md §21.
+ * Fungsi murni coldStress()/heatStress() diekspor untuk test (skenario Jagong Jeget/Atu Lintang). Ambang: docs/reference/THRESHOLDS.md §21.
  */
 import { TEMP_STRESS } from '../thresholds.js'
 

@@ -6,7 +6,7 @@
  *
  *   node scripts/validate-season.mjs [--days 120] [--min waspada|bahaya] [--events docs/validation/events-2026.json] [--out server/data/validation-<tgl>.json]
  *
- * Definisi (docs/VALIDATION.md):
+ * Definisi (docs/reference/VALIDATION.md):
  *  - Hari-sentra "aktif" = ada snapshot dengan level bahaya ≥ --min (default waspada) pada tanggal itu.
  *  - Kejadian = laporan warga tipe = id bahaya (atau pemetaan: abu/gas → vulkanik; badai → badai) ATAU kejadian terkurasi
  *    { date:'YYYY-MM-DD', location:'<id>'|'*', hazard:'<id>', source:'BPBD|BMKG|media', note }.

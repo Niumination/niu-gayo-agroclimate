@@ -1,6 +1,6 @@
 /**
  * Fungsi murni analisis risiko hidrometeorologi (M3).
- * Semua threshold & bobot di thresholds.js (dokumentasi: docs/THRESHOLDS.md).
+ * Semua threshold & bobot di thresholds.js (dokumentasi: docs/reference/THRESHOLDS.md).
  * Fungsi threshold lama dipertahankan (kompatibilitas test M1/M2).
  */
 import { LANDSLIDE, WATERSHED, WIND, WIND_GUST } from './thresholds.js'

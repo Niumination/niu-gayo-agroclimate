@@ -1,7 +1,7 @@
 /**
  * Threshold & bobot model risiko — satu modul konfigurasi terdokumentasi (M3).
- * Tabel referensi lengkap + justifikasi literatur: docs/THRESHOLDS.md.
- * Perubahan di sini HARUS disinkronkan dengan docs/THRESHOLDS.md.
+ * Tabel referensi lengkap + justifikasi literatur: docs/reference/THRESHOLDS.md.
+ * Perubahan di sini HARUS disinkronkan dengan docs/reference/THRESHOLDS.md.
  */
 
 export const TEMP = {
@@ -94,7 +94,7 @@ export const WIND = {
 export const WIND_GUST = {
   waspada: 40.0,  // km/jam
   bahaya: 60.0,
-  ekstrem: 75.0,      // skala seragam registry: ≈ Beaufort 9 (strong gale 75–88 km/jam, kerusakan struktur ringan) — docs/THRESHOLDS.md §13
+  ekstrem: 75.0,      // skala seragam registry: ≈ Beaufort 9 (strong gale 75–88 km/jam, kerusakan struktur ringan) — docs/reference/THRESHOLDS.md §13
   bmkgEkstrem: 45.0,  // FR-KONV-4: hembusan ≥ 45 km/jam (≥ 25 knot) = kriteria cuaca ekstrem BMKG → penanda `flags.bmkgExtreme`, bukan level
 }
 
@@ -171,7 +171,7 @@ export const HOTSPOT = {
 }
 
 /**
- * H-API — operasional FWI harian (docs/THRESHOLDS.md §10): pengamatan "siang" diambil dari jam `obsHourWib`
+ * H-API — operasional FWI harian (docs/reference/THRESHOLDS.md §10): pengamatan "siang" diambil dari jam `obsHourWib`
  * (standar FWI: 12.00 waktu setempat; matahari tertinggi Takengon ≈ 12.32 WIB), hujan = akumulasi 24 jam hingga jam itu.
  * Spin-up dari arsip ERA5 (`spinUpDays`) agar DMC/DC tidak bergantung nilai awal; proyeksi `forecastDays` hari dari prakiraan ECMWF.
  * Status "Siaga Kebakaran Lokal" (FR-API-5): FFMC ≥ `siagaFfmc` DAN hotspot ≤ 25 km dalam 24 jam.
@@ -207,7 +207,7 @@ export const WATER_BALANCE = {
 }
 
 /**
- * H-GEMPA (Fase 2.1; docs/THRESHOLDS.md §15) — MMI indikatif di sentra dari relasi atenuasi Bakun & Wentworth (1997):
+ * H-GEMPA (Fase 2.1; docs/reference/THRESHOLDS.md §15) — MMI indikatif di sentra dari relasi atenuasi Bakun & Wentworth (1997):
  * MMI = c0 + c1·M − c2·log10(R_hipo), R_hipo = √(jarak² + kedalaman²) (km), dibatasi ≥ minHypoKm.
  * Level: MMI < 3 rendah · III–IV waspada · V–VI bahaya · ≥ VII ekstrem. MMI resmi BMKG untuk tempat di Gayo menang bila lebih tinggi.
  * Jendela: ≤ 24 jam level penuh; 24–72 jam dibatasi waspada; > 72 jam informasi (rendah).
@@ -225,7 +225,7 @@ export const QUAKE = {
 }
 
 /**
- * H-VULKANIK (Fase 2.2b; docs/THRESHOLDS.md §16) — tingkat aktivitas PVMBG I/II/III/IV → rendah/waspada/bahaya/ekstrem
+ * H-VULKANIK (Fase 2.2b; docs/reference/THRESHOLDS.md §16) — tingkat aktivitas PVMBG I/II/III/IV → rendah/waspada/bahaya/ekstrem
  * untuk sentra ≤ nearKm dari puncak; nearKm–farKm turun satu tingkat; > farKm informasi. Sektor bawah angin ±sectorHalfAngle°, ≤ sectorMaxKm.
  */
 export const VOLCANO = {
@@ -236,7 +236,7 @@ export const VOLCANO = {
 }
 
 /**
- * H-PETIR / H-ANGIN+ (Fase 2.3; docs/THRESHOLDS.md §17) — konsensus ECMWF (CAPE, kode cuaca 95–99) × GFS (LI, CAPE), horizon 12 jam:
+ * H-PETIR / H-ANGIN+ (Fase 2.3; docs/reference/THRESHOLDS.md §17) — konsensus ECMWF (CAPE, kode cuaca 95–99) × GFS (LI, CAPE), horizon 12 jam:
  * waspada CAPE ≥ 1.000 J/kg atau LI ≤ −3 · bahaya CAPE ≥ 2.000 atau kode 95–99 atau LI ≤ −6 ·
  * ekstrem = bahaya + (hembusan ≥ 45 km/jam atau hujan ≥ 20 mm/jam atau peringatan BMKG aktif).
  * Hujan es (kualitatif): kode 96/99 atau CAPE ≥ 2.500 & LI ≤ −6. Puting beliung (FR-KONV-4): bahaya + hembusan ≥ WIND_GUST.bmkgEkstrem.
@@ -251,7 +251,7 @@ export const CONVECTIVE = {
 }
 
 /**
- * H-BANJIR+ (Fase 2.4; docs/THRESHOLDS.md §18) — anomali debit GloFAS = debit / median klimatologi hari-dalam-tahun:
+ * H-BANJIR+ (Fase 2.4; docs/reference/THRESHOLDS.md §18) — anomali debit GloFAS = debit / median klimatologi hari-dalam-tahun:
  * ≥ 2 waspada · ≥ 3 bahaya · ≥ 5 ekstrem · > p95 → minimal waspada. Pengubah: ARI72 ≥ 100 mm & level ≥ waspada → +1 tingkat.
  */
 export const FLOOD_DISCHARGE = {
@@ -262,7 +262,7 @@ export const FLOOD_DISCHARGE = {
 }
 
 /**
- * H-KERING lanjutan (Fase 3.1; docs/THRESHOLDS.md §20) — SPI McKee 1993 (baseline 1991–2020 ERA5 per lokasi):
+ * H-KERING lanjutan (Fase 3.1; docs/reference/THRESHOLDS.md §20) — SPI McKee 1993 (baseline 1991–2020 ERA5 per lokasi):
  * ≤ −1 agak kering → waspada · ≤ −1,5 sangat kering → bahaya · ≤ −2 ekstrem. VPD siang (09–15 WIB) rata-rata 7 hari:
  * > 0,82 kPa waspada (pembungaan), > 1,5 kPa bahaya (indikatif, Yunnan 2025).
  */
@@ -270,7 +270,7 @@ export const SPI = { waspada: -1, bahaya: -1.5, ekstrem: -2 }
 export const VPD = { waspada: 0.82, bahaya: 1.5, dayStartH: 9, dayEndH: 15, days: 7 }
 
 /**
- * H-SUHU (Fase 3.2; docs/THRESHOLDS.md §21) — stres dingin/embun upas & panas/aborsi bunga kopi Arabika:
+ * H-SUHU (Fase 3.2; docs/reference/THRESHOLDS.md §21) — stres dingin/embun upas & panas/aborsi bunga kopi Arabika:
  * dingin: Tmin ≤ 10 waspada · ≤ 6 bahaya · ≤ 4 + awan < 30 % + angin ≤ 5 km/jam + Td ≤ 2 °C → ekstrem (embun upas);
  *         elevasi ≥ 1.400 m: Tmin model dikoreksi −1 °C (genangan udara dingin lembah/plato, indikatif).
  * panas:  Tmax ≥ 28 waspada · ≥ 30 bahaya · ≥ 32 ekstrem; pada fase bunga VPD > 0,82 kPa → +1 tingkat.
