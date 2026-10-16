@@ -126,7 +126,7 @@ export function readOverride(file) {
   return { level, label: LEVEL_LABEL[level], asOf: o.asOf ?? null, source: o.source ?? 'override manual', force: !!o.force }
 }
 
-export async function getVolcanoStatus({ fetchText = defaultFetchText, fetchJson = defaultFetchJson, url = MAGMA_URL, lastGoodFile = LAST_GOOD_FILE, overridePath = process.env.VOLCANO_OVERRIDE_PATH, now = new Date().toISOString(), locations = LOCATIONS, summit = BURNI_TELONG } = {}) {
+export async function getVolcanoStatus({ fetchText = defaultFetchText, fetchJson = defaultFetchJson, url = MAGMA_URL, lastGoodFile = LAST_GOOD_FILE, overridePath = process.env.VOLCANO_OVERRIDE_PATH, now = new Date().toISOString(), locations = LOCATIONS, summit = BURNI_TELONG, staleDays = Number(process.env.MAGMA_STALE_DAYS || 7) } = {}) {
   let volcano = null
   let error
   let counts = null
@@ -153,9 +153,13 @@ export async function getVolcanoStatus({ fetchText = defaultFetchText, fetchJson
     overridden = true
   } else if (!volcano) {
     const last = readLast(lastGoodFile)
-    if (last?.volcano) {
+    const ageDays = last?.savedAt ? (new Date(now).getTime() - new Date(last.savedAt).getTime()) / 86_400_000 : null
+    // F-18: hasil tersimpan hanya dipakai bila umurnya ≤ MAGMA_STALE_DAYS (default 7 hari).
+    if (last?.volcano && (ageDays === null || ageDays <= staleDays)) {
       volcano = { ...last.volcano }
       stale = true
+    } else if (last?.volcano) {
+      error = `${error ? `${error}; ` : ''}hasil tersimpan berumur ${Math.round(ageDays)} hari (> MAGMA_STALE_DAYS=${staleDays}) → diabaikan`
     }
   }
   if (volcano && !stale) writeLast(lastGoodFile, { volcano, savedAt: now })

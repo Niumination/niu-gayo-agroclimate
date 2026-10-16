@@ -11,7 +11,10 @@ import { HAZARDS_ENABLED } from './config.js'
 import { computeSpi } from './spi.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-export const DEFAULT_ARCHIVE_DIR = path.join(__dirname, 'data', 'hazard-archive')
+// F-18: dapat diarahkan lewat HAZARD_ARCHIVE_DIR (relatif akar repo atau absolut).
+export const DEFAULT_ARCHIVE_DIR = process.env.HAZARD_ARCHIVE_DIR
+  ? path.resolve(process.cwd(), process.env.HAZARD_ARCHIVE_DIR)
+  : path.join(__dirname, 'data', 'hazard-archive')
 
 const settle = (p) => Promise.resolve(p).then((value) => ({ ok: true, value }), (error) => ({ ok: false, error }))
 

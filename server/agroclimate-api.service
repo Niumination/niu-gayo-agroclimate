@@ -6,11 +6,26 @@ Wants=network-online.target
 [Service]
 Type=simple
 ExecStart=/usr/bin/node %h/niumination/niu-gayo-agroclimate/server/index.js
+WorkingDirectory=%h/niumination/niu-gayo-agroclimate
 Environment=PORT=7455
 Environment=PROXY_TTL_MIN=10
 Environment=ENSEMBLE_TTL_MIN=30
+# Kunci/token (TELEGRAM_*, ALERTS_CRON_TOKEN, FIRMS_*, dst.) dari berkas .env —
+# format .env.example sudah aman untuk EnvironmentFile (komentar di baris sendiri).
+EnvironmentFile=-%h/niumination/niu-gayo-agroclimate/.env
 Restart=on-failure
 RestartSec=10
+
+# Hardening (audit F-17) — konservatif, aman untuk unit pengguna (systemctl --user):
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectControlGroups=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+RestrictSUIDSGID=true
+# Satu-satunya jalur tulis: arsip bahaya, status peringatan, laporan warga.
+ReadWritePaths=%h/niumination/niu-gayo-agroclimate/server/data
 
 [Install]
 WantedBy=default.target

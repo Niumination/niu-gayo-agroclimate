@@ -1,0 +1,37 @@
+# Dependabot — pembaruan dependensi otomatis
+# Kebijakan: patch/minor digabung dalam satu PR mingguan; mayor dibiarkan untuk
+# evaluasi manual (hindari lompatan breaking tanpa staging, lihat SECURITY.md).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: Asia/Jakarta
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    groups:
+      minor-dan-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
+    ignore:
+      # Lompatan mayor butuh staging & evaluasi UI — ditangani manual (roadmap v2.1).
+      - dependency-name: tailwindcss
+        update-types: [version-update:semver-major]
+      - dependency-name: vite
+        update-types: [version-update:semver-major]
+      - dependency-name: "@vitejs/plugin-react"
+        update-types: [version-update:semver-major]
+      - dependency-name: lucide-react
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns: ["*"]

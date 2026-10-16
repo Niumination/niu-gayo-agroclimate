@@ -52,30 +52,37 @@ export async function getHotspots({ fetchImpl = fetch, now = new Date(), mapKey 
   const warnings = []
   const okSources = []
   let rows = []
-  settled.forEach((s, i) => {
-    const src = sources[i]
-    if (s.status === 'fulfilled') {
-      const parsed = parseFirmsCsv(s.value, { source: src })
-      okSources.push({ source: src, rows: parsed.length })
-      rows = rows.concat(parsed)
-    } else {
-      warnings.push(s.reason?.message ?? String(s.reason))
+  // F-08: seluruh pemrosesan dibungkus — modul ini tidak boleh melempar ke pemanggil
+  // (semua kegagalan → payload degraded, konsisten dengan modul sumber lain).
+  try {
+    settled.forEach((s, i) => {
+      const src = sources[i]
+      if (s.status === 'fulfilled') {
+        const parsed = parseFirmsCsv(s.value, { source: src })
+        okSources.push({ source: src, rows: parsed.length })
+        rows = rows.concat(parsed)
+      } else {
+        warnings.push(s.reason?.message ?? String(s.reason))
+      }
+    })
+    if (!okSources.length) {
+      const empty = mapHotspots([], locations, { now })
+      return { ...base, degraded: true, reason: warnings.join('; ') || 'semua sumber FIRMS gagal', sources: [], warnings, counts: empty.counts, hotspots: [], perLocation: empty.perLocation }
     }
-  })
-  if (!okSources.length) {
+    const mapped = mapHotspots(rows, locations, { now })
+    return {
+      ...base,
+      degraded: false,
+      reason: null,
+      sources: okSources,
+      warnings,
+      counts: mapped.counts,
+      hotspots: mapped.hotspots.map(slimHotspot),
+      perLocation: mapped.perLocation,
+    }
+  } catch (err) {
     const empty = mapHotspots([], locations, { now })
-    return { ...base, degraded: true, reason: warnings.join('; ') || 'semua sumber FIRMS gagal', sources: [], warnings, counts: empty.counts, hotspots: [], perLocation: empty.perLocation }
-  }
-  const mapped = mapHotspots(rows, locations, { now })
-  return {
-    ...base,
-    degraded: false,
-    reason: null,
-    sources: okSources,
-    warnings,
-    counts: mapped.counts,
-    hotspots: mapped.hotspots.map(slimHotspot),
-    perLocation: mapped.perLocation,
+    return { ...base, degraded: true, reason: `pemrosesan hotspot gagal: ${err.message}`, sources: okSources, warnings, counts: empty.counts, hotspots: [], perLocation: empty.perLocation }
   }
 }
 

@@ -58,6 +58,18 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    // F-11: pisahkan vendor agar cache lebih baik & tiap berkas lebih kecil
+    // (anggaran di check-bundle tetap berlaku pada total gzip).
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+  },
   server: {
     port: 5188,
     // Dev: teruskan /api ke server proxy lokal (node server/index.js, :7455) agar fitur

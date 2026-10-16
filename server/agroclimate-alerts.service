@@ -6,6 +6,18 @@ Requires=agroclimate-api.service
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/node %h/niumination/niu-gayo-agroclimate/scripts/alerts-cron.mjs
+WorkingDirectory=%h/niumination/niu-gayo-agroclimate
 Environment=API_BASE=http://127.0.0.1:7455
+# Ambil TELEGRAM_*/ALERTS_CRON_TOKEN dari .env bila ada (sama seperti agroclimate-api.service)
+EnvironmentFile=-%h/niumination/niu-gayo-agroclimate/.env
 # Samakan dengan ALERTS_CRON_TOKEN pada agroclimate-api.service bila diaktifkan
-# Environment=ALERTS_CRON_TOKEN=ganti-dengan-token
+
+# Hardening (audit F-17) — konservatif, aman untuk unit pengguna (systemctl --user):
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectControlGroups=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+RestrictSUIDSGID=true
+ReadWritePaths=%h/niumination/niu-gayo-agroclimate/server/data

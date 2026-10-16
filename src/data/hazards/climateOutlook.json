@@ -1,12 +1,13 @@
 {
   "_meta": {
     "description": "Konteks iklim musiman terkurasi manual dari rilis BMKG (tanpa API). Diperbarui tiap dasarian/bulan oleh maintainer; UI menampilkan banner bila `validUntil` belum lewat, selain itu menampilkan 'perlu pembaruan'.",
-    "howToUpdate": "Cek rilis BMKG (bmkg.go.id → Iklim → Prediksi musim / ENSO-IOD dasarian) & Staklim Aceh; perbarui angka, tanggal rilis, sumber, validUntil.",
-    "lastReviewed": "2026-10-14"
+    "howToUpdate": "Cek rilis BMKG (bmkg.go.id -> Iklim -> Prediksi musim / ENSO-IOD dasarian) & Staklim Aceh; cek silang NOAA CPC ENSO Diagnostics (bulanan): https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml; perbarui angka, tanggal rilis, sumber, validUntil. CI menjalankan `npm run check:outlook` (gagal bila kedaluwarsa, peringatan bila <= 14 hari).",
+    "lastReviewed": "2026-10-16",
+    "cadence": "dasarian (BMKG) + bulanan (NOAA CPC); pembaruan CPC berikutnya 2026-11-12"
   },
   "current": {
     "issuedAt": "2026-10",
-    "validUntil": "2026-11-10",
+    "validUntil": "2026-11-12",
     "enso": {
       "phase": "El Niño",
       "strength": "sangat kuat",
@@ -36,8 +37,30 @@
       {
         "title": "BMKG — perkembangan ENSO/IOD dasarian (dikutip di docs/dev/01-RESEARCH-LOG.md iterasi 4)",
         "url": "https://www.bmkg.go.id/iklim"
+      },
+      {
+        "title": "NOAA CPC - ENSO Diagnostic Discussion (8 Okt 2026): El Nino Advisory, indeks Nino-3.4 +2,1 C",
+        "url": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml"
       }
-    ]
+    ],
+    "cpcCrossCheck": {
+      "issuedAt": "2026-10-08",
+      "source": "NOAA CPC ENSO Diagnostic Discussion (8 Okt 2026)",
+      "nino34": 2.1,
+      "nino3": 3.0,
+      "nino12": 3.9,
+      "outlook": "El Nino kuat-sangat kuat hingga Jan-Mar 2027 (peluang >83%); peluang >= +2.5C RONI: 54% SON, 83% OND, 70% NDJ",
+      "nextIssue": "2026-11-12",
+      "url": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml",
+      "note": "Cek silang independen: memperkuat fase El Nino kuat dari rilis BMKG; anomali konveksi tersupresi di atas Indonesia."
+    }
   },
-  "history": []
+  "history": [
+    {
+      "issuedAt": "2026-10",
+      "validUntil": "2026-11-10",
+      "supersededAt": "2026-10-16",
+      "note": "Validitas diperpanjang ke 2026-11-12 setelah cek silang NOAA CPC (temuan audit F-14); angka BMKG tidak berubah."
+    }
+  ]
 }

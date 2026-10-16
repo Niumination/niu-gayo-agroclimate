@@ -41,11 +41,14 @@ Dataran Tinggi Gayo (Kabupaten Aceh Tengah) merupakan produsen kopi Arabika orga
 | `/api/hazards?location=<id>\|all` | **hazard registry**: 11 bahaya (longsor, banjir, angin, badai, asap, kebakaran, kekeringan, gempa, vulkanik, suhu, karat) dengan level seragam, metrik, anjuran, sumber, `interactions[]`; `all` = ringkasan 15 sentra untuk peta (+ arsip harian) | 10 menit (`HAZARDS_TTL_MIN`) |
 | `/api/alerts/feed[?format=cap&id=]` | peringatan aktif bergaya CAP 1.2 (JSON; per-id sebagai CAP XML untuk ekspor) | — |
 | `POST /api/alerts/run[?dryRun=1&only=gempa,vulkanik]` | satu siklus diseminasi (anti-kebisingan → Telegram); header `x-cron-token` wajib dari luar loopback | — |
+| `POST /api/cache/flush` | kosongkan seluruh cache dalam proses (operasional: setelah mengubah kunci/TTL); server hanya mendengar 127.0.0.1 | — |
 | `/api/disaster-history?location=<id>[&hazard=<id>]` | riwayat kejadian terdokumentasi per sentra (+ hitungan per bahaya) | statis |
 | `/healthz` | versi, fitur aktif, status per sumber data (umur cache, degraded) | — |
 
 **Cron peringatan (Fase 1.8 / 2.1):** `node scripts/alerts-cron.mjs --dry-run` untuk uji; produksi: salin `server/agroclimate-alerts.{service,timer}` (tiap 30 menit, semua bahaya) dan `server/agroclimate-alerts-fast.{service,timer}` (tiap 5 menit, `--only gempa,vulkanik`) ke `~/.config/systemd/user/`, isi `TELEGRAM_BOT_TOKEN`, `TELEGRAM_HOME_CHANNEL`, `ALERTS_CRON_TOKEN` di EnvironmentFile server, lalu `systemctl --user enable --now agroclimate-alerts.timer agroclimate-alerts-fast.timer`. Aturan anti-kebisingan: [`docs/THRESHOLDS.md`](docs/THRESHOLDS.md) §13–14.
 - Detail status & desain: repo `niu-gayo-agroclimate-docs` (DISASTER-DATA-RESEARCH.md, PLAN.md).
+
+**Verifikasi rilis & keamanan:** `npm test` (295 uji), `npm run test:coverage`, `npm run check:bundle`, `npm run check:outlook` (gagal bila `climateOutlook.json` kedaluwarsa — perbarui dari rilis BMKG/NOAA CPC), `npm run check:i18n` (inventaris label Gayo yang menunggu tinjauan penutur asli), `npm run smoke`. CI menjalankan langkah-langkah itu plus `npm audit --omit=dev --audit-level=high`. Semua respons API memakai header keamanan dasar (`nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`); token cron dibandingkan constant-time. Kebijakan pelaporan: [`SECURITY.md`](SECURITY.md).
 
 ## 🌐 Live Site
 

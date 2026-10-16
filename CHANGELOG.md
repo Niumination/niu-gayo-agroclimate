@@ -1,5 +1,31 @@
 # Changelog
 
+## [2.0.1] — 2026-10-16 · Pengerasan pasca-audit (18 temuan, tanpa perubahan perilaku fitur)
+
+Audit menyeluruh terhadap upstream `fa33bfb` (10 iterasi riset: OpenSSF Scorecard, OWASP API Security Top 10, OASIS CAP 1.2, advisory Vite/esbuild 2025–2026, probing langsung 8 sumber data). Rilis ini menutup seluruh temuan yang dapat diselesaikan di kode; dua temuan bersifat tugas manusia (tag bertanda tangan, terjemahan Gayo) dan satu advisory dev-only belum punya patch hulu.
+
+### Keamanan & rantai pasok
+- **F-13** Semua respons API kini memakai header keamanan dasar: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer` (JSON dan CAP XML).
+- **F-12** Perbandingan token cron `x-cron-token` memakai `crypto.timingSafeEqual` (constant-time).
+- **F-02** CI: action dipin ke SHA commit (`actions/checkout@11bd7190…` v4.2.2, `actions/setup-node@49933ea5…` v4.4.0) + `permissions: contents: read`.
+- **F-01** Gerbang `npm audit --omit=dev --audit-level=high` di CI (pohon produksi 0 kerentanan); override `postcss-selector-parser@^7.1.6` menutup GHSA-rj75-hqrm-r3gf. Sisa advisori `braces` (CVE-2026-93687, dev-only, belum ada patch hulu) didokumentasikan di `SECURITY.md`.
+- **F-03** `SECURITY.md` baru (kebijakan pelaporan + status advisori dev-only). **F-04** Dependabot mingguan (`.github/dependabot.yml`, mayor di-ignore untuk evaluasi manual).
+
+### Keandalan & operasional
+- **F-14** `climateOutlook.json`: divalidasi silang NOAA CPC 8 Okt 2026 (El Niño kuat–sangat kuat, Niño-3.4 +2,1 °C); `validUntil` → `2026-11-12` (tanggal rilis otoritatif berikutnya); skrip **`npm run check:outlook`** + gerbang CI (gagal bila kedaluwarsa).
+- **F-17** Unit systemd: `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=strict`, proteksi kernel/cgroup, `RestrictSUIDSGID`, `ReadWritePaths=…/server/data`, `EnvironmentFile=-…/.env`.
+- **F-18** `MAGMA_STALE_DAYS` kini benar-benar dibaca (fallback hasil tersimpan hanya bila ≤ N hari); `HAZARD_ARCHIVE_DIR` kini dipakai; `.env.example` diselaraskan dengan kode (gaya aman `EnvironmentFile`, variabel v3 ditandai "belum dibaca").
+- **F-08** `server/firms.js`: seluruh pemrosesan dibungkus — tidak pernah melempar ke pemanggil.
+- **F-11** Code-splitting vendor (`vendor-react`, `vendor-icons`): chunk utama 135,3 → 130,7 kB gzip; total 133,3 kB (anggaran 200/150 tetap lolos).
+
+### Struktur & keterlacakan
+- **F-09** Routing dipisah ke `server/routes.js` (handler memakai konteks `ctx` eksplisit); `server/index.js` 405 → 163 baris.
+- **F-10** `npm run test:coverage` + langkah CI (cakupan dilaporkan; ambang menyusul). Suite kini **295 uji** (9 uji baru untuk `check-outlook` & `check-i18n`).
+- **F-16** `npm run check:i18n` — inventaris 52 placeholder label Gayo (tugas manusia H-4; jalankan `--strict` setelah selesai).
+- **F-15** `/api/cache/flush` didokumentasikan di README.
+- **F-05** `engines.node >= 20`. **F-06** tag rilis bertanda tangan: tugas manusia (butuh kunci GPG). **F-07** hutang mayor (Tailwind 4, Vite 8, plugin-react 6, lucide 1.x) dijadwalkan v2.1; Dependabot sengaja mengabaikan lompatan mayor.
+
+
 ## [2.0.0] — 2026-10-15 · Sprint 4 "Multi-bahaya lengkap" (Fase 2: 2.1–2.5 · Fase 3: 3.1, 3.2, 3.4 · Fase 1: 1.10b · Fase 4: 4.2, 4.4, 4.5)
 
 Rilis v2.0.0 menutup seluruh butir roadmap `docs/dev/03-ROADMAP.md` yang tidak memerlukan masukan manusia. Registry kini **11 bahaya** (`longsor, banjir, angin, badai, asap, kebakaran, kekeringan, gempa, vulkanik, suhu, karat`) + interaksi lintas-bahaya. Tag git `v2.0.0` dan aktivasi cron/kunci tetap tugas manusia (H-1, H-6, H-7, H-9).

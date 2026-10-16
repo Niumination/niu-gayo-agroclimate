@@ -27,6 +27,15 @@
 | V3-11 | **Model longsor berbasis fisik ringan** (Iverson/TRIGRS-lite dengan DEM 30 m) menggantikan skor heuristik | tinggi | tinggi | DEM, data tanah |
 | V3-12 | **Kanal WhatsApp Business/SMS gateway** resmi BPBD | tinggi | biaya operasional | MoU |
 
+## 2b. Hutang teknis & pengerasan (rilis v2.1, hasil audit 2026-10-16)
+| # | Item | Alasan / sumber |
+|---|---|---|
+| A-1 | Naikkan lompatan mayor: Tailwind 4 (menghapus rantai `chokidar→braces`, sekaligus menutup CVE-2026-93687 yang belum ada patch di Tailwind 3), Vite 8, `@vitejs/plugin-react` 6, lucide-react 1.x | audit F-07; Dependabot sengaja mengabaikan mayor — butuh staging & uji visual |
+| A-2 | Ambang cakupan uji (`test:coverage`) + laporan tren; mulai dari modul kritis (hazards, alert, thresholds) | audit F-10 — saat ini cakupan hanya dilaporkan |
+| A-3 | Tag rilis bertanda tangan / attestation (`git tag -s` atau Sigstore) | audit F-06 — butuh kunci GPG/identitas penerbit (tugas manusia H-10) |
+| A-4 | Pantau advisory `braces` (`micromatch/braces#70`); evaluasi alternatif tooling CSS bila patch tak kunjung ada | audit F-01/SECURITY.md — dev-only, tanpa jalur eksploitasi runtime |
+| A-5 | Pisahkan `docs/` mengikuti empat kuadran Diátaxis (tutorial/how-to/reference/explanation) bila dokumentasi bertambah | audit F-15 catatan struktur |
+
 ## 3. Yang sengaja tidak dilakukan
 - Memberi label "peringatan dini resmi" pada keluaran apa pun — mandat BMKG/BPBD/PVMBG.
 - Mengumpulkan data pribadi pelapor (tetap anonim, tanpa lokasi presisi).
