@@ -6,6 +6,7 @@
  *   - sebagian sumber gagal → warnings[], sisanya tetap dipakai; semua gagal → degraded.
  * Kuota FIRMS: 5.000 transaksi / 10 menit per kunci → TTL 30 menit (FIRMS_TTL_MIN) sudah sangat longgar.
  */
+import https from 'node:https'
 import { FIRMS_API, FIRMS_MAP_KEY, FIRMS_BBOX, FIRMS_SOURCES, FIRMS_DAYS } from './config.js'
 import { LOCATIONS } from '../src/data/locations.js'
 import { parseFirmsCsv, mapHotspots, haversineKm, SOURCE_NOTE } from '../src/domain/hazards/hotspots.js'
@@ -38,8 +39,32 @@ export function buildFirmsUrl(source, { mapKey = FIRMS_MAP_KEY, bbox = FIRMS_BBO
   return `${api}/${mapKey}/${source}/${bbox}/${clampFirmsDays(days)}`
 }
 
+// Node 22 undici fetch gagal ke firms.modaps.eosdis.nasa.gov (IPv6) — pakai https.get + family 4.
+// firmsFetch: fetch-like interface (ok/status/text()) untuk produksi.
+function firmsFetch(url, { headers } = {}) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, {
+      family: 4,
+      headers: headers || { 'User-Agent': 'niu-gayo-agroclimate/2 (+https://cuaca.abstract.biz.id)' },
+    }, (res) => {
+      let data = ''
+      res.on('data', (c) => { data += c })
+      res.on('end', () => {
+        resolve({
+          ok: res.statusCode >= 200 && res.statusCode < 300,
+          status: res.statusCode,
+          text: () => Promise.resolve(data),
+        })
+      })
+    })
+    req.on('error', reject)
+    req.setTimeout(20_000, () => { req.destroy(new Error('timeout')) })
+  })
+}
+
 async function getText(url, fetchImpl, label) {
-  const resp = await fetchImpl(url, { signal: AbortSignal.timeout(20_000), headers: { 'User-Agent': 'niu-gayo-agroclimate/2 (+https://cuaca.abstract.biz.id)' } })
+  const doFetch = fetchImpl || firmsFetch
+  const resp = await doFetch(url, { headers: { 'User-Agent': 'niu-gayo-agroclimate/2 (+https://cuaca.abstract.biz.id)' } })
   if (!resp.ok) throw new Error(`${label} HTTP ${resp.status}`)
   const text = await resp.text()
   // FIRMS mengembalikan HTTP 200 berisi pesan untuk kunci salah / kuota habis.
@@ -50,7 +75,7 @@ async function getText(url, fetchImpl, label) {
 /**
  * Ambil + gabungkan hotspot semua sumber. Mengembalikan payload lengkap /api/hotspots.
  */
-export async function getHotspots({ fetchImpl = fetch, now = new Date(), mapKey = FIRMS_MAP_KEY, sources = FIRMS_SOURCES, bbox = FIRMS_BBOX, days = FIRMS_DAYS, locations = LOCATIONS } = {}) {
+export async function getHotspots({ fetchImpl = firmsFetch, now = new Date(), mapKey = FIRMS_MAP_KEY, sources = FIRMS_SOURCES, bbox = FIRMS_BBOX, days = FIRMS_DAYS, locations = LOCATIONS } = {}) {
   const retrievedAt = new Date().toISOString()
   const base = {
     retrievedAt,
