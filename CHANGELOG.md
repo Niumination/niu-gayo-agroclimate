@@ -1,6 +1,6 @@
 # Changelog
 
-## [Belum dirilis] — Fase design/frontend/UX (P1 ✅ · P2–P6 menyusul)
+## [Belum dirilis] — Fase design/frontend/UX (P1–P2 ✅ · P3–P6 menyusul)
 
 ### P1 — Token semantik & kontras (2026-10-16) ✅
 - **Nol teks di bawah 4,5:1.** 417 utilitas teks beropasitas (`text-ink/45`, `dark:text-mist/40`, …) di **66 berkas** diganti token peran; pindai ulang menemukan **0** sisa. Sebelumnya 262 pemakaian gagal ambang WCAG AA di 21 berkas.
@@ -10,6 +10,15 @@
 - **Fokus keyboard tidak lagi dihapus:** `AppBar` (pemilih wilayah) melepas `focus-visible:outline-none` sehingga penanda fokus kembali terlihat.
 - **Gerbang kontras jadi penjaga build:** CI menjalankan `npm run check:contrast -- --strict` — **34/34 pasangan token lulus** (teks 4,5:1 · non-teks 3:1) dan 0 utilitas teks beropasitas; regresi kontras kini **menggagalkan build**. Skrip juga mengabaikan komentar blok supaya contoh anti-pola di dokumentasi tidak dihitung.
 - Uji: **340** (338 → +2: pemetaan pita opasitas & pengabaian komentar). Cakupan 95,70 / 84,06 / 95,89 %. Bundel 131,6 → **132,0 kB** gzip (tanpa dependensi baru).
+
+### P2 — Aksesibilitas interaksi (2026-10-16) ✅
+- **Target sentuh ≥ 44 px menyeluruh.** Pemindai tag `<button>` atas seluruh `src/` menemukan **0 tombol** di bawah 44 px (sebelumnya 12 dari 24); 4 kontrol yang masih 32–40 px dinaikkan (tutup dialog `AboutData`, tautan `tel:` `EmergencyContacts`, baris tanda di `ReportButton`, tombol anjuran `FireDangerCard`), tab bawah mobile jadi **56 px** + `env(safe-area-inset-bottom)`.
+- **Semantik tab lengkap.** `BottomNav` memakai `role="tablist"/"tab"`, `aria-selected`, `aria-controls`, `id`, **roving tabindex**, dan navigasi keyboard panah kiri/kanan + Home/End; `MobileTabShell` memakai `role="tabpanel"` + `aria-labelledby` + `tabIndex=0` **tanpa** menghapus penanda fokus (WCAG 2.4.7).
+- **Status diumumkan ke pembaca layar.** `aria-live="polite"` + `role="status"` baru untuk pembaruan data (jumlah bahaya aktif + level tertinggi + jam WIB), **skip-link** “Lewati ke konten utama” menuju `#main`, dan banner galat kini `role="alert"` dengan tombol **Coba lagi** (`min-h-11`).
+- **Fokus & label.** `AppBar`/`DesktopHeader`: kontrol `h-11`/`min-h-11`, emoji tema ditandai `aria-hidden` (label tetap teks), dan tidak ada lagi `outline-none` di seluruh `src/`.
+- **Skala tipografi dipasang sebagai token.** `@theme` kini mendefinisikan `--text-body` (16 px, teks isi & aksi), `--text-body-sm`/`--text-label` (14 px), `--text-caption` (12 px); teks aksi/kontrol P2 naik ke 16 px, metadata ke 12 px. 15 label antarmuka (navigasi, bantuan, berbagi, footer panel) berpindah dari teks keras ke i18n id+Gayo (temuan baru **A-10**; sisa teks keras di kartu dicatat untuk P3/P4).
+- **Pengaman baru:** `tests/a11yContract.test.js` (**10 uji**) mengunci tablist/tabpanel, skip-link + `aria-live`, larangan `outline-none`, target seluruh tombol ≥ 44 px (pemindai tag sadar-kurawal), keberadaan token skala teks, dan ketersediaan label i18n baru di kedua bahasa.
+- Gerbang paket: **350 uji lulus** · cakupan 95,78 / 84,20 / 95,94 % · `check:contrast --strict` hijau (34/34) · bundel **132,9 kB** gzip (batas 200) · `check:outlook` (27 hari) · `check:i18n` (67 placeholder) · `smoke` lolos · 35 dokumen / 117 tautan / 0 rusak.
 
 ### Tahap audit & rencana (commit `bfa8315`) — belum mengubah UI
 

@@ -9,7 +9,7 @@
 | `npm run dev` | Vite dev server (:5188) | UI + proxy `/api` ke `127.0.0.1:7455` |
 | `npm run build` | Vite 8 / Rolldown → `dist/` | bundle produksi, ± 0,5 detik |
 | `npm run preview` | Vite preview | menyajikan `dist/` (uji PWA/offline) |
-| `npm test` | `node --test tests/*.test.js` | **340 uji**, semua panggilan jaringan di-mock |
+| `npm test` | `node --test tests/*.test.js` | **350 uji**, semua panggilan jaringan di-mock (termasuk 10 uji kontrak a11y `tests/a11yContract.test.js`) |
 | `npm run test:coverage` | sama + `--experimental-test-coverage` | laporan cakupan mentah (tanpa ambang) |
 | **`npm run check:coverage`** | `scripts/check-coverage.mjs` | **gerbang cakupan**: baris ≥ 95 %, cabang ≥ 80 %, fungsi ≥ 92 % + tren vs baseline |
 | **`npm run check:bundle`** | `scripts/check-bundle.mjs` | JS utama ≤ 150 kB gzip · total ≤ 200 kB (atur lewat `BUNDLE_MAX_KB`/`BUNDLE_TOTAL_MAX_KB`) |
@@ -47,6 +47,6 @@ npm ci → npm test → npm run check:coverage → npm audit --omit=dev --audit-
 ```
 
 Angka acuan saat rilis v2.1.0 (semua hijau): 327 uji · cakupan 96,46/83,86/96,00 · bundle 65,8 kB gzip (utama) & 131,6 kB (total) · CSS 8,09 kB gzip · outlook berlaku sampai 2026-11-12 · `npm audit` **0**.
-Angka setelah **P1 (token & kontras, 16 Okt 2026)**: **340 uji** · cakupan 95,70/84,06/95,89 % · `check:contrast --strict` hijau (34/34 pasangan, 0 temuan opasitas) · bundel 132,0 kB total gzip.
+Angka setelah **P2 (aksesibilitas interaksi, 16 Okt 2026)**: **350 uji** · cakupan 95,78/84,20/95,94 % · `check:contrast --strict` hijau (34/34 pasangan, 0 temuan opasitas) · 0 dari 25 tombol < 44 px · bundel 132,9 kB total gzip.
 
 Lihat juga: [ENDPOINT-API.md](ENDPOINT-API.md) · [KONFIGURASI-ENV.md](KONFIGURASI-ENV.md) · [`AGENTS.md`](../../AGENTS.md)

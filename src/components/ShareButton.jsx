@@ -5,7 +5,7 @@ import { whatsappText, smsText, waShareUrl, smsShareUrl } from '../domain/share.
  * FR-X-7 — bagikan ringkasan bahaya sentra: Web Share API bila ada, lalu WhatsApp (wa.me) / SMS / salin.
  * Teks disusun oleh src/domain/share.js (murni, teruji).
  */
-export default function ShareButton({ hazards, location, compact = true }) {
+export default function ShareButton({ hazards, location, compact = true, tr = (k) => k }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   if (!hazards?.results?.length) return null
@@ -30,17 +30,19 @@ export default function ShareButton({ hazards, location, compact = true }) {
     } catch { /* abaikan */ }
   }
 
-  const link = 'underline underline-offset-2 hover:text-ink dark:hover:text-mist'
+  // P2: role="group" (bukan role="menu" tanpa pengelolaan fokus) — semua item tetap
+  // fokusable secara alami; target sentuh ≥ 44 px lewat min-h-11.
+  const link = 'min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist transition duration-100 ease-out active:scale-[.97]'
   return (
     <span className="relative inline-flex items-center gap-2">
-      <button type="button" onClick={share} className={link} aria-haspopup="menu" aria-expanded={open}>
-        Bagikan
+      <button type="button" onClick={share} className={link} aria-expanded={open}>
+        {tr('share')}
       </button>
       {open && (
-        <span role="menu" className={`inline-flex items-center gap-2 ${compact ? '' : 'flex-col items-start'}`}>
-          <a role="menuitem" className={link} href={waShareUrl(wa)} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-          <a role="menuitem" className={link} href={smsShareUrl(sms)}>SMS ({sms.length}/160)</a>
-          <button role="menuitem" type="button" className={link} onClick={() => copy(wa)}>{copied ? 'Tersalin ✓' : 'Salin'}</button>
+        <span role="group" aria-label={tr('shareHow')} className={`inline-flex items-center gap-3 ${compact ? '' : 'flex-col items-start'}`}>
+          <a className={link} href={waShareUrl(wa)} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a className={link} href={smsShareUrl(sms)}>SMS ({sms.length}/160)</a>
+          <button type="button" className={link} onClick={() => copy(wa)}>{copied ? `${tr('copied')} ✓` : tr('copy')}</button>
         </span>
       )}
     </span>

@@ -18,7 +18,7 @@ export default function ClimateBanner({ drought, now }) {
   if (!m) return null
   return (
     <div role="status" className={`border rounded-card px-4 py-3 text-[13px] ${STYLE[m.tone] || STYLE.sedang}`}>
-      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="w-full text-left flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="min-h-11 inline-flex items-center w-full text-left flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
         <span className="font-semibold">{m.title}</span>
         <span className="text-[11px] opacity-75">{m.summary}{m.issuedAt ? ` · rilis ${m.issuedAt}` : ''} {open ? '▴' : '▾'}</span>
       </button>
@@ -35,7 +35,7 @@ export default function ClimateBanner({ drought, now }) {
           {m.sources.length > 0 && (
             <p className="text-[11px] opacity-75">
               Sumber: {m.sources.map((s, i) => (
-                <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{s.title}</a>
+                <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">{s.title}</a>
               ))}
             </p>
           )}

@@ -38,7 +38,7 @@ export default function AppBar({
         </div>
         {age && (
           <span
-            className={`shrink-0 mt-0.5 inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-full border ${ageTone}`}
+            className={`shrink-0 mt-0.5 inline-flex items-center gap-1.5 text-caption font-medium px-2.5 py-1 rounded-full border ${ageTone}`}
           >
             <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${age.stale ? 'bg-husk' : 'bg-leaf'}`} />
             {tr('dataAge')} {age.label}
@@ -46,7 +46,7 @@ export default function AppBar({
         )}
       </div>
       <div className="px-2 pb-2 flex items-center justify-between gap-1">
-        <span className="pl-2 text-[11px] font-data text-ink-subtle dark:text-mist-subtle truncate">
+        <span className="pl-2 text-caption font-data text-ink-subtle dark:text-mist-subtle truncate">
           Niu Gayo Agro-Climate · ecmwf_ifs025
         </span>
         <div className="flex items-center">
@@ -54,7 +54,7 @@ export default function AppBar({
             aria-label={tr('language')}
             value={lang}
             onChange={(e) => onLangChange(e.target.value)}
-            className="h-11 max-w-[9.5rem] bg-transparent text-[13px] text-ink-body dark:text-mist-body rounded-lg px-1"
+            className="h-11 max-w-[9.5rem] bg-transparent text-body text-ink-body dark:text-mist-body rounded-lg px-2"
           >
             {LANGS.map((l) => (
               <option key={l.id} value={l.id}>{l.id === 'id' ? 'ID' : 'Gayo'}</option>
@@ -65,16 +65,16 @@ export default function AppBar({
             onClick={onToggleTheme}
             onDoubleClick={isAuto ? undefined : onResetTheme}
             aria-label={theme === 'dark' ? tr('themeLight') : tr('themeDark')}
-            className="h-11 w-11 grid place-items-center rounded-lg text-lg text-ink-body dark:text-mist-body"
+            className="h-11 w-11 grid place-items-center rounded-lg text-lg text-ink-body dark:text-mist-body transition duration-100 ease-out active:scale-[.97]"
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
           </button>
           <button
             type="button"
             onClick={onRefresh}
             disabled={loading}
             aria-label={loading ? tr('refreshing') : tr('refresh')}
-            className="h-11 w-11 grid place-items-center rounded-lg text-ink-body dark:text-mist-body disabled:opacity-40"
+            className="h-11 w-11 grid place-items-center rounded-lg text-ink-body dark:text-mist-body disabled:opacity-40 transition duration-100 ease-out active:scale-[.97]"
           >
             <RefreshCw size={20} aria-hidden="true" className={loading ? 'animate-spin' : ''} />
           </button>

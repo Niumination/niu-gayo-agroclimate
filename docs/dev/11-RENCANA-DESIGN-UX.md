@@ -21,10 +21,10 @@ Perbaikan dijadwalkan sebagai 6 paket kerja dengan kriteria terima terukur. Pake
 | Pasangan teks < 4,5:1 | 262 pemakaian di 21 berkas | ✅ **0 sejak P1** (417 utilitas diganti) |
 | Teks isi ≥ 16 px | tidak ada | semua teks isi & aksi |
 | Teks < 12 px | 107 pemakaian (10–11 px) | 0 |
-| Tombol ≥ 44 px | 12 dari 24 | seluruh aksi utama |
-| Aturan `focus:` eksplisit | 0 | seluruh kontrol interaktif |
-| `aria-live` untuk pembaruan data | 0 | ≥ 2 (status muat + perubahan level) |
-| Semantik tab (tablist/tab/tabpanel) | tidak ada | lengkap + navigasi panah |
+| Tombol ≥ 44 px | 12 dari 24 | ✅ **sejak P2** (0 dari 25 tombol < 44 px) |
+| Aturan `focus:` eksplisit | 0 | ✅ **sejak P2** (0 penghapus penanda fokus) |
+| `aria-live` untuk pembaruan data | 0 | ✅ **sejak P2** (pembaruan data + status) |
+| Semantik tab (tablist/tab/tabpanel) | tidak ada | ✅ **sejak P2** (penuh + navigasi panah) |
 | Safe-area aktif | `env()` inert (tanpa `viewport-fit=cover`) | aktif di iOS/Android |
 | Font data termuat | tidak (hanya deklarasi CSS) | 1 berkas WOFF2 subset, `swap` |
 
@@ -72,7 +72,10 @@ Satu animasi masuk 200 ms (sesuai rekomendasi) + `prefers-reduced-motion` sudah 
 `App.jsx` menampilkan teks polos `role="status"` saat memuat (tanpa kerangka/skeleton), tanpa indikator progres pada aksi tombol, tanpa panel "kosong" eksplisit, dan status basi (`dataAge`, ≥ 30 menit) hanya berupa label — tidak ada ajakan tindakan.
 
 ### A-9 I18n & pemuaian teks
-52 label ditandai `[?]` (tugas manusia H-4). Label Gayo/Indonesia cenderung 20–35 % lebih panjang; beberapa kartu memakai `text-[11px]` + lebar tetap, sehingga berisiko terpotong saat terjemahan masuk.
+67 label ditandai `[?]` (tugas manusia H-4; 52 pada audit, +15 dari label interaksi P2). Label Gayo/Indonesia cenderung 20–35 % lebih panjang; beberapa kartu memakai `text-[11px]` + lebar tetap, sehingga berisiko terpotong saat terjemahan masuk.
+
+### A-10 Teks antarmuka yang belum masuk i18n (temuan baru saat P2)
+Beberapa label antarmuka ditulis keras dalam bahasa Indonesia meskipun aplikasi dwibahasa: footer panel bahaya (tombol tampilkan/sembunyikan, tautan bantuan, “Evaluasi … WIB”, catatan “bukan peringatan resmi”), seluruh label `ShareButton`, tautan bantuan di footer `App.jsx`, serta `AboutData`/`ReportButton`/`FireDangerCard` (“Tutup”, “Sembunyikan”, “Lihat N anjuran lain”), termasuk `aria-label` bagian. **Sudah diperbaiki P2:** 15 kunci (navigasi, tampilkan/sembunyikan, bantuan, berbagi, catatan footer) di bahasa id + Gayo dan dipakai lewat `tr()`; sisanya dicatat untuk P3/P4 bersama uji pemuaian.
 
 ## 5. Riset → implikasi (R-1 … R-12)
 
@@ -106,7 +109,8 @@ Setiap paket memuat: tujuan · langkah · berkas sasaran · kriteria terima · u
 5. Ubah langkah CI menjadi `npm run check:contrast -- --strict`.
 **Kriteria terima:** `check:contrast --strict` hijau; `grep -nE 'text-(ink|mist)/[0-4][0-9]' src` = 0; tangkapan layar terang/gelap di 320/375/768/1280 px tidak ada teks "pudar"; uji tetap 338/338.
 
-### P2 — Aksesibilitas interaksi (usaha **M**)
+### P2 — Aksesibilitas interaksi (usaha **M**) · ✅ **SELESAI 2026-10-16**
+**Hasil terukur:** pemindai tag `<button>`: **0 dari 25 tombol** di bawah 44 px (sebelumnya 12/24); 4 kontrol 32–40 px dinaikkan; tab bawah 56 px + safe-area; `BottomNav` = `tablist` penuh (roving tabindex + panah/Home/End) dan `MobileTabShell` = `tabpanel` ber-`aria-labelledby` **tanpa** `outline-none`; `aria-live="polite"` + `role="status"` untuk pembaruan data; skip-link `#main`; banner galat `role="alert"` + tombol “Coba lagi”; `AppBar`/`DesktopHeader` kontrol 44 px & emoji `aria-hidden`; skala teks jadi token (`--text-body/body-sm/label/caption`); 15 label interaksi masuk i18n (temuan baru A-10). Pengaman: `tests/a11yContract.test.js` (10 uji) → suite **350 uji**; bundel 132,0 → **132,9 kB**; `check:contrast --strict` tetap 34/34.
 **Langkah**
 1. Target sentuh: seluruh tombol/tautan aksi ≥ 44 px (`min-h-11`/`h-11 w-11` + `px-3`), minimum 24 px untuk kontrol sekunder dengan jarak ≥ 24 px.
 2. Fokus: hapus `focus-visible:outline-none` di `AppBar`; pastikan `:focus-visible` global (2 px `leaf-deep`/`leaf-soft` + offset 2 px) tidak pernah ditimpa.
@@ -156,7 +160,7 @@ P1 token+kontras  →  check:contrast --strict  →  P2 a11y interaksi
         P3 tipografi+font  →  build+bundle  →  P4 state  →  P5 gerak/safe-area  →  P6 pengaman+docs
 ```
 
-Gerbang setelah tiap paket: `npm test` (338) · `npm run check:coverage` · `npm run check:contrast` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
+Gerbang setelah tiap paket: `npm test` (350) · `npm run check:coverage` · `npm run check:contrast` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
 **Jangan** menyentuh `tailwind.config.js`/`postcss.config.js` (sudah dihapus pada v2.1.0) dan jangan menambah dependensi runtime.
 
 ## 8. Log 50 putaran (audit → riset → rencana)
@@ -226,11 +230,11 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 | 47 | Motion & reduced-motion | Durasi final §5; `animate-pulse` dilepas dari makna; transisi tema 150 ms |
 | 48 | Keadaan aplikasi | 4 keadaan wajib per kartu: memuat (skeleton) · kosong (penjelasan) · basi (aksi) · gagal (ulang) |
 | 49 | I18n & pemuaian | Label Gayo 20–35 % lebih panjang → tanpa truncation pada 320 px; uji label `[?]` setelah H-4 |
-| 50 | Konsolidasi & pengaman | `scripts/check-contrast.mjs` (+11 uji) & langkah CI dipasang; audit ulang: **338 uji lulus**, cakupan 95,68/84,05/95,88 %; dokumen ini + `DESIGN-TOKENS.md` diterbitkan |
+| 50 | Konsolidasi & pengaman | `scripts/check-contrast.mjs` (+11 uji) & langkah CI dipasang; audit ulang saat penyusunan: **338 uji lulus**, cakupan 95,68/84,05/95,88 %; dokumen ini + `DESIGN-TOKENS.md` diterbitkan. Setelah P1–P2: **350 uji**, 95,78/84,20/95,94 % |
 
 ## 9. Definisi selesai (Definition of Done)
 
-**Otomatis (CI):** `npm test` (338) · `check:coverage` · `check:contrast --strict` · `build` · `check:bundle` (≤ 200 kB) · `smoke` · `check:outlook` · `check:i18n`.
+**Otomatis (CI):** `npm test` (350) · `check:coverage` · `check:contrast --strict` · `build` · `check:bundle` (≤ 200 kB) · `smoke` · `check:outlook` · `check:i18n`.
 **Manual (butuh manusia/telepon nyata):**
 1. **Keyboard:** Tab dari atas → skip-link → seluruh kontrol; tidak ada jebakan fokus; tab tab berpindah dengan panah; Shift+Tab berbalik arah.
 2. **Pembaca layar** (TalkBack/VoiceOver/NVDA): 4 tab terbaca; perubahan status & hasil laporan diumumkan; peta punya ringkasan teks.
@@ -246,7 +250,8 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 |---|---|---|
 | Menambah berat font & token | Bundel naik ±30–40 kB | Anggaran 200 kB longgar (131,6 kB); subset + satu berkas variabel; `check:bundle` menjaga |
 | Penggantian 262 pemakaian opasitas | Regresi visual halus tak terlihat tanpa mata manusia | Kerjakan P1 pada cabang terpisah + tangkapan layar 4 lebar × 2 tema sebelum/sesudah |
-| Gerbang kontras `--strict` menyala lebih awal | CI merah saat P1 belum tuntas | Saat ini **informatif**; ubah flag di langkah terakhir P1 |
+| Gerbang kontras `--strict` menyala lebih awal | CI merah saat P1 belum tuntas | ✅ Ditutup: CI memakai `--strict` sejak P1 (34/34 lulus) |
+| Pemindai a11y statis (tanpa browser) bisa luput dari masalah nyata | Hasil P2 tak terverifikasi visual | Ditutup sebagian oleh `tests/a11yContract.test.js`; sisa verifikasi keyboard/TalkBack tetap manual (§9) |
 | Perubahan tema besar di Tailwind 4 | Risiko keluaran kompilasi tak terduga | P1 hanya menambah token (tanpa menghapus kelas lama); pembersihan pasangan `dark:` dilakukan per komponen dengan uji + tangkapan layar |
 | Label Gayo (H-4) belum selesai | Uji pemuaian teks tak bisa final | Struktur tahan panjang (boleh membungkus) diuji lebih dulu dengan versi panjang buatan |
 
@@ -261,10 +266,12 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 | Paket | Status | Bukti |
 |---|---|---|
 | P1 token & kontras | ✅ selesai 2026-10-16 (commit `P1`) | 417 penggantian · `check:contrast --strict` hijau (34/34) · CI memakai `--strict` · `LevelGlyph` di `HazardPanel` · 340 uji · bundel 132,0 kB |
-| P2 a11y interaksi | ⬜ berikutnya | target 44 px · fokus terlihat · semantik tab · `aria-live` · skip-link · ikon level di kartu lain |
+| P2 a11y interaksi | ✅ selesai 2026-10-16 (commit `P2`) | 0/25 tombol < 44 px · tablist+tabpanel penuh · skip-link + `aria-live` · `a11yContract` 10 uji · skala teks jadi token · 15 label i18n |
 | P3 tipografi & font | ⬜ | skala 16 px · self-host JetBrains Mono subset · `tabular-nums` |
 | P4 keadaan aplikasi | ⬜ | skeleton · empty · basi + muat ulang · spinner tombol |
 | P5 gerak & area aman | ⬜ | durasi motion · `viewport-fit=cover` · `min-w-0` |
 | P6 pengaman & docs | ⬜ | ESLint `jsx-a11y` · pa11y/axe manual · dokumen |
+
+**Catatan teknis P2 yang perlu diingat:** (a) skala teks hidup sebagai token `--text-*` di `@theme` sehingga utilitas baru tanpa token langsung ketahuan lewat uji kontrak; (b) pemindai target sentuh memeriksa tag `<button>` termasuk `className` dinamis (konstanta lokal seperti `const link = 'min-h-11 …'`); (c) tint latar kartu level masih memakai pasangan `dark:` — penyisiran bersama P3; (d) verifikasi keyboard/pembaca layar tetap manual (sandbox tanpa browser).
 
 **Catatan teknis P1 yang perlu diingat:** (a) token baru tidak menambah dependensi dan hanya menambah ±0,4 kB gzip; (b) `check-contrast.mjs` kini mengabaikan komentar blok sehingga contoh anti-pola di dokumentasi/kode tidak dihitung sebagai temuan; (c) dua token jembatan `ink-body`/`mist-body` (~8:1) ditambahkan supaya teks isi tidak menyatu dengan judul saat opasitas dinaikkan; (d) tangkapan layar terang/gelap tetap perlu dilakukan manusia (sandbox tanpa browser).

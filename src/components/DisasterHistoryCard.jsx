@@ -24,11 +24,11 @@ export default function DisasterHistoryCard({ history, location }) {
       </div>
       {chips.length > 1 && (
         <div className="flex flex-wrap gap-1.5 pb-3 border-b border-ink/10 dark:border-mist/10">
-          <button type="button" onClick={() => setFilter(null)} className={`px-2.5 py-1 rounded-full text-[11px] border ${!filter ? 'border-ink/40 dark:border-mist/40 text-ink dark:text-mist' : 'border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted'}`}>
+          <button type="button" onClick={() => setFilter(null)} className={`min-h-11 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] border ${!filter ? 'border-ink/40 dark:border-mist/40 text-ink dark:text-mist' : 'border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted'}`}>
             Semua
           </button>
           {chips.map(([h, n]) => (
-            <button key={h} type="button" onClick={() => setFilter(filter === h ? null : h)} aria-pressed={filter === h} className={`px-2.5 py-1 rounded-full text-[11px] border inline-flex items-center gap-1.5 ${filter === h ? 'border-ink/40 dark:border-mist/40 text-ink dark:text-mist' : 'border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted'}`}>
+            <button key={h} type="button" onClick={() => setFilter(filter === h ? null : h)} aria-pressed={filter === h} className={`min-h-11 px-2.5 py-1 rounded-full text-[11px] border inline-flex items-center gap-1.5 ${filter === h ? 'border-ink/40 dark:border-mist/40 text-ink dark:text-mist' : 'border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted'}`}>
               <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${DOT[h] || 'bg-ink/30'}`} />
               {HAZARD_LABEL[h] ?? h} {n}
             </button>
@@ -51,7 +51,7 @@ export default function DisasterHistoryCard({ history, location }) {
                   {e.source && (
                     <>
                       {' · '}
-                      <a href={e.source} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">sumber</a>
+                      <a href={e.source} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">sumber</a>
                     </>
                   )}
                 </p>

@@ -226,7 +226,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                 <fieldset>
                   <legend className="text-[13px] font-medium text-ink-body dark:text-mist-muted">Tanda yang terlihat</legend>
                   {DROUGHT_SIGNS.map((d) => (
-                    <label key={d.value} className="flex items-center gap-2 min-h-[40px] text-[13px] text-ink-body dark:text-mist-body">
+                    <label key={d.value} className="flex items-center gap-2 min-h-11 text-[13px] text-ink-body dark:text-mist-body">
                       <input
                         type="checkbox"
                         checked={signs.includes(d.value)}

@@ -191,7 +191,7 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
           ))}
         </ul>
         {a.advice.length > 2 && (
-          <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-1 text-[12px] font-medium text-leaf-deep dark:text-leaf-soft hover:underline min-h-[32px]">
+          <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-1 text-[12px] font-medium text-leaf-deep dark:text-leaf-soft hover:underline min-h-11">
             {showAll ? 'Sembunyikan' : `Lihat ${a.advice.length - 2} anjuran lain`}
           </button>
         )}
@@ -199,8 +199,8 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
 
       <p className="mt-3 text-[11px] text-ink-muted dark:text-mist-subtle leading-relaxed">
         Kelas FDRS Indonesia (de Groot dkk. 2007 / BMKG SPBK); FWI dihitung dari ERA5-Land + ECMWF (Open-Meteo, CC BY 4.0). Rujukan resmi:{' '}
-        <a className="underline" href="https://www.bmkg.go.id/cuaca/karhutla/dc" target="_blank" rel="noreferrer">BMKG Karhutla</a> ·{' '}
-        <a className="underline" href="https://sipongi.menlhk.go.id/" target="_blank" rel="noreferrer">SiPongi KLHK</a>
+        <a className="min-h-11 inline-flex items-center underline" href="https://www.bmkg.go.id/cuaca/karhutla/dc" target="_blank" rel="noreferrer">BMKG Karhutla</a> ·{' '}
+        <a className="min-h-11 inline-flex items-center underline" href="https://sipongi.menlhk.go.id/" target="_blank" rel="noreferrer">SiPongi KLHK</a>
         {fireDanger.warnings?.length > 0 && <span className="block mt-1">Catatan: {fireDanger.warnings.join('; ')}</span>}
       </p>
     </>,

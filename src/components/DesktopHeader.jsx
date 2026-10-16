@@ -29,22 +29,22 @@ export default function DesktopHeader({
       <div className="max-w-shell mx-auto px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-baseline gap-3 min-w-0">
           <span className="font-semibold tracking-tight text-ink dark:text-mist">Niu Gayo Agro-Climate</span>
-          <span className="font-data text-[11px] text-ink-muted dark:text-mist-subtle">ecmwf_ifs025</span>
+          <span className="font-data text-caption text-ink-muted dark:text-mist-subtle">ecmwf_ifs025</span>
           {age && (
-            <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border ${ageTone}`}>
+            <span className={`inline-flex items-center gap-1.5 text-caption font-medium px-2 py-0.5 rounded-full border ${ageTone}`}>
               <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${age.stale ? 'bg-husk' : 'bg-leaf'}`} />
               {tr('dataAge')} {age.label}
             </span>
           )}
           {offline && (
-            <span role="status" className="text-[11px] font-medium text-husk-deep dark:text-husk-soft">
+            <span role="status" className="text-caption font-medium text-husk-deep dark:text-husk-soft">
               {tr('offlineBanner')}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {lastUpdated && (
-            <span className="font-data text-[11px] text-ink-muted dark:text-mist-subtle">
+            <span className="font-data text-caption text-ink-muted dark:text-mist-subtle">
               {tr('updated')} {lastUpdated}
             </span>
           )}
@@ -52,7 +52,7 @@ export default function DesktopHeader({
             aria-label={tr('language')}
             value={lang}
             onChange={(e) => onLangChange(e.target.value)}
-            className="h-9 bg-transparent text-[13px] text-ink-body dark:text-mist-body rounded-lg px-1 focus-visible:outline-none"
+            className="h-11 bg-transparent text-body text-ink-body dark:text-mist-body rounded-lg px-2"
           >
             {LANGS.map((l) => (
               <option key={l.id} value={l.id}>{l.label}</option>
@@ -63,16 +63,16 @@ export default function DesktopHeader({
             onClick={onToggleTheme}
             onDoubleClick={isAuto ? undefined : onResetTheme}
             aria-label={theme === 'dark' ? tr('themeLight') : tr('themeDark')}
-            className="h-9 w-9 grid place-items-center rounded-lg text-ink-body dark:text-mist-body hover:bg-ink/5 dark:hover:bg-mist/5"
+            className="h-11 w-11 grid place-items-center rounded-lg text-lg text-ink-body dark:text-mist-body hover:bg-ink/5 dark:hover:bg-mist/5 transition duration-100 ease-out active:scale-[.97]"
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
           </button>
           <button
             type="button"
             onClick={onRefresh}
             disabled={loading}
             aria-label={loading ? tr('refreshing') : tr('refresh')}
-            className="h-9 px-3 inline-flex items-center gap-2 rounded-lg text-[13px] font-medium text-ink-body dark:text-mist-body hover:bg-ink/5 dark:hover:bg-mist/5 disabled:opacity-40"
+            className="min-h-11 px-3 inline-flex items-center gap-2 rounded-lg text-body font-medium text-ink-body dark:text-mist-body hover:bg-ink/5 dark:hover:bg-mist/5 disabled:opacity-40 transition duration-100 ease-out active:scale-[.97]"
           >
             <RefreshCw size={15} aria-hidden="true" className={loading ? 'animate-spin' : ''} />
             {loading ? tr('refreshing') : tr('refresh')}

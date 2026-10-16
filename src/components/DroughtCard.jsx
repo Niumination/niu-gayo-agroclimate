@@ -139,7 +139,7 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
       </div>
       <p className="mt-3 text-[11px] text-ink-muted dark:text-mist-subtle leading-relaxed">
         HTH = hari berturut hujan &lt; 1 mm (definisi BMKG). Arsip model ERA5-Land ~9 km, bukan penakar hujan; tertinggal {drought.archive?.lagDays ?? '—'} hari. Rujukan:{' '}
-        <a className="underline" href="https://www.bmkg.go.id/iklim" target="_blank" rel="noreferrer">BMKG Iklim (Monitoring HTH dasarian)</a>
+        <a className="min-h-11 inline-flex items-center underline" href="https://www.bmkg.go.id/iklim" target="_blank" rel="noreferrer">BMKG Iklim (Monitoring HTH dasarian)</a>
         {drought.warnings?.length > 0 && <span className="block mt-1">Catatan: {drought.warnings.join('; ')}</span>}
       </p>
     </>,

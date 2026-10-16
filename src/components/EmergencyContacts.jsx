@@ -25,7 +25,7 @@ export default function EmergencyContacts({ location, hazard = '*' }) {
               <p className="text-[13px] text-ink-body dark:text-mist-body truncate">{c.name}</p>
               <p className="text-[11px] text-ink-muted dark:text-mist-subtle">{c.scope}{c.alt ? ` · alt. ${c.alt}` : ''}</p>
             </div>
-            <a href={`tel:${String(c.phone).replace(/[^\d+]/g, '')}`} className="shrink-0 min-h-[40px] inline-flex items-center px-3 rounded-lg border border-ink/15 dark:border-mist/15 font-data text-[13px] text-ink dark:text-mist hover:border-ink/40 dark:hover:border-mist/40">
+            <a href={`tel:${String(c.phone).replace(/[^\d+]/g, '')}`} className="shrink-0 min-h-11 inline-flex items-center px-3 rounded-lg border border-ink/15 dark:border-mist/15 font-data text-[13px] text-ink dark:text-mist hover:border-ink/40 dark:hover:border-mist/40">
               {c.phone}
             </a>
           </li>

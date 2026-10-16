@@ -110,7 +110,7 @@ function HazardRow({ r, open, onToggle, lang }) {
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="w-full text-left flex items-start justify-between gap-3"
+        className="min-h-11 inline-flex items-center w-full text-left flex items-start justify-between gap-3"
       >
         <div className="min-w-0">
           <p className="text-[13px] font-medium text-ink-body dark:text-mist-body truncate">{label}</p>
@@ -200,31 +200,31 @@ export default function HazardPanel({ hazards, location, lang = 'id', onAbout, o
         ))}
       </ul>
 
-      <div className="mt-3 pt-3 border-t border-ink/10 dark:border-mist/10 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[11px] text-ink-muted dark:text-mist-subtle">
+      <div className="mt-3 pt-3 border-t border-ink/10 dark:border-mist/10 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-caption text-ink-muted dark:text-mist-subtle">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {visible.length < results.length && (
-            <button type="button" onClick={() => setShowAll(true)} className="underline underline-offset-2 hover:text-ink dark:hover:text-mist">
-              Tampilkan semua ({results.length})
+            <button type="button" onClick={() => setShowAll(true)} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist">
+              {tr('showAll')} ({results.length})
             </button>
           )}
           {showAll && visible.length === results.length && results.some((r) => r.level === 'n/a') && (
-            <button type="button" onClick={() => setShowAll(false)} className="underline underline-offset-2 hover:text-ink dark:hover:text-mist">
-              Sembunyikan yang tanpa data
+            <button type="button" onClick={() => setShowAll(false)} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist">
+              {tr('hideNoData')}
             </button>
           )}
           {hidden.length > 0 && onToggleHidden && (
-            <button type="button" onClick={() => onToggleHidden([])} className="underline underline-offset-2 hover:text-ink dark:hover:text-mist">
-              Tampilkan {hidden.length} bahaya yang disembunyikan
+            <button type="button" onClick={() => onToggleHidden([])} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist">
+              {tr('showHidden')} ({hidden.length})
             </button>
           )}
           {onAbout && (
-            <button type="button" onClick={onAbout} className="underline underline-offset-2 hover:text-ink dark:hover:text-mist">
-              Tentang data &amp; batasan
+            <button type="button" onClick={onAbout} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist">
+              {tr('aboutData')}
             </button>
           )}
-          <ShareButton hazards={hazards} location={location} />
+          <ShareButton hazards={hazards} location={location} tr={tr} />
         </div>
-        <span>{asOf ? `Evaluasi ${asOf} WIB` : ''} · informasi pendukung, bukan peringatan resmi</span>
+        <span>{asOf ? `${tr('evaluatedAt')} ${asOf} WIB` : ''} · {tr('unofficialNote')}</span>
       </div>
     </section>
   )

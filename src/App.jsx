@@ -40,6 +40,8 @@ export default function App() {
   const [fetchedAt, setFetchedAt] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  // P2 — pengumuman untuk pembaca layar (WCAG 4.1.3 Status Messages)
+  const [liveMsg, setLiveMsg] = useState('')
 
   // i18n
   const [lang, setLang] = useState(() => prefs.getLang() || 'id')
@@ -104,6 +106,13 @@ export default function App() {
         const res = await getAgroClimateData(loc)
         setData(res)
         setFetchedAt(Date.now())
+        const level = res?.hazards?.worst
+        const jam = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
+        setLiveMsg(
+          level && level !== 'n/a'
+            ? `${tr('updated')} ${jam} WIB — ${tr('highestLevel')}: ${level}`
+            : `${tr('updated')} ${jam} WIB`
+        )
       } catch (err) {
         setError(err.message || tr('errorLoad'))
       } finally {
@@ -278,6 +287,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* P2 — WCAG 2.4.1: lewati navigasi ke konten utama (hanya terlihat saat difokus) */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:px-4 focus:min-h-11 focus:inline-flex focus:items-center focus:rounded-lg focus:bg-leaf-deep focus:text-on-accent focus:text-body focus:font-semibold"
+      >
+        {tr('skipToContent')}
+      </a>
+      {/* P2 — pengumuman pembaruan data untuk pembaca layar */}
+      <div role="status" aria-live="polite" className="sr-only">{liveMsg}</div>
       {isDesktop ? (
         <DesktopHeader {...headerProps} />
       ) : (
@@ -287,23 +305,30 @@ export default function App() {
       {error && (
         <div
           role="alert"
-          className="mx-4 mt-4 border border-cherry/30 bg-cherry/5 text-cherry-deep dark:text-cherry-soft p-4 rounded-card text-[13px]"
+          className="mx-4 mt-4 border border-cherry/30 bg-cherry/5 text-cherry-deep dark:text-cherry-soft p-4 rounded-card text-body"
         >
-          {error}
+          <p className="font-medium">{error}</p>
+          <button
+            type="button"
+            onClick={() => loadData(selectedLocation)}
+            className="mt-2 min-h-11 px-4 inline-flex items-center rounded-lg bg-cherry text-on-accent font-semibold text-body transition duration-100 ease-out active:scale-[.97]"
+          >
+            {tr('retry')}
+          </button>
         </div>
       )}
 
       {loading && !data && (
-        <p role="status" className="flex-1 grid place-items-center text-[13px] text-ink-muted dark:text-mist-muted py-16">
+        <p role="status" className="flex-1 grid place-items-center text-body text-ink-muted dark:text-mist-muted py-16">
           {tr('refreshing')}
         </p>
       )}
 
       {isDesktop ? (
-        <main className="flex-1 w-full anim-enter">{desktopLayout}</main>
+        <main id="main" className="flex-1 w-full anim-enter">{desktopLayout}</main>
       ) : (
         <>
-          <main className="flex-1 w-full">
+          <main id="main" className="flex-1 w-full">
             <MobileTabShell active={tab}>
               {tab === 'now' && mobileNow}
               {tab === 'forecast' && mobileForecast}
@@ -315,10 +340,10 @@ export default function App() {
         </>
       )}
 
-      <footer className="border-t border-ink/10 dark:border-mist/10 py-4 text-center text-[11px] text-ink-muted dark:text-mist-subtle">
+      <footer className="border-t border-ink/10 dark:border-mist/10 py-4 text-center text-caption text-ink-muted dark:text-mist-subtle">
         Niu Gayo Agro-Climate &bull; {tr('footer')} &bull;{' '}
-        <button type="button" onClick={() => setAboutOpen(true)} className="underline underline-offset-2 hover:text-ink dark:hover:text-mist">
-          Tentang data &amp; batasan
+        <button type="button" onClick={() => setAboutOpen(true)} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist">
+          {tr('aboutData')}
         </button>
       </footer>
       <AboutData open={aboutOpen} onClose={() => setAboutOpen(false)} />

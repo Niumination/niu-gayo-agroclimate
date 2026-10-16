@@ -385,7 +385,7 @@ function main() {
     console.error('\n✗ [kontras] mode --strict: ada temuan kontras')
     process.exit(1)
   }
-  console.log('\nOK [kontras] selesai (mode informatif)')
+  console.log(`\nOK [kontras] selesai (mode ${strict ? 'ketat --strict' : 'informatif'})`)
   process.exit(0)
 }
 

@@ -203,7 +203,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
               type="button"
               onClick={() => setShowCleanRoom((v) => !v)}
               aria-expanded={showCleanRoom}
-              className="text-[11px] font-medium underline underline-offset-2 text-ink-body dark:text-mist-muted"
+              className="min-h-11 inline-flex items-center text-[11px] font-medium underline underline-offset-2 text-ink-body dark:text-mist-muted"
             >
               {showCleanRoom ? 'Sembunyikan' : 'Tampilkan'} daftar periksa {a.advice.cleanRoomTitle?.toLowerCase() || 'ruang bersih'}
             </button>
@@ -222,9 +222,9 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
       <p className="mt-4 pt-3 border-t border-ink/10 dark:border-mist/10 text-[11px] text-ink-muted dark:text-mist-subtle leading-relaxed">
         Estimasi {a.flags.model} via Open-Meteo Air Quality · jam data {hhmm(a.time)} WIB · diambil {clock(airQuality.retrievedAt)}.
         Bukan pengganti pengumuman resmi:{' '}
-        <a href="https://ispu.menlhk.go.id/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">ISPUNet KLHK</a>
+        <a href="https://ispu.menlhk.go.id/" target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">ISPUNet KLHK</a>
         {' · '}
-        <a href="https://www.bmkg.go.id/kualitas-udara/informasi-partikulat-pm25.bmkg" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">PM2,5 BMKG</a>.
+        <a href="https://www.bmkg.go.id/kualitas-udara/informasi-partikulat-pm25.bmkg" target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">PM2,5 BMKG</a>.
       </p>
     </>,
   )

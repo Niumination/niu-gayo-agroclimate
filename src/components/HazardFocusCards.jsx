@@ -252,7 +252,7 @@ export function ExternalReportsCard({ externalReports }) {
   return (
     <Shell title="Laporan Warga PetaBencana.id" subtitle="Dataran Tinggi Gayo (Aceh Tengah, Bener Meriah, Gayo Lues) · 7 hari terakhir" ariaLabel="Laporan warga PetaBencana" footer={`${d.attribution}.`}>
       {d.total === 0 ? (
-        <p className="text-[13px] text-ink-muted dark:text-mist-muted">Belum ada laporan warga di wilayah Gayo dalam 7 hari terakhir. Lapor via <a className="underline" href="https://petabencana.id" target="_blank" rel="noreferrer noopener">petabencana.id</a> atau tombol Lapor di aplikasi ini.</p>
+        <p className="text-[13px] text-ink-muted dark:text-mist-muted">Belum ada laporan warga di wilayah Gayo dalam 7 hari terakhir. Lapor via <a className="min-h-11 inline-flex items-center underline" href="https://petabencana.id" target="_blank" rel="noreferrer noopener">petabencana.id</a> atau tombol Lapor di aplikasi ini.</p>
       ) : (
         <ul className="divide-y divide-ink/10 dark:divide-mist/10">
           {d.reports.slice(0, 6).map((r) => (

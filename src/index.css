@@ -76,6 +76,18 @@
   --color-level-bahaya-dark: #F0A184;
   --color-level-ekstrem-dark: #F29BA0;
 
+  /* Skala ukuran teks (P2/P3; tabel: docs/reference/DESIGN-TOKENS.md §4).
+     Tailwind 4: token `--text-*` menghasilkan font-size + line-height sekaligus.
+     Aturan: teks isi & aksi >= 16 px, label >= 14 px, minimum mutlak 12 px. */
+  --text-body: 1rem;                 /* 16 px — teks isi & aksi */
+  --text-body--line-height: 1.6;
+  --text-body-sm: 0.875rem;          /* 14 px — baris tabel, daftar anjuran */
+  --text-body-sm--line-height: 1.55;
+  --text-label: 0.875rem;            /* 14 px — label kecil (upper + tracking) */
+  --text-label--line-height: 1.4;
+  --text-caption: 0.75rem;           /* 12 px — stempel waktu, catatan kaki */
+  --text-caption--line-height: 1.45;
+
   --font-data: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --max-width-shell: 1400px;
   --radius-card: 16px;

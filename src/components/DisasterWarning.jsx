@@ -111,7 +111,7 @@ export default function DisasterWarning({ disaster, dailyRainSum, location }) {
                     {a.description}
                   </p>
                   <p className="mt-0.5 font-data text-[10px] text-ink-subtle dark:text-mist-subtle">
-                    {a.pubDate} — <a className="underline" href={a.link} target="_blank" rel="noreferrer">detail CAP BMKG</a>
+                    {a.pubDate} — <a className="min-h-11 inline-flex items-center underline" href={a.link} target="_blank" rel="noreferrer">detail CAP BMKG</a>
                   </p>
                 </div>
               ))}

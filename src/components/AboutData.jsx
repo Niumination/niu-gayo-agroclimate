@@ -41,7 +41,7 @@ export default function AboutData({ open, onClose }) {
             <h2 id="about-title" className="text-sm font-semibold tracking-tight">Tentang data &amp; batasan</h2>
             <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">Niu Gayo Agro-Climate adalah informasi pendukung keputusan — bukan peringatan dini resmi.</p>
           </div>
-          <button type="button" onClick={onClose} className="min-h-[40px] px-3 rounded-lg border border-ink/15 dark:border-mist/15 text-[13px]">Tutup</button>
+          <button type="button" onClick={onClose} className="min-h-11 px-3 rounded-lg border border-ink/15 dark:border-mist/15 text-[13px]">Tutup</button>
         </div>
 
         <div className="space-y-5 pt-4 text-[13px] leading-relaxed">
@@ -60,7 +60,7 @@ export default function AboutData({ open, onClose }) {
               <li><span className="inline-block w-2 h-2 rounded-full bg-leaf mr-2" />Rendah — kondisi normal; tidak perlu tindakan khusus.</li>
               <li><span className="inline-block w-2 h-2 rounded-full bg-husk mr-2" />Waspada — pantau; siapkan langkah pencegahan di kebun/rumah.</li>
               <li><span className="inline-block w-2 h-2 rounded-full bg-cherry mr-2" />Bahaya — kurangi paparan/aktivitas berisiko; ikuti anjuran pada kartu.</li>
-              <li><span className="inline-block w-2 h-2 rounded-full bg-cherry mr-2 animate-pulse" />Ekstrem — ambang resmi terlampaui jauh; prioritaskan keselamatan dan arahan petugas.</li>
+              <li><span aria-hidden="true" className="inline-block w-2 h-2 rounded-full bg-cherry mr-2" />Ekstrem — ambang resmi terlampaui jauh; prioritaskan keselamatan dan arahan petugas.</li>
               <li className="text-ink-muted dark:text-mist-muted">“Tidak tersedia” = sumber data sedang gagal atau bahaya tidak berlaku di sentra ini (mis. indeks DAS hanya untuk hulu Peusangan).</li>
             </ul>
             <p className="text-ink-muted dark:text-mist-muted mt-1">Ambang lengkap dan rujukannya: <code>docs/reference/THRESHOLDS.md</code> di repositori.</p>
@@ -71,7 +71,7 @@ export default function AboutData({ open, onClose }) {
             <ul className="mt-1 divide-y divide-ink/10 dark:divide-mist/10">
               {SOURCES.map((s) => (
                 <li key={s.name} className="py-2">
-                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-2">{s.name}</a>
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center font-medium underline underline-offset-2">{s.name}</a>
                   <p className="text-[12px] text-ink-body dark:text-mist-muted">{s.use}</p>
                   <p className="text-[11px] text-ink-muted dark:text-mist-subtle">Lisensi: {s.license}</p>
                 </li>
@@ -101,7 +101,7 @@ export default function AboutData({ open, onClose }) {
           <section>
             <h3 className="font-semibold">Koreksi &amp; kontak</h3>
             <p className="text-ink-body dark:text-mist-body mt-1">
-              Nomor kontak, riwayat kejadian, atau ambang yang keliru? Buka isu di repositori <a href="https://github.com/niumination/niu-gayo-agroclimate" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">niumination/niu-gayo-agroclimate</a> atau hubungi pengelola melalui kanal komunitas Niu Gayo.
+              Nomor kontak, riwayat kejadian, atau ambang yang keliru? Buka isu di repositori <a href="https://github.com/niumination/niu-gayo-agroclimate" target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">niumination/niu-gayo-agroclimate</a> atau hubungi pengelola melalui kanal komunitas Niu Gayo.
               Darurat: <strong>112</strong> · BPBD Aceh Tengah <strong>(0643) 21113</strong> · Damkar <strong>113</strong>.
             </p>
           </section>

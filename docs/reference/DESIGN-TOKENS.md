@@ -126,6 +126,8 @@ Aturan tambahan untuk lencana/kartu level:
 | `text-caption` | 0,75 rem / 12 px | 1,45 | stempel waktu, catatan kaki | minimum mutlak; kontras ≥ 4,5:1 |
 | `text-data` | 0,875–1 rem, `font-data` (JetBrains Mono) | 1,4 | angka, satuan, koordinat | pakai `tabular-nums` |
 
+**Status penerapan (P2, 2026-10-16):** keempat token skala sudah dipasang di `src/index.css` (`--text-body`, `--text-body-sm`, `--text-label`, `--text-caption`, masing-masing dengan `--line-height`); teks isi & aksi memakai 16 px, metadata 12 px. `tests/a11yContract.test.js` menolak utilitas `text-*` dari skala resmi yang belum punya token.
+
 Aturan: (a) jangan ada teks di bawah 12 px — saat ini ada 100 pemakaian 11 px dan 7 pemakaian 10 px; (b) `text-[10px]/[11px]` dinaikkan ke `text-caption` (12 px) atau dihilangkan; (c) satu preload font saja (`JetBrains Mono` subset latin + latin-ext, WOFF2, `font-display: swap`) — saat ini font di-*declare* tetapi **tidak di-self-host** sehingga semua angka jatuh ke monospace sistem.
 
 ## 5. Gerak (motion)
