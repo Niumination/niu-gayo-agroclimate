@@ -17,23 +17,23 @@ export default function ClimateBanner({ drought, now }) {
   const m = climateBannerModel(outlook, { now: now ?? new Date(), drought })
   if (!m) return null
   return (
-    <div role="status" className={`border rounded-card px-4 py-3 text-[13px] ${STYLE[m.tone] || STYLE.sedang}`}>
+    <div role="status" className={`border rounded-card px-4 py-3 text-body ${STYLE[m.tone] || STYLE.sedang}`}>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="min-h-11 inline-flex items-center w-full text-left flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
         <span className="font-semibold">{m.title}</span>
-        <span className="text-[11px] opacity-75">{m.summary}{m.issuedAt ? ` · rilis ${m.issuedAt}` : ''} {open ? '▴' : '▾'}</span>
+        <span className="text-caption opacity-75">{m.summary}{m.issuedAt ? ` · rilis ${m.issuedAt}` : ''} {open ? '▴' : '▾'}</span>
       </button>
-      {m.local && <p className={`mt-1 text-[12px] ${m.localTone === 'rendah' ? 'text-leaf-deep dark:text-leaf-soft' : ''}`}>{m.local}</p>}
+      {m.local && <p className={`mt-1 text-caption ${m.localTone === 'rendah' ? 'text-leaf-deep dark:text-leaf-soft' : ''}`}>{m.local}</p>}
       {open && (
-        <div className="mt-2 space-y-1.5 text-[12px] text-ink-body dark:text-mist-body">
+        <div className="mt-2 space-y-1.5 text-caption text-ink-body dark:text-mist-body">
           {m.detail && <p>{m.detail}</p>}
           {m.implications.length > 0 && (
             <ul className="list-disc pl-4 space-y-0.5">
               {m.implications.map((x, i) => <li key={i}>{x}</li>)}
             </ul>
           )}
-          {m.staleNote && <p className="text-[11px] opacity-80">{m.staleNote}</p>}
+          {m.staleNote && <p className="text-caption opacity-80">{m.staleNote}</p>}
           {m.sources.length > 0 && (
-            <p className="text-[11px] opacity-75">
+            <p className="text-caption opacity-75">
               Sumber: {m.sources.map((s, i) => (
                 <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">{s.title}</a>
               ))}

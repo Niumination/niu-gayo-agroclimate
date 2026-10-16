@@ -19,14 +19,14 @@ export default function InstrumentPanel({ current, daily, location, tr, classNam
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist truncate">
+          <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist break-words">
             {location?.name}
           </h2>
-          <p className="text-[13px] text-ink-muted dark:text-mist-muted truncate">
-            {tr('elevation')} <span className="font-data">{location?.elevation}</span> {tr('mdpl')}
+          <p className="text-body-sm text-ink-muted dark:text-mist-muted break-words">
+            {tr('elevation')} <span className="font-data tabular-nums">{location?.elevation}</span> {tr('mdpl')}
           </p>
         </div>
-        <span className="shrink-0 text-[11px] font-medium px-2 py-1 rounded-full border border-ink/10 dark:border-mist/15 text-ink-muted dark:text-mist-muted">
+        <span className="shrink-0 text-caption font-medium px-2 py-1 rounded-full border border-ink/10 dark:border-mist/15 text-ink-muted dark:text-mist-muted">
           {tr('airTemp')}
         </span>
       </div>
@@ -36,12 +36,12 @@ export default function InstrumentPanel({ current, daily, location, tr, classNam
         <span className="font-data font-semibold leading-none tracking-tighter text-[3.5rem] sm:text-[4.25rem] text-ink dark:text-mist tabular-nums">
           {current.temp}
         </span>
-        <span className="font-data text-lg text-ink-muted dark:text-mist-muted pb-2">°C</span>
+        <span className="font-data text-lg text-ink-muted dark:text-mist-muted pb-2 tabular-nums">°C</span>
       </div>
-      <p className="mt-1 text-[13px] text-ink-muted dark:text-mist-muted">
-        {tr('min')} <span className="font-data text-ink-body dark:text-mist-body">{daily.minTemp}°C</span>
+      <p className="mt-1 text-body text-ink-muted dark:text-mist-muted">
+        {tr('min')} <span className="font-data text-ink-body dark:text-mist-body tabular-nums">{daily.minTemp}°C</span>
         {'  '}
-        {tr('max')} <span className="font-data text-ink-body dark:text-mist-body">{daily.maxTemp}°C</span>
+        {tr('max')} <span className="font-data text-ink-body dark:text-mist-body tabular-nums">{daily.maxTemp}°C</span>
       </p>
 
       {/* Metrik pendukung, dipisah hairline rule */}

@@ -19,16 +19,16 @@ export default function DisasterHistoryCard({ history, location }) {
   return (
     <section aria-label="Riwayat kejadian bencana" className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3">
-        <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">Riwayat kejadian {location?.name ? `— ${location.name}` : ''}</h2>
-        <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">{history.count} kejadian terdokumentasi publik (BNPB/BPBD/media) · bukan daftar lengkap</p>
+        <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">Riwayat kejadian {location?.name ? `— ${location.name}` : ''}</h2>
+        <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{history.count} kejadian terdokumentasi publik (BNPB/BPBD/media) · bukan daftar lengkap</p>
       </div>
       {chips.length > 1 && (
         <div className="flex flex-wrap gap-1.5 pb-3 border-b border-ink/10 dark:border-mist/10">
-          <button type="button" onClick={() => setFilter(null)} className={`min-h-11 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] border ${!filter ? 'border-ink/40 dark:border-mist/40 text-ink dark:text-mist' : 'border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted'}`}>
+          <button type="button" onClick={() => setFilter(null)} className={`min-h-11 inline-flex items-center px-2.5 py-1 rounded-full text-caption border ${!filter ? 'border-ink/40 dark:border-mist/40 text-ink dark:text-mist' : 'border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted'}`}>
             Semua
           </button>
           {chips.map(([h, n]) => (
-            <button key={h} type="button" onClick={() => setFilter(filter === h ? null : h)} aria-pressed={filter === h} className={`min-h-11 px-2.5 py-1 rounded-full text-[11px] border inline-flex items-center gap-1.5 ${filter === h ? 'border-ink/40 dark:border-mist/40 text-ink dark:text-mist' : 'border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted'}`}>
+            <button key={h} type="button" onClick={() => setFilter(filter === h ? null : h)} aria-pressed={filter === h} className={`min-h-11 px-2.5 py-1 rounded-full text-caption border inline-flex items-center gap-1.5 ${filter === h ? 'border-ink/40 dark:border-mist/40 text-ink dark:text-mist' : 'border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted'}`}>
               <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${DOT[h] || 'bg-ink/30'}`} />
               {HAZARD_LABEL[h] ?? h} {n}
             </button>
@@ -40,12 +40,12 @@ export default function DisasterHistoryCard({ history, location }) {
           <li key={e.id ?? `${e.date}-${e.title}`} className="py-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[13px] font-medium text-ink-body dark:text-mist-body inline-flex items-center gap-1.5">
+                <p className="text-body font-medium text-ink-body dark:text-mist-body inline-flex items-center gap-1.5">
                   <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${DOT[e.hazard ?? e.type] || 'bg-ink/30'}`} />
                   {e.title}
                 </p>
-                {e.summary && <p className="text-[12px] leading-snug text-ink-muted dark:text-mist-muted mt-0.5">{e.summary}</p>}
-                <p className="text-[11px] text-ink-muted dark:text-mist-subtle mt-1">
+                {e.summary && <p className="text-caption leading-snug text-ink-muted dark:text-mist-muted mt-0.5">{e.summary}</p>}
+                <p className="text-caption text-ink-muted dark:text-mist-subtle mt-1">
                   {fmt(e.date)}{e.district ? ` · ${e.district}` : ''}
                   {e.emergencyStatus && <span className="ml-1.5 inline-block px-1.5 rounded border border-cherry/40 text-cherry-deep dark:text-cherry-soft uppercase tracking-wide">{e.emergencyStatus}</span>}
                   {e.source && (
@@ -56,11 +56,11 @@ export default function DisasterHistoryCard({ history, location }) {
                   )}
                 </p>
               </div>
-              <span className="shrink-0 font-data text-[11px] text-ink-muted dark:text-mist-subtle">{e.year}</span>
+              <span className="shrink-0 font-data text-caption text-ink-muted dark:text-mist-subtle tabular-nums">{e.year}</span>
             </div>
           </li>
         ))}
-        {events.length === 0 && <li className="py-3 text-[12px] text-ink-muted dark:text-mist-muted">Tidak ada kejadian untuk filter ini.</li>}
+        {events.length === 0 && <li className="py-3 text-caption text-ink-muted dark:text-mist-muted">Tidak ada kejadian untuk filter ini.</li>}
       </ul>
     </section>
   )

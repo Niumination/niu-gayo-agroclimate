@@ -41,11 +41,11 @@ export default function SchematicMap({ hazardsAll, selectedLocation, onSelectLoc
     <section aria-label="Peta skematik bahaya 15 sentra" className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3 flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">Peta skematik bahaya</h2>
-          <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">Warna = level tertinggi per sentra{asOf ? ` · ${asOf} WIB` : ''} · bukan peta navigasi</p>
+          <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">Peta skematik bahaya</h2>
+          <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">Warna = level tertinggi per sentra{asOf ? ` · ${asOf} WIB` : ''} · bukan peta navigasi</p>
         </div>
         {hazardsAll?.worst && (
-          <span className="text-[11px] text-ink-muted dark:text-mist-muted text-right">
+          <span className="text-caption text-ink-muted dark:text-mist-muted text-right">
             Tertinggi: <span className="font-semibold" style={{ color: FILL[hazardsAll.worst.level] }}>{hazardsAll.worst.name}</span>
           </span>
         )}
@@ -84,7 +84,7 @@ export default function SchematicMap({ hazardsAll, selectedLocation, onSelectLoc
           )
         })}
       </svg>
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-muted dark:text-mist-muted">
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-ink-muted dark:text-mist-muted">
         {['ekstrem', 'bahaya', 'waspada', 'rendah', 'n/a'].map((k) => (
           <span key={k} className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: FILL[k] }} />{LABEL[k]}</span>
         ))}
@@ -92,7 +92,7 @@ export default function SchematicMap({ hazardsAll, selectedLocation, onSelectLoc
         <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#f97316]" />hotspot</span>
       </div>
       {nearVolcano.length > 0 && (
-        <p className="mt-2 text-[11px] text-ink-muted dark:text-mist-subtle">
+        <p className="mt-2 text-caption text-ink-muted dark:text-mist-subtle">
           Jarak ke Burni Telong: {nearVolcano.map((s) => `${s.name.replace(/\s*\(.*\)$/, '')} ${s.distVolcanoKm.toFixed(1)} km`).join(' · ')}. Status gunung api dari PVMBG/MAGMA (tidak otomatis).
         </p>
       )}

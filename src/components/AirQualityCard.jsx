@@ -37,7 +37,7 @@ const num = (v, digits = 0) => (v == null ? '—' : Number(v).toLocaleString('id
 
 function Badge({ level, label, toneMap = TONE, dotMap = DOT }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 text-[13px] font-semibold ${toneMap[level] || TONE.rendah}`}>
+    <span className={`inline-flex items-center gap-1.5 text-body font-semibold ${toneMap[level] || TONE.rendah}`}>
       <span aria-hidden="true" className={`w-2 h-2 rounded-full ${dotMap[level] || 'bg-leaf'}`} />
       {label}
     </span>
@@ -47,12 +47,12 @@ function Badge({ level, label, toneMap = TONE, dotMap = DOT }) {
 function Metric({ label, value, unit, sub }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] uppercase tracking-wide text-ink-muted dark:text-mist-muted">{label}</p>
-      <p className="font-data text-[15px] font-medium text-ink dark:text-mist tabular-nums">
+      <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">{label}</p>
+      <p className="font-data text-body font-medium text-ink dark:text-mist tabular-nums">
         {value}
-        {unit && <span className="text-[11px] font-normal text-ink-muted dark:text-mist-muted ml-1">{unit}</span>}
+        {unit && <span className="text-caption font-normal text-ink-muted dark:text-mist-muted ml-1">{unit}</span>}
       </p>
-      {sub && <p className="text-[11px] text-ink-muted dark:text-mist-muted leading-snug">{sub}</p>}
+      {sub && <p className="text-caption text-ink-muted dark:text-mist-muted leading-snug">{sub}</p>}
     </div>
   )
 }
@@ -72,8 +72,8 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
   const shell = (children) => (
     <section aria-label={title} className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3">
-        <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">{title}</h2>
-        <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">{subtitle}</p>
+        <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">{title}</h2>
+        <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{subtitle}</p>
       </div>
       {children}
     </section>
@@ -81,9 +81,9 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
 
   if (!a) {
     return shell(
-      <p className="pt-3 border-t border-ink/10 dark:border-mist/10 text-[13px] text-ink-muted dark:text-mist-muted">
+      <p className="pt-3 border-t border-ink/10 dark:border-mist/10 text-body text-ink-muted dark:text-mist-muted">
         {label('airQualityUnavailable', 'Data kualitas udara belum tersedia saat ini.')}
-        {airQuality.error && <span className="block mt-1 text-[11px] text-ink-muted dark:text-mist-subtle">({airQuality.error})</span>}
+        {airQuality.error && <span className="block mt-1 text-caption text-ink-muted dark:text-mist-subtle">({airQuality.error})</span>}
       </p>,
     )
   }
@@ -103,7 +103,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
       {/* Headline ISPU */}
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10 flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-ink-muted dark:text-mist-muted">
+          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">
             ISPU {a.ispu.basis === '24h' ? 'rata-rata 24 jam' : 'sesaat'} · {a.ispu.paramLabel}
           </p>
           <p className="font-data text-4xl font-semibold tabular-nums leading-none mt-1 text-ink dark:text-mist">{a.ispu.index}</p>
@@ -111,16 +111,16 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
             <Badge level={cat.key} label={cat.label} toneMap={CATEGORY_TONE} dotMap={CATEGORY_DOT} />
           </div>
           {a.ispu.partial && (
-            <p className="text-[11px] text-ink-muted dark:text-mist-muted mt-1">Data {a.ispu.hours} jam — rata-rata parsial</p>
+            <p className="text-caption text-ink-muted dark:text-mist-muted mt-1">Data {a.ispu.hours} jam — rata-rata parsial</p>
           )}
         </div>
         <div className="text-right shrink-0">
-          <p className="text-[11px] uppercase tracking-wide text-ink-muted dark:text-mist-muted">Status</p>
+          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">Status</p>
           <div className="mt-1">
             <Badge level={a.level} label={levelLabel} />
           </div>
           {a.instant && a.instant.index !== a.ispu.index && (
-            <p className="text-[11px] text-ink-muted dark:text-mist-muted mt-1 tabular-nums">sesaat {a.instant.index} ({a.instant.category.label})</p>
+            <p className="text-caption text-ink-muted dark:text-mist-muted mt-1 tabular-nums">sesaat {a.instant.index} ({a.instant.category.label})</p>
           )}
         </div>
       </div>
@@ -128,13 +128,13 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
       {/* Kabut asap (proksi jarak pandang) */}
       <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-[13px] font-medium text-ink-body dark:text-mist-muted">{label('haze', 'Kabut asap')} · jarak pandang siang ({haze.windowLabel})</h3>
+          <h3 className="text-body font-medium text-ink-body dark:text-mist-muted">{label('haze', 'Kabut asap')} · jarak pandang siang ({haze.windowLabel})</h3>
           <Badge level={hazeLevelKey} label={haze.level === 'tidak_diketahui' ? 'Tidak diketahui' : haze.level === 'tidak_ada' ? 'Tidak terdeteksi' : haze.label} />
         </div>
-        <p className="mt-1 text-[13px] text-ink-body dark:text-mist-body tabular-nums">
+        <p className="mt-1 text-body text-ink-body dark:text-mist-body tabular-nums">
           {haze.visibilityKm != null ? (
             <>
-              Minimum <span className="font-data font-medium">{num(haze.visibilityKm, 1)} km</span> pukul {hhmm(haze.time)}
+              Minimum <span className="font-data font-medium tabular-nums">{num(haze.visibilityKm, 1)} km</span> pukul {hhmm(haze.time)}
               {haze.supported && haze.level !== 'tidak_ada' && <span className="text-ink-muted dark:text-mist-muted"> · didukung {haze.supportReason}</span>}
             </>
           ) : (
@@ -142,7 +142,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
           )}
         </p>
         {haze.lowVisibilityNonSmoke && (
-          <p className="mt-1 text-[11px] text-ink-muted dark:text-mist-muted">
+          <p className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
             Jarak pandang rendah tetapi PM2,5/AOD rendah — kemungkinan kabut atau awan rendah, bukan asap.
           </p>
         )}
@@ -157,7 +157,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
 
       {/* Prospek */}
       {a.outlook && (
-        <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10 flex items-center justify-between gap-2 text-[13px]">
+        <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10 flex items-center justify-between gap-2 text-body">
           <span className="text-ink-body dark:text-mist-muted">{label('outlook24h', 'Prospek 24 jam')}</span>
           <span className="font-data tabular-nums text-ink dark:text-mist">
             puncak {a.outlook.peakIndex ?? '—'}
@@ -170,28 +170,28 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
 
       {/* Anjuran */}
       <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10">
-        <h3 className="text-[13px] font-medium text-ink-body dark:text-mist-muted">{label('advice', 'Anjuran')} — {cat.label}</h3>
+        <h3 className="text-body font-medium text-ink-body dark:text-mist-muted">{label('advice', 'Anjuran')} — {cat.label}</h3>
         {a.advice.policy && (
-          <p className={`mt-2 text-[13px] leading-relaxed font-medium ${TONE[a.level] || ''}`}>{a.advice.policy}</p>
+          <p className={`mt-2 text-body leading-relaxed font-medium ${TONE[a.level] || ''}`}>{a.advice.policy}</p>
         )}
         <dl className="mt-2 space-y-1.5">
           {GROUP_ORDER.filter((g) => a.advice.groups[g]).map((g) => (
-            <div key={g} className="text-[13px] leading-relaxed">
+            <div key={g} className="text-body leading-relaxed">
               <dt className="inline font-medium text-ink-body dark:text-mist-muted">{GROUP_SHORT[g]}: </dt>
               <dd className="inline text-ink-body dark:text-mist-body">{a.advice.groups[g]}</dd>
             </div>
           ))}
         </dl>
-        {a.advice.whoNote && <p className="mt-2 text-[11px] text-ink-muted dark:text-mist-muted">{a.advice.whoNote}</p>}
+        {a.advice.whoNote && <p className="mt-2 text-caption text-ink-muted dark:text-mist-muted">{a.advice.whoNote}</p>}
         {(a.coffee.dryingHold || a.coffee.fieldWorkHold) && (
-          <p className="mt-3 text-[11px] text-ink-muted dark:text-mist-muted leading-relaxed">
+          <p className="mt-3 text-caption text-ink-muted dark:text-mist-muted leading-relaxed">
             <strong className="font-medium text-ink-body dark:text-mist-muted">Kopi:</strong>{' '}
             {a.coffee.dryingHold && 'tunda penjemuran terbuka (asap). '}
             {a.coffee.fieldWorkHold && 'tunda kerja kebun yang tidak mendesak.'}
           </p>
         )}
         {a.advice.crossCutting.length > 0 && (
-          <ul className="mt-2 text-[11px] text-ink-muted dark:text-mist-muted leading-relaxed list-disc pl-4 space-y-0.5">
+          <ul className="mt-2 text-caption text-ink-muted dark:text-mist-muted leading-relaxed list-disc pl-4 space-y-0.5">
             {a.advice.crossCutting.map((s) => (
               <li key={s}>{s}</li>
             ))}
@@ -203,12 +203,12 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
               type="button"
               onClick={() => setShowCleanRoom((v) => !v)}
               aria-expanded={showCleanRoom}
-              className="min-h-11 inline-flex items-center text-[11px] font-medium underline underline-offset-2 text-ink-body dark:text-mist-muted"
+              className="min-h-11 inline-flex items-center text-caption font-medium underline underline-offset-2 text-ink-body dark:text-mist-muted"
             >
               {showCleanRoom ? 'Sembunyikan' : 'Tampilkan'} daftar periksa {a.advice.cleanRoomTitle?.toLowerCase() || 'ruang bersih'}
             </button>
             {showCleanRoom && (
-              <ol className="mt-1 text-[11px] text-ink-muted dark:text-mist-muted leading-relaxed list-decimal pl-4 space-y-0.5">
+              <ol className="mt-1 text-caption text-ink-muted dark:text-mist-muted leading-relaxed list-decimal pl-4 space-y-0.5">
                 {a.advice.cleanRoomItems.map((s) => (
                   <li key={s}>{s}</li>
                 ))}
@@ -219,7 +219,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
       </div>
 
       {/* Sumber */}
-      <p className="mt-4 pt-3 border-t border-ink/10 dark:border-mist/10 text-[11px] text-ink-muted dark:text-mist-subtle leading-relaxed">
+      <p className="mt-4 pt-3 border-t border-ink/10 dark:border-mist/10 text-caption text-ink-muted dark:text-mist-subtle leading-relaxed">
         Estimasi {a.flags.model} via Open-Meteo Air Quality · jam data {hhmm(a.time)} WIB · diambil {clock(airQuality.retrievedAt)}.
         Bukan pengganti pengumuman resmi:{' '}
         <a href="https://ispu.menlhk.go.id/" target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">ISPUNet KLHK</a>

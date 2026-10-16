@@ -159,8 +159,8 @@ export default function App() {
       className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
     >
       <div className="pb-3">
-        <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">{tr('rainChart')}</h2>
-        <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">{tr('rainChartSub')}</p>
+        <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">{tr('rainChart')}</h2>
+        <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{tr('rainChartSub')}</p>
       </div>
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10">
         <RainChart data={rainSeries} labelRain={tr('rain')} />

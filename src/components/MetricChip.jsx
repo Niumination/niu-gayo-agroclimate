@@ -15,14 +15,14 @@ const TONE = {
 export default function MetricChip({ label, value, unit, note, tone = 'default', className = '' }) {
   return (
     <div className={`min-w-0 ${className}`}>
-      <div className="text-[13px] font-medium text-ink-muted dark:text-mist-muted leading-tight">{label}</div>
+      <div className="text-body font-medium text-ink-muted dark:text-mist-muted leading-tight">{label}</div>
       <div className="mt-1 flex items-baseline gap-1">
         <span className={`font-data text-xl font-semibold tabular-nums tracking-tight ${TONE[tone] || TONE.default}`}>
           {value}
         </span>
-        {unit ? <span className="font-data text-[11px] text-ink-muted dark:text-mist-muted">{unit}</span> : null}
+        {unit ? <span className="font-data text-caption text-ink-muted dark:text-mist-muted tabular-nums">{unit}</span> : null}
       </div>
-      {note ? <div className="mt-0.5 text-[11px] text-ink-muted dark:text-mist-subtle truncate">{note}</div> : null}
+      {note ? <div className="mt-0.5 text-caption text-ink-muted dark:text-mist-subtle break-words">{note}</div> : null}
     </div>
   )
 }

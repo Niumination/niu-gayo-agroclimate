@@ -128,7 +128,9 @@ Aturan tambahan untuk lencana/kartu level:
 
 **Status penerapan (P2, 2026-10-16):** keempat token skala sudah dipasang di `src/index.css` (`--text-body`, `--text-body-sm`, `--text-label`, `--text-caption`, masing-masing dengan `--line-height`); teks isi & aksi memakai 16 px, metadata 12 px. `tests/a11yContract.test.js` menolak utilitas `text-*` dari skala resmi yang belum punya token.
 
-Aturan: (a) jangan ada teks di bawah 12 px — saat ini ada 100 pemakaian 11 px dan 7 pemakaian 10 px; (b) `text-[10px]/[11px]` dinaikkan ke `text-caption` (12 px) atau dihilangkan; (c) satu preload font saja (`JetBrains Mono` subset latin + latin-ext, WOFF2, `font-display: swap`) — saat ini font di-*declare* tetapi **tidak di-self-host** sehingga semua angka jatuh ke monospace sistem.
+Aturan: (a) jangan ada teks di bawah 12 px; (b) `text-[10px]/[11px]` dinaikkan ke `text-caption` (12 px) atau dihilangkan; (c) satu preload font saja (`JetBrains Mono` subset latin + latin-ext, WOFF2, `font-display: swap`).
+
+**Status penerapan (P3, 2026-10-16):** ✅ seluruh aturan di atas terpenuhi dan **dijaga gerbang** `npm run check:typography`: 0 ukuran arbitrer < 16 px (sisa 2 ukuran baca besar 56/68 px), 0 `text-xs`/`text-sm`, 0 `truncate`, kontrol formulir ≥ 16 px. Font `JetBrains Mono` variable 400–700 di-self-host di `public/fonts/` (latin 30,7 kB + latin-ext 11,4 kB), satu `<link rel="preload">`, dan fallback metrik `JetBrains Mono Fallback` (`size-adjust: 102%` · `ascent-override: 102%` · `descent-override: 30%` · `line-gap-override: 0%`) diturunkan dari metrik asli font (advanced 0,600 em, ascender 1,02 em, descender 0,30 em).
 
 ## 5. Gerak (motion)
 

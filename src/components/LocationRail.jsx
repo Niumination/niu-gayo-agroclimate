@@ -10,7 +10,7 @@ export default function LocationRail({ selectedLocation, onSelectLocation, tr })
 
   return (
     <nav aria-label={tr('pickRegion')} className="min-w-0">
-      <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">{tr('pickRegion')}</h2>
+      <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">{tr('pickRegion')}</h2>
       <ol className="mt-3 divide-y divide-ink/5 dark:divide-mist/10">
         {sorted.map((loc, i) => {
           const active = loc.id === selectedLocation?.id
@@ -26,12 +26,12 @@ export default function LocationRail({ selectedLocation, onSelectLocation, tr })
                     : 'text-ink-body dark:text-mist-body hover:text-ink dark:hover:text-mist'
                 }`}
               >
-                <span className="font-data text-[11px] w-5 shrink-0 text-ink-subtle dark:text-mist-subtle">
+                <span className="font-data text-caption w-5 shrink-0 text-ink-subtle dark:text-mist-subtle tabular-nums">
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full shrink-0 self-center bg-leaf/70" />
-                <span className="flex-1 min-w-0 truncate text-[13px] font-medium">{loc.name}</span>
-                <span className="font-data text-[11px] shrink-0 text-ink-muted dark:text-mist-subtle">
+                <span className="flex-1 min-w-0 break-words text-body-sm font-medium">{loc.name}</span>
+                <span className="font-data text-caption shrink-0 text-ink-muted dark:text-mist-subtle tabular-nums">
                   {loc.elevation}
                 </span>
               </button>

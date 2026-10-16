@@ -22,11 +22,11 @@ export default class ErrorBoundary extends React.Component {
           <div role="alert" className="bg-soil-raised border border-cherry-soft/40 rounded-card p-6 max-w-md text-center">
             <span aria-hidden="true" className="text-3xl block mb-2">⚠️</span>
             <h1 className="text-base font-bold mb-2">Terjadi kesalahan aplikasi</h1>
-            <p className="text-sm text-mist-body mb-4">{this.state.message}</p>
+            <p className="text-body text-mist-body mb-4">{this.state.message}</p>
             <button
               type="button"
               onClick={() => { this.setState({ hasError: false, message: null }); window.location.reload() }}
-              className="min-h-11 px-4 rounded-lg bg-cherry text-on-accent text-sm font-semibold hover:bg-cherry-deep active:scale-[.97] transition"
+              className="min-h-11 px-4 rounded-lg bg-cherry text-on-accent text-body font-semibold hover:bg-cherry-deep active:scale-[.97] transition"
             >
               Muat Ulang
             </button>

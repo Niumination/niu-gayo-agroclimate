@@ -29,12 +29,13 @@ Peta dokumentasi ada di **`docs/README.md`**. Aturan penempatan: **tutorial** (`
 
 ## Verification Commands
 
-- Test: `npm test` (node test runner; 350 test, semua fetch upstream di-mock)
+- Test: `npm test` (node test runner; 359 test, semua fetch upstream di-mock)
 - Cakupan: `npm run check:coverage` — **gerbang ambang** (baris ≥ 95 %, cabang ≥ 80 %, fungsi ≥ 92 %; ambang di `scripts/check-coverage.mjs`) + tren vs `scripts/coverage-baseline.json`; `npm run test:coverage` tetap ada sebagai laporan mentah
 - Kesegaran outlook: `npm run check:outlook` (gagal bila `climateOutlook.json` kedaluwarsa; perbarui dari BMKG/NOAA CPC)
 - Inventaris Gayo: `npm run check:i18n` (daftar label `[?]` yang menunggu tinjauan penutur asli — tugas manusia H-4)
 - Kontras & tipografi desain: `npm run check:contrast` — menilai pasangan token di `src/index.css` terhadap WCAG 2.2 AA (teks 4,5:1 · non-teks 3:1), memindai utilitas teks beropasitas, dan menghitung teks < 16 px. Sejak **P1 (2026-10-16)** CI menjalankannya **`--strict`**: 34/34 pasangan lulus, 0 utilitas beropasitas → regresi kontras menggagalkan build. Jangan menulis teks dengan opasitas (`text-ink/45`) — pakai token peran di `docs/reference/DESIGN-TOKENS.md`.
 - Kontrak aksesibilitas: `tests/a11yContract.test.js` (10 uji) mengunci hasil **P2** — tablist/tabpanel + roving tabindex, skip-link + `aria-live`, larangan `outline-none`, target seluruh `<button>` ≥ 44 px, token skala teks (`--text-body/body-sm/label/caption`), dan label i18n baru. Bila uji ini gagal, perbaiki kodenya — jangan melemahkan uji.
+- Tipografi (sejak P3): ukuran teks **wajib** memakai token skala — `text-caption` (12 px, hanya metadata), `text-body-sm`/`text-label` (14 px), `text-body` (16 px, teks isi & aksi). Jangan memakai `text-[Npx]` (< 16 px), `text-xs`, `text-sm`, atau `truncate` (label Gayo memanjang → pakai `break-words`). Angka memakai `font-data` + `tabular-nums`. Gerbang: `npm run check:typography`. Font `JetBrains Mono` self-host di `public/fonts/` (jangan ganti ke CDN; preload + fallback metrik ada di `src/index.css`/`index.html`).
 - Build: `npm run build` (Vite 8/Rolldown; bundle production di `dist/`; ~0,4 dtk)
 - Toolchain v2.1.0: Vite 8 + `@vitejs/plugin-react` 6 (Oxc) + **Tailwind 4 CSS-first** — konfigurasi tema/varian ada di `src/index.css` (`@theme`, `@custom-variant dark`), BUKAN lagi di `tailwind.config.js` (dihapus). Node ≥ 20.19 (lihat `engines`).
 - Pemisahan chunk vendor memakai `build.rollupOptions.output.advancedChunks` (Rolldown); bentuk objek `manualChunks` v3 tidak didukung lagi.

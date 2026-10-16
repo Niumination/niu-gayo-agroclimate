@@ -1,6 +1,6 @@
 # Changelog
 
-## [Belum dirilis] — Fase design/frontend/UX (P1–P2 ✅ · P3–P6 menyusul)
+## [Belum dirilis] — Fase design/frontend/UX (P1–P3 ✅ · P4–P6 menyusul)
 
 ### P1 — Token semantik & kontras (2026-10-16) ✅
 - **Nol teks di bawah 4,5:1.** 417 utilitas teks beropasitas (`text-ink/45`, `dark:text-mist/40`, …) di **66 berkas** diganti token peran; pindai ulang menemukan **0** sisa. Sebelumnya 262 pemakaian gagal ambang WCAG AA di 21 berkas.
@@ -19,6 +19,15 @@
 - **Skala tipografi dipasang sebagai token.** `@theme` kini mendefinisikan `--text-body` (16 px, teks isi & aksi), `--text-body-sm`/`--text-label` (14 px), `--text-caption` (12 px); teks aksi/kontrol P2 naik ke 16 px, metadata ke 12 px. 15 label antarmuka (navigasi, bantuan, berbagi, footer panel) berpindah dari teks keras ke i18n id+Gayo (temuan baru **A-10**; sisa teks keras di kartu dicatat untuk P3/P4).
 - **Pengaman baru:** `tests/a11yContract.test.js` (**10 uji**) mengunci tablist/tabpanel, skip-link + `aria-live`, larangan `outline-none`, target seluruh tombol ≥ 44 px (pemindai tag sadar-kurawal), keberadaan token skala teks, dan ketersediaan label i18n baru di kedua bahasa.
 - Gerbang paket: **350 uji lulus** · cakupan 95,78 / 84,20 / 95,94 % · `check:contrast --strict` hijau (34/34) · bundel **132,9 kB** gzip (batas 200) · `check:outlook` (27 hari) · `check:i18n` (67 placeholder) · `smoke` lolos · 35 dokumen / 117 tautan / 0 rusak.
+
+### P3 — Tipografi, font, & pemuaian teks (2026-10-16) ✅
+- **Tidak ada lagi teks di bawah 16 px untuk teks isi.** Seluruh **212 ukuran arbitrer** (`text-[10px]`…`text-[15px]`) dipetakan ke token skala: `text-caption` (12 px) untuk stempel waktu/satuan/catatan kaki, `text-body` (16 px) untuk teks isi, judul kartu, tombol, dan pesan. Sisa ukuran arbitrer hanya 2: pembacaan besar 56 px/68 px di `InstrumentPanel`.
+- **Ukuran bawaan kecil disingkirkan:** 19× `text-sm` (14 px) → `text-body` (16 px) — seluruh judul kartu kini ≥ 16 px; tidak ada `text-xs`/`text-sm` tersisa di `src/`.
+- **Tidak ada lagi pemotongan teks:** 12× `truncate` → `break-words`, sehingga label Gayo/Indonesia yang 20–35 % lebih panjang membungkus alih-alih hilang (uji pemuaian 320 px).
+- **Font data benar-benar termuat:** `JetBrains Mono` variable (400–700) di-self-host di `public/fonts/` — subset **latin 30,7 kB + latin-ext 11,4 kB = 42,0 kB** (WOFF2), `font-display: swap`, **satu** `<link rel="preload">` untuk subset latin, plus **fallback metrik** (`size-adjust: 102%`, `ascent-override: 102%`, `descent-override: 30%`) agar baris tidak melompat saat font selesai dimuat. Sebelumnya font hanya *dideklarasikan* sehingga semua angka jatuh ke monospace sistem.
+- **Angka rata kolom:** `tabular-nums` ditambahkan pada 28 kelas `font-data` yang belum memilikinya.
+- **Gerbang baru `npm run check:typography`** (9 uji di `tests/checkTypography.test.js`, langkah CI setelah build): menolak ukuran arbitrer < 16 px, `text-xs`/`text-sm`, kelas kecil pada `select`/`input`/`textarea` (cegah zoom iOS), sisa `truncate`, serta memastikan berkas font ada di `public/fonts/` dan ikut terbangun ke `dist/fonts/`.
+- **Uji 350 → 359** · cakupan 95,70 / 84,31 / 95,91 % · bundel JS tetap **132,9 kB** gzip (font berada di luar anggaran JS; precache PWA 14 → 16 entri, 492 → 536 KiB) · `check:contrast --strict` tetap 34/34 · `smoke` lolos · 35 dokumen / 117 tautan / 0 rusak.
 
 ### Tahap audit & rencana (commit `bfa8315`) — belum mengubah UI
 

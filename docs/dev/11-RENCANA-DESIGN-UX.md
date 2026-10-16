@@ -19,14 +19,14 @@ Perbaikan dijadwalkan sebagai 6 paket kerja dengan kriteria terima terukur. Pake
 | Metrik | Sekarang (audit) | Target setelah P1–P6 |
 |---|---|---|
 | Pasangan teks < 4,5:1 | 262 pemakaian di 21 berkas | ✅ **0 sejak P1** (417 utilitas diganti) |
-| Teks isi ≥ 16 px | tidak ada | semua teks isi & aksi |
-| Teks < 12 px | 107 pemakaian (10–11 px) | 0 |
+| Teks isi ≥ 16 px | tidak ada | ✅ **sejak P3** (212 ukuran arbitrer → token) |
+| Teks < 12 px | 107 pemakaian (10–11 px) | ✅ **sejak P3** (0 pemakaian) |
 | Tombol ≥ 44 px | 12 dari 24 | ✅ **sejak P2** (0 dari 25 tombol < 44 px) |
 | Aturan `focus:` eksplisit | 0 | ✅ **sejak P2** (0 penghapus penanda fokus) |
 | `aria-live` untuk pembaruan data | 0 | ✅ **sejak P2** (pembaruan data + status) |
 | Semantik tab (tablist/tab/tabpanel) | tidak ada | ✅ **sejak P2** (penuh + navigasi panah) |
 | Safe-area aktif | `env()` inert (tanpa `viewport-fit=cover`) | aktif di iOS/Android |
-| Font data termuat | tidak (hanya deklarasi CSS) | 1 berkas WOFF2 subset, `swap` |
+| Font data termuat | tidak (hanya deklarasi CSS) | ✅ **sejak P3** (2 berkas WOFF2 42 kB, preload + fallback metrik) |
 
 ## 2. Ruang lingkup
 
@@ -52,6 +52,7 @@ Kasus nyata yang berdampak langsung: baris brand `AppBar` (`text-ink/40` = 2,45:
 
 ### A-2 Tipografi
 `text-[11px]`×100 · `text-[13px]`×93 · `text-[12px]`×19 · `text-[10px]`×7 · `text-[15px]`×6 · `text-[14px]`×1. Tidak ada satu pun teks isi pada 16 px. `font-data` dipakai 44× tetapi tidak ada berkas font di `dist/`.
+**Selesai di P3 (2026-10-16):** seluruh 212 ukuran itu kini token skala (`text-caption` 12 px / `text-body` 16 px), `text-sm` 19× dinaikkan ke 16 px, `truncate` 12× diganti `break-words`, `tabular-nums` mengikuti seluruh nilai `font-data`, dan `JetBrains Mono` termuat dari `dist/fonts/` (42 kB, preload + fallback metrik).
 
 ### A-3 Target sentuh & fokus
 24 `<button>`; hanya 10 ber-`min-h-[44px]` + 2 ber-`h-11 w-11`. Tidak ada aturan `focus:` eksplisit; `AppBar` memakai `focus-visible:outline-none` sehingga kontrol kehilangan penanda fokus. Tidak ada skip-link ke konten utama.
@@ -120,7 +121,8 @@ Setiap paket memuat: tujuan · langkah · berkas sasaran · kriteria terima · u
 6. Bantuan konsisten (WCAG 3.2.6): tombol "Tentang data & batasan" di posisi sama di desktop & mobile.
 **Kriteria terima:** lintasan keyboard tanpa jebakan fokus; setiap kontrol punya penanda fokus terlihat; audit kontras tetap hijau; skenario uji manual §9 lulus.
 
-### P3 — Tipografi, font, & pemuaian teks (usaha **M**)
+### P3 — Tipografi, font, & pemuaian teks (usaha **M**) · ✅ **SELESAI 2026-10-16**
+**Hasil terukur:** 212 ukuran arbitrer → token skala (sisa 2 ukuran baca besar 56/68 px); 19× `text-sm` → `text-body`; 12× `truncate` → `break-words`; `tabular-nums` +28 kelas `font-data`; JetBrains Mono variable 400–700 self-host **latin 30,7 kB + latin-ext 11,4 kB** (satu preload + fallback metrik `size-adjust: 102%`); gerbang `npm run check:typography` (+9 uji → **359 uji**) memakai aturan 16 px/12 px, larangan `truncate`, dan keberadaan font di `public/fonts` → `dist/fonts`; bundel JS tetap 132,9 kB gzip; precache 492 → 536 KiB.
 **Langkah**
 1. Terapkan skala §4: `text-caption/label/body-sm/body`; naikkan seluruh 10–11 px → 12 px minimum, teks isi & aksi → 16 px.
 2. Input/`select` ≥ 16 px (cek `DistrictSelector`, `AppBar`, form laporan).
@@ -160,7 +162,7 @@ P1 token+kontras  →  check:contrast --strict  →  P2 a11y interaksi
         P3 tipografi+font  →  build+bundle  →  P4 state  →  P5 gerak/safe-area  →  P6 pengaman+docs
 ```
 
-Gerbang setelah tiap paket: `npm test` (350) · `npm run check:coverage` · `npm run check:contrast` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
+Gerbang setelah tiap paket: `npm test` (359) · `npm run check:coverage` · `npm run check:contrast` · `npm run check:typography` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
 **Jangan** menyentuh `tailwind.config.js`/`postcss.config.js` (sudah dihapus pada v2.1.0) dan jangan menambah dependensi runtime.
 
 ## 8. Log 50 putaran (audit → riset → rencana)
@@ -234,7 +236,7 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 
 ## 9. Definisi selesai (Definition of Done)
 
-**Otomatis (CI):** `npm test` (350) · `check:coverage` · `check:contrast --strict` · `build` · `check:bundle` (≤ 200 kB) · `smoke` · `check:outlook` · `check:i18n`.
+**Otomatis (CI):** `npm test` (359) · `check:coverage` · `check:contrast --strict` · `check:typography` · `build` · `check:bundle` (≤ 200 kB JS) · `smoke` · `check:outlook` · `check:i18n`.
 **Manual (butuh manusia/telepon nyata):**
 1. **Keyboard:** Tab dari atas → skip-link → seluruh kontrol; tidak ada jebakan fokus; tab tab berpindah dengan panah; Shift+Tab berbalik arah.
 2. **Pembaca layar** (TalkBack/VoiceOver/NVDA): 4 tab terbaca; perubahan status & hasil laporan diumumkan; peta punya ringkasan teks.
@@ -267,10 +269,12 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 |---|---|---|
 | P1 token & kontras | ✅ selesai 2026-10-16 (commit `P1`) | 417 penggantian · `check:contrast --strict` hijau (34/34) · CI memakai `--strict` · `LevelGlyph` di `HazardPanel` · 340 uji · bundel 132,0 kB |
 | P2 a11y interaksi | ✅ selesai 2026-10-16 (commit `P2`) | 0/25 tombol < 44 px · tablist+tabpanel penuh · skip-link + `aria-live` · `a11yContract` 10 uji · skala teks jadi token · 15 label i18n |
-| P3 tipografi & font | ⬜ | skala 16 px · self-host JetBrains Mono subset · `tabular-nums` |
+| P3 tipografi & font | ✅ selesai 2026-10-16 (commit `P3`) | 212 ukuran → token · 0 teks < 16 px isi / 0 teks < 12 px · JetBrains Mono 42 kB self-host + preload + fallback metrik · gerbang `check:typography` (9 uji) |
 | P4 keadaan aplikasi | ⬜ | skeleton · empty · basi + muat ulang · spinner tombol |
 | P5 gerak & area aman | ⬜ | durasi motion · `viewport-fit=cover` · `min-w-0` |
 | P6 pengaman & docs | ⬜ | ESLint `jsx-a11y` · pa11y/axe manual · dokumen |
+
+**Catatan teknis P3 yang perlu diingat:** (a) @font-face harus berada **setelah** `@import "tailwindcss";` dan **tanpa** titik-koma liar — kesalahan kecil di situ menggagalkan `lightningcss minify` saat build; (b) `size-adjust: 102%` dihitung dari advanced monospace lazim (Consolas 0,550 em · Menlo/DejaVu 0,602 em) vs JetBrains Mono 0,600 em — angka ini perkiraan, bukan hasil pengukuran perangkat; (c) font hanya untuk angka (`font-data`), teks isi tetap font sistem supaya unduhan tetap 42 kB; (d) uji pemuaian label Gayo pada 320 px masih butuh mata manusia (lihat §9).
 
 **Catatan teknis P2 yang perlu diingat:** (a) skala teks hidup sebagai token `--text-*` di `@theme` sehingga utilitas baru tanpa token langsung ketahuan lewat uji kontrak; (b) pemindai target sentuh memeriksa tag `<button>` termasuk `className` dinamis (konstanta lokal seperti `const link = 'min-h-11 …'`); (c) tint latar kartu level masih memakai pasangan `dark:` — penyisiran bersama P3; (d) verifikasi keyboard/pembaca layar tetap manual (sandbox tanpa browser).
 

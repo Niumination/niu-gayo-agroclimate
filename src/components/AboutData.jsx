@@ -38,13 +38,13 @@ export default function AboutData({ open, onClose }) {
       >
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-ink/10 dark:border-mist/10">
           <div>
-            <h2 id="about-title" className="text-sm font-semibold tracking-tight">Tentang data &amp; batasan</h2>
-            <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">Niu Gayo Agro-Climate adalah informasi pendukung keputusan — bukan peringatan dini resmi.</p>
+            <h2 id="about-title" className="text-body font-semibold tracking-tight">Tentang data &amp; batasan</h2>
+            <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">Niu Gayo Agro-Climate adalah informasi pendukung keputusan — bukan peringatan dini resmi.</p>
           </div>
-          <button type="button" onClick={onClose} className="min-h-11 px-3 rounded-lg border border-ink/15 dark:border-mist/15 text-[13px]">Tutup</button>
+          <button type="button" onClick={onClose} className="min-h-11 px-3 rounded-lg border border-ink/15 dark:border-mist/15 text-body">Tutup</button>
         </div>
 
-        <div className="space-y-5 pt-4 text-[13px] leading-relaxed">
+        <div className="space-y-5 pt-4 text-body leading-relaxed">
           <section>
             <h3 className="font-semibold">Apa arti “estimasi”?</h3>
             <p className="text-ink-body dark:text-mist-body mt-1">
@@ -72,8 +72,8 @@ export default function AboutData({ open, onClose }) {
               {SOURCES.map((s) => (
                 <li key={s.name} className="py-2">
                   <a href={s.url} target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center font-medium underline underline-offset-2">{s.name}</a>
-                  <p className="text-[12px] text-ink-body dark:text-mist-muted">{s.use}</p>
-                  <p className="text-[11px] text-ink-muted dark:text-mist-subtle">Lisensi: {s.license}</p>
+                  <p className="text-caption text-ink-body dark:text-mist-muted">{s.use}</p>
+                  <p className="text-caption text-ink-muted dark:text-mist-subtle">Lisensi: {s.license}</p>
                 </li>
               ))}
             </ul>

@@ -54,6 +54,12 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
+      # Fase design/UX (P3 selesai 2026-10-16): skala tipografi berbasis token — tanpa teks < 16 px
+      # untuk teks isi, tanpa ukuran bawaan kecil (text-xs/text-sm), kontrol formulir >= 16 px,
+      # tanpa `truncate` (label Gayo memanjang), dan font data ter-self-host (public/fonts -> dist/fonts).
+      - name: Gerbang tipografi (skala token + font)
+        run: npm run check:typography
+
       # Fase 4.4 — anggaran bundel (gzip ≤ 200 kB total, ≤ 150 kB per berkas) agar tetap ringan di jaringan 3G Gayo
       - name: Check bundle budget
         run: npm run check:bundle

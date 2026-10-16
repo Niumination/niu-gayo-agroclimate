@@ -29,11 +29,11 @@ export default function AppBar({
     <header className="sticky top-0 z-40 bg-surface/90 dark:bg-soil/90 backdrop-blur-md border-b border-ink/10 dark:border-mist/10">
       <div className="px-4 pt-3 pb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h1 className="text-base font-semibold tracking-tight text-ink dark:text-mist truncate leading-tight">
+          <h1 className="text-base font-semibold tracking-tight text-ink dark:text-mist break-words leading-tight">
             {selectedLocation?.name}
           </h1>
-          <p className="text-[13px] text-ink-muted dark:text-mist-muted leading-tight">
-            <span className="font-data">{selectedLocation?.elevation}</span> {tr('mdpl')}
+          <p className="text-body text-ink-muted dark:text-mist-muted leading-tight">
+            <span className="font-data tabular-nums">{selectedLocation?.elevation}</span> {tr('mdpl')}
           </p>
         </div>
         {age && (
@@ -46,7 +46,7 @@ export default function AppBar({
         )}
       </div>
       <div className="px-2 pb-2 flex items-center justify-between gap-1">
-        <span className="pl-2 text-caption font-data text-ink-subtle dark:text-mist-subtle truncate">
+        <span className="pl-2 text-caption font-data text-ink-subtle dark:text-mist-subtle break-words tabular-nums">
           Niu Gayo Agro-Climate · ecmwf_ifs025
         </span>
         <div className="flex items-center">
@@ -81,7 +81,7 @@ export default function AppBar({
         </div>
       </div>
       {offline && (
-        <p role="status" className="px-4 pb-2 text-[13px] font-medium text-husk-deep dark:text-husk-soft">
+        <p role="status" className="px-4 pb-2 text-body font-medium text-husk-deep dark:text-husk-soft">
           {tr('offlineBanner')}
         </p>
       )}

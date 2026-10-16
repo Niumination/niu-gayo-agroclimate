@@ -133,7 +133,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
       <button
         type="button"
         onClick={() => { setStatus(null); setOpen(true) }}
-        className={`inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-card border border-ink/15 dark:border-mist/15 text-[13px] font-medium text-ink dark:text-mist hover:bg-ink/5 dark:hover:bg-mist/10 transition-colors ${className}`}
+        className={`inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-card border border-ink/15 dark:border-mist/15 text-body font-medium text-ink dark:text-mist hover:bg-ink/5 dark:hover:bg-mist/10 transition-colors ${className}`}
       >
         <span aria-hidden="true">⚠</span> Lapor kejadian
       </button>
@@ -150,23 +150,23 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
             aria-labelledby="report-title"
             className="w-full max-w-md bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
           >
-            <h2 id="report-title" className="text-sm font-semibold text-ink dark:text-mist">
+            <h2 id="report-title" className="text-body font-semibold text-ink dark:text-mist">
               Lapor kejadian — {location.name}
             </h2>
-            <p className="mt-1 text-[11px] text-ink-muted dark:text-mist-muted">
+            <p className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
               Laporan diteruskan ke koordinator BPBD. Tidak ada data pribadi yang dikumpulkan.
               {type === 'kebakaran' && <strong className="block mt-1 text-cherry-deep dark:text-cherry-soft">Api besar/mengancam rumah: hubungi Damkar 113 / BPBD lebih dulu.</strong>}
             </p>
             <form onSubmit={submit} className="mt-4 space-y-3">
               <div>
-                <label htmlFor="report-type" className="block text-[13px] font-medium text-ink-body dark:text-mist-muted">
+                <label htmlFor="report-type" className="block text-body font-medium text-ink-body dark:text-mist-muted">
                   Jenis kejadian
                 </label>
                 <select
                   id="report-type"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="mt-1 w-full min-h-[44px] rounded-md border border-ink/15 dark:border-mist/15 bg-transparent px-3 text-[13px] text-ink dark:text-mist"
+                  className="mt-1 w-full min-h-[44px] rounded-md border border-ink/15 dark:border-mist/15 bg-transparent px-3 text-body text-ink dark:text-mist"
                 >
                   {TYPES.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -176,45 +176,45 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
               {type === 'asap' && (
                 <>
                   <div>
-                    <label htmlFor="report-visibility" className="block text-[13px] font-medium text-ink-body dark:text-mist-muted">
+                    <label htmlFor="report-visibility" className="block text-body font-medium text-ink-body dark:text-mist-muted">
                       Seberapa pekat asapnya?
                     </label>
                     <select
                       id="report-visibility"
                       value={visibility}
                       onChange={(e) => setVisibility(e.target.value)}
-                      className="mt-1 w-full min-h-[44px] rounded-md border border-ink/15 dark:border-mist/15 bg-transparent px-3 text-[13px] text-ink dark:text-mist"
+                      className="mt-1 w-full min-h-[44px] rounded-md border border-ink/15 dark:border-mist/15 bg-transparent px-3 text-body text-ink dark:text-mist"
                     >
                       {VISIBILITY.map((v) => (
                         <option key={v.value} value={v.value}>{v.label}</option>
                       ))}
                     </select>
-                    <p className="mt-1 text-[11px] text-ink-muted dark:text-mist-muted">
+                    <p className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
                       Patokan: bukit/menara yang biasanya terlihat jelas tidak tampak = &lt; 1 km.
                     </p>
                   </div>
-                  <label className="flex items-center gap-2 min-h-[44px] text-[13px] text-ink-body dark:text-mist-body">
+                  <label className="flex items-center gap-2 min-h-[44px] text-body text-ink-body dark:text-mist-body">
                     <input type="checkbox" checked={smell} onChange={(e) => setSmell(e.target.checked)} className="w-4 h-4" />
                     Bau asap menyengat / mata perih
                   </label>
                 </>
               )}
               {type === 'kebakaran' && (
-                <label className="flex items-center gap-2 min-h-[44px] text-[13px] text-ink-body dark:text-mist-body">
+                <label className="flex items-center gap-2 min-h-[44px] text-body text-ink-body dark:text-mist-body">
                   <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="w-4 h-4" />
                   Api masih menyala saat ini
                 </label>
               )}
               {KIND_OPTIONS[type] && (
                 <div>
-                  <label htmlFor="report-kind" className="block text-[13px] font-medium text-ink-body dark:text-mist-muted">
+                  <label htmlFor="report-kind" className="block text-body font-medium text-ink-body dark:text-mist-muted">
                     {KIND_OPTIONS[type].label}
                   </label>
                   <select
                     id="report-kind"
                     value={kind}
                     onChange={(e) => setKind(e.target.value)}
-                    className="mt-1 w-full min-h-[44px] rounded-lg border border-ink/15 dark:border-mist/15 bg-transparent px-3 text-[14px] text-ink dark:text-mist"
+                    className="mt-1 w-full min-h-[44px] rounded-lg border border-ink/15 dark:border-mist/15 bg-transparent px-3 text-body text-ink dark:text-mist"
                   >
                     {KIND_OPTIONS[type].options.map((k) => (
                       <option key={k.value} value={k.value}>{k.label}</option>
@@ -224,9 +224,9 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
               )}
               {type === 'kekeringan' && (
                 <fieldset>
-                  <legend className="text-[13px] font-medium text-ink-body dark:text-mist-muted">Tanda yang terlihat</legend>
+                  <legend className="text-body font-medium text-ink-body dark:text-mist-muted">Tanda yang terlihat</legend>
                   {DROUGHT_SIGNS.map((d) => (
-                    <label key={d.value} className="flex items-center gap-2 min-h-11 text-[13px] text-ink-body dark:text-mist-body">
+                    <label key={d.value} className="flex items-center gap-2 min-h-11 text-body text-ink-body dark:text-mist-body">
                       <input
                         type="checkbox"
                         checked={signs.includes(d.value)}
@@ -239,7 +239,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                 </fieldset>
               )}
               <div>
-                <label htmlFor="report-note" className="block text-[13px] font-medium text-ink-body dark:text-mist-muted">
+                <label htmlFor="report-note" className="block text-body font-medium text-ink-body dark:text-mist-muted">
                   Catatan (opsional)
                 </label>
                 <textarea
@@ -249,14 +249,14 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder={PLACEHOLDER[type] || 'cth: longsor kecil di jalur kebun, hujan deras sejak sore'}
-                  className="mt-1 w-full rounded-md border border-ink/15 dark:border-mist/15 bg-transparent px-3 py-2 text-[13px] text-ink dark:text-mist"
+                  className="mt-1 w-full rounded-md border border-ink/15 dark:border-mist/15 bg-transparent px-3 py-2 text-body text-ink dark:text-mist"
                 />
               </div>
               {status === 'ok' && (
-                <p role="status" className="text-[13px] text-leaf-deep dark:text-leaf-soft">Laporan terkirim — terima kasih.</p>
+                <p role="status" className="text-body text-leaf-deep dark:text-leaf-soft">Laporan terkirim — terima kasih.</p>
               )}
               {status === 'error' && (
-                <p role="alert" className="text-[13px] text-cherry-deep dark:text-cherry-soft">
+                <p role="alert" className="text-body text-cherry-deep dark:text-cherry-soft">
                   Gagal mengirim (kemungkinan batas 5 laporan/jam). Coba lagi nanti.
                 </p>
               )}
@@ -264,14 +264,14 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="min-h-[44px] px-4 rounded-card text-[13px] text-ink-body dark:text-mist-muted hover:bg-ink/5 dark:hover:bg-mist/10"
+                  className="min-h-[44px] px-4 rounded-card text-body text-ink-body dark:text-mist-muted hover:bg-ink/5 dark:hover:bg-mist/10"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={status === 'sending' || status === 'ok'}
-                  className="min-h-[44px] px-4 rounded-card bg-leaf text-white text-[13px] font-medium disabled:opacity-50"
+                  className="min-h-[44px] px-4 rounded-card bg-leaf text-white text-body font-medium disabled:opacity-50"
                 >
                   {status === 'sending' ? 'Mengirim…' : 'Kirim laporan'}
                 </button>

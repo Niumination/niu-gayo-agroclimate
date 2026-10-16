@@ -11,7 +11,7 @@ export default function DistrictSelector({ selectedLocation, onSelectLocation, t
   return (
     <div className={variant === 'desktop' ? 'flex items-end gap-4 flex-wrap' : ''}>
       <div className={variant === 'desktop' ? 'min-w-[260px]' : ''}>
-        <label htmlFor="district-select" className="block text-[13px] font-medium text-ink-muted dark:text-mist-muted mb-1.5">
+        <label htmlFor="district-select" className="block text-body font-medium text-ink-muted dark:text-mist-muted mb-1.5">
           {tr('pickRegion')}
         </label>
         <select
@@ -21,7 +21,7 @@ export default function DistrictSelector({ selectedLocation, onSelectLocation, t
             const loc = LOCATIONS.find((l) => l.id === e.target.value)
             if (loc) onSelectLocation(loc)
           }}
-          className="w-full min-h-[44px] bg-surface dark:bg-soil border border-ink/15 dark:border-mist/15 rounded-lg px-3 text-[15px] font-medium text-ink dark:text-mist"
+          className="w-full min-h-[44px] bg-surface dark:bg-soil border border-ink/15 dark:border-mist/15 rounded-lg px-3 text-body font-medium text-ink dark:text-mist"
         >
           {sorted.map((loc) => (
             <option key={loc.id} value={loc.id}>
@@ -31,9 +31,9 @@ export default function DistrictSelector({ selectedLocation, onSelectLocation, t
         </select>
       </div>
       {selectedLocation && (
-        <p className={`text-[13px] text-ink-muted dark:text-mist-muted ${variant === 'desktop' ? 'pb-3' : 'mt-2'}`}>
+        <p className={`text-body text-ink-muted dark:text-mist-muted ${variant === 'desktop' ? 'pb-3' : 'mt-2'}`}>
           {tr('regionChar')}: <span className="text-ink-body dark:text-mist-body">{selectedLocation.type}</span>
-          <span className="ml-2 font-data text-[11px] text-ink-subtle dark:text-mist-subtle">
+          <span className="ml-2 font-data text-caption text-ink-subtle dark:text-mist-subtle tabular-nums">
             {selectedLocation.lat.toFixed(4)}°N, {selectedLocation.lon.toFixed(4)}°E
           </span>
         </p>

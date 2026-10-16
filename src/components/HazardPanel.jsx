@@ -70,7 +70,7 @@ const clock = (iso) => {
 
 function Badge({ level, label }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 text-[13px] font-semibold ${TONE[level] || TONE['n/a']}`}>
+    <span className={`inline-flex items-center gap-1.5 text-body font-semibold ${TONE[level] || TONE['n/a']}`}>
       <LevelGlyph level={level} />
       {label ?? LEVEL_LABEL[level] ?? level}
     </span>
@@ -89,8 +89,8 @@ function AdviceList({ advice }) {
     <div className="mt-2 space-y-1.5">
       {groups.map(([k, label]) => (
         <div key={k}>
-          <p className="text-[11px] uppercase tracking-wide text-ink-muted dark:text-mist-subtle">{label}</p>
-          <ul className="list-disc pl-4 text-[12px] leading-snug text-ink-body dark:text-mist-body space-y-0.5">
+          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-subtle">{label}</p>
+          <ul className="list-disc pl-4 text-caption leading-snug text-ink-body dark:text-mist-body space-y-0.5">
             {advice[k].slice(0, 3).map((a, i) => (
               <li key={i}>{typeof a === 'string' ? a : a?.id ?? JSON.stringify(a)}</li>
             ))}
@@ -113,26 +113,26 @@ function HazardRow({ r, open, onToggle, lang }) {
         className="min-h-11 inline-flex items-center w-full text-left flex items-start justify-between gap-3"
       >
         <div className="min-w-0">
-          <p className="text-[13px] font-medium text-ink-body dark:text-mist-body truncate">{label}</p>
-          <p className={`text-[12px] leading-snug mt-0.5 ${r.level === 'n/a' ? 'text-ink-muted dark:text-mist-subtle' : 'text-ink-body dark:text-mist-muted'}`}>{r.headline}</p>
+          <p className="text-body font-medium text-ink-body dark:text-mist-body break-words">{label}</p>
+          <p className={`text-caption leading-snug mt-0.5 ${r.level === 'n/a' ? 'text-ink-muted dark:text-mist-subtle' : 'text-ink-body dark:text-mist-muted'}`}>{r.headline}</p>
         </div>
         <div className="shrink-0 flex items-baseline gap-2">
           <Badge level={r.level} />
-          {typeof r.score === 'number' && <span className="font-data text-[11px] text-ink-muted dark:text-mist-subtle">{r.score}</span>}
-          <span aria-hidden="true" className="text-[11px] text-ink-subtle dark:text-mist-subtle">{open ? '▴' : '▾'}</span>
+          {typeof r.score === 'number' && <span className="font-data text-caption text-ink-muted dark:text-mist-subtle tabular-nums">{r.score}</span>}
+          <span aria-hidden="true" className="text-caption text-ink-subtle dark:text-mist-subtle">{open ? '▴' : '▾'}</span>
         </div>
       </button>
       {open && (
         <div className="mt-2 pl-0.5">
-          {r.detail && <p className="text-[12px] leading-snug text-ink-body dark:text-mist-muted">{r.detail}</p>}
+          {r.detail && <p className="text-caption leading-snug text-ink-body dark:text-mist-muted">{r.detail}</p>}
           {metrics.length > 0 && (
             <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
               {metrics.map((m) => (
                 <div key={m.key} className="flex items-baseline justify-between gap-2 border-b border-dotted border-ink/10 dark:border-mist/10">
-                  <dt className="text-[11px] text-ink-muted dark:text-mist-muted truncate">{m.label ?? m.key}</dt>
-                  <dd className="font-data text-[12px] text-ink dark:text-mist">
+                  <dt className="text-caption text-ink-muted dark:text-mist-muted break-words">{m.label ?? m.key}</dt>
+                  <dd className="font-data text-caption text-ink dark:text-mist tabular-nums">
                     {num(m.value)}
-                    {m.unit ? <span className="text-ink-muted dark:text-mist-subtle text-[10px]"> {m.unit}</span> : null}
+                    {m.unit ? <span className="text-ink-muted dark:text-mist-subtle text-caption"> {m.unit}</span> : null}
                   </dd>
                 </div>
               ))}
@@ -140,7 +140,7 @@ function HazardRow({ r, open, onToggle, lang }) {
           )}
           <AdviceList advice={r.advice} />
           {r.sources?.length > 0 && (
-            <p className="mt-2 text-[11px] text-ink-muted dark:text-mist-subtle">
+            <p className="mt-2 text-caption text-ink-muted dark:text-mist-subtle">
               Sumber: {r.sources.map((s) => s.name).join(' · ')}
               {r.flags?.estimate ? ' · nilai estimasi model, bukan pengukuran stasiun' : ''}
             </p>
@@ -174,21 +174,21 @@ export default function HazardPanel({ hazards, location, lang = 'id', onAbout, o
     >
       <div className="pb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">Indeks Bahaya {location?.name ? `— ${location.name}` : ''}</h2>
-          <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">{groups}</p>
+          <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">Indeks Bahaya {location?.name ? `— ${location.name}` : ''}</h2>
+          <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{groups}</p>
         </div>
         <Badge level={worst} />
       </div>
 
       <div className="py-3 border-y border-ink/10 dark:border-mist/10">
-        <p className={`text-[13px] font-medium ${active.length ? TONE[worst] : 'text-ink-body dark:text-mist-muted'}`}>{headline}</p>
+        <p className={`text-body font-medium ${active.length ? TONE[worst] : 'text-ink-body dark:text-mist-muted'}`}>{headline}</p>
         {active.length > 0 && (
-          <p className="text-[12px] text-ink-muted dark:text-mist-muted mt-0.5">
+          <p className="text-caption text-ink-muted dark:text-mist-muted mt-0.5">
             {active.map((r) => ((lang === 'gayo' && r.label?.gayo) || r.label?.id || r.id)).join(', ')}
           </p>
         )}
         {counts.degraded > 0 && counts.degraded < counts.total && (
-          <p className="text-[11px] text-ink-muted dark:text-mist-subtle mt-1">{counts.degraded} bahaya tanpa data (sumber tidak tersedia / tidak berlaku di sentra ini).</p>
+          <p className="text-caption text-ink-muted dark:text-mist-subtle mt-1">{counts.degraded} bahaya tanpa data (sumber tidak tersedia / tidak berlaku di sentra ini).</p>
         )}
         {/* Fase 2.5 (FR-X-2) — aturan interaksi lintas-bahaya */}
         {interactions.length > 0 && <div className="mt-2"><InteractionsList interactions={interactions} /></div>}
