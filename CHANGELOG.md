@@ -1,6 +1,6 @@
 # Changelog
 
-## [Belum dirilis] — Fase design/frontend/UX (P1–P5 ✅ · P6 menyusul)
+## [Belum dirilis] — Fase design/frontend/UX (P1–P6 ✅ selesai)
 
 ### P1 — Token semantik & kontras (2026-10-16) ✅
 - **Nol teks di bawah 4,5:1.** 417 utilitas teks beropasitas (`text-ink/45`, `dark:text-mist/40`, …) di **66 berkas** diganti token peran; pindai ulang menemukan **0** sisa. Sebelumnya 262 pemakaian gagal ambang WCAG AA di 21 berkas.
@@ -44,6 +44,18 @@
 - **Area aman**: `index.html` memakai **`viewport-fit=cover`** (tanpa ini `env(safe-area-inset-*)` selalu 0 — termasuk di emulator); `AppBar`/`DesktopHeader` mendapat `pt-[env(safe-area-inset-top)]`, `BottomNav` tetap `pb-[env(safe-area-inset-bottom)]`; `theme-color` diperbarui mengikuti **tema terpilih** (bukan hanya `prefers-color-scheme`) + `meta color-scheme`.
 - **Pengaman baru**: `tests/motionContract.test.js` (**9 uji**) mengunci larangan denyut, batas 300/500 ms, token gerak, `reduced-motion`, kehadiran umpan balik tekan, `min-w-0`, dan area aman.
 - Uji **368 → 377** · cakupan 95,75 / 84,41 / 95,97 % · bundel JS 134,6 kB gzip · `check:contrast --strict`, `check:typography`, `smoke` hijau.
+
+### P6 — Pengaman & tata kelola (2026-10-16) ✅
+- **ESLint hidup, 0 temuan.** `eslint.config.js` (flat config) + `eslint-plugin-jsx-a11y` + `eslint-plugin-react-hooks` sebagai devDependency (**0 dampak bundel**), skrip **`npm run lint`**, dan langkah CI baru. Saat pertama dipasang: **70 temuan**; kini **0** — dan yang diperbaiki bukan hanya gejala:
+  - **Latar dialog jadi `<button>` sungguhan** (`AboutData`, `ReportButton`) — sebelumnya `<div onClick>` yang tak bisa dijangkau papan ketik/pembaca layar; kini `tabIndex={-1}` + `aria-label`, dengan Escape dan tombol “Tutup” tetap jalur utama.
+  - **`role="tablist"` pindah** dari `<nav>` ke daftar tab (peran widget tidak boleh dipasang pada elemen non-interaktif).
+  - **Hook React benar, bukan di-`disable`.** `loadData` memakai `useCallback([tr])`, efek memuat `[selectedLocation, loadData]`, dan `useMemo` umur data kehilangan dependensi berlebih `data` — komentar `eslint-disable` lama dihapus karena tidak lagi diperlukan.
+  - **Konstanta Lanczos (`server/spi.js`) ditulis ulang** ke bentuk terpendek yang bulat-balik **identik** (nilai double tidak berubah) — bukan sekadar mematikan aturan.
+  - 29 impor `React` yang tidak terpakai (runtime JSX otomatis) + belasan impor/variabel mati dibuang di `src/`, `server/`, dan `tests/`.
+- **Kontrak P4/P5 diperbaiki ikut temuan lint**: pemindai tombol `a11yContract` kini membuang komentar lebih dulu (contoh `<button>` di JSX bukan tombol) dan mengecualikan tombol latar penuh `inset-0` (target = seluruh layar).
+- **Jalur uji browser didokumentasikan** untuk dijalankan manusia: `docs/how-to/09-uji-browser-a11y.md` + `.pa11yci.json` (3 viewport) + contoh `axe-core/Playwright` **4 tab × 2 tema**, dengan kebijakan **ratchet** (ambang hanya turun) — sengaja **tidak** di CI karena runner tidak memasang browser.
+- **Dokumen gerbang disinkronkan**: `SKRIP-NPM.md` (baris `lint` + angka i18n 76), `AGENTS.md` (aturan lint), `docs/README.md` (how-to 09), `docs/dev/10-ROADMAP-V3.md` (D-6 ✅), dan `docs/dev/11` (semua metrik §1 kini ✅).
+- Uji tetap **377** · cakupan 95,75 / 84,41 / 95,97 % · bundel JS 134,6 kB gzip · seluruh gerbang + **lint** hijau.
 
 ### Tahap audit & rencana (commit `bfa8315`) — belum mengubah UI
 

@@ -6,7 +6,7 @@
  * berdata; bila hari terakhir ≥ 1 mm → "HH" (hari hujan, HTH = 0). Kelas: Sangat Pendek 1–5 · Pendek 6–10 ·
  * Menengah 11–20 · Panjang 21–30 · Sangat Panjang 31–60 · Kekeringan Ekstrem > 60 hari.
  */
-import { HTH, WATER_BALANCE , VPD, SPI } from '../thresholds.js'
+import { HTH, WATER_BALANCE, VPD } from '../thresholds.js'
 
 export const HTH_CLASSES = [
   { key: 'hh', label: 'Hari Hujan', short: 'HH', max: 0 },

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import {  useRef  } from 'react'
 import { CloudSun, CloudRain, AlertTriangle, MapPin } from 'lucide-react'
 
 /**
@@ -32,11 +32,10 @@ export default function BottomNav({ active, onChange, tr }) {
 
   return (
     <nav
-      role="tablist"
       aria-label={tr('tabsLabel')}
       className="fixed bottom-0 inset-x-0 z-40 bg-surface/95 dark:bg-soil/95 backdrop-blur-md border-t border-ink/10 dark:border-mist/10 pb-[env(safe-area-inset-bottom)]"
     >
-      <div className="grid grid-cols-4">
+      <div role="tablist" aria-label={tr('tabsLabel')} className="grid grid-cols-4">
         {MOBILE_TABS.map(({ id, labelKey, Icon }) => {
           const isActive = active === id
           return (

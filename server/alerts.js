@@ -33,7 +33,7 @@ export function appendLog(entries, dir = DEFAULT_DATA_DIR) {
 }
 /** Feed: peringatan dalam `hours` jam terakhir (terbaru dulu), opsional filter lokasi/bahaya. */
 export function readFeed({ hours = 24, now = new Date().toISOString(), location = null, hazard = null, limit = 100, dir = DEFAULT_DATA_DIR } = {}) {
-  let lines = []
+  let lines
   try {
     lines = fs.readFileSync(logFile(dir), 'utf8').split('\n').filter(Boolean)
   } catch {

@@ -1,4 +1,3 @@
-import React from 'react'
 
 /**
  * Notice P4 — pita keadaan aplikasi (daring kembali, data basi, offline).

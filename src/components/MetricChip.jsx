@@ -1,4 +1,3 @@
-import React from 'react'
 
 /**
  * Satu pembacaan instrumen: label sentence-case + nilai monospace panel.

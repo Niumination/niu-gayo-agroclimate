@@ -1,4 +1,3 @@
-import React from 'react'
 import EmptyState from './EmptyState'
 
 const defaultTr = (k, f) => f ?? k

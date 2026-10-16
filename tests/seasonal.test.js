@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert'
-import { seasonalPhase, monthsToPeak, seasonalNote, seasonalInfo } from '../src/domain/seasonal.js'
+import { seasonalPhase, monthsToPeak, seasonalInfo } from '../src/domain/seasonal.js'
 import disasterHistory from '../src/data/disasterHistory.json' with { type: 'json' }
 import { LOCATIONS } from '../src/data/locations.js'
 

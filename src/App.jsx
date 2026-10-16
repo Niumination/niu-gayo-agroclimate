@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import {  useState, useEffect, useMemo, useCallback  } from 'react'
 import AppBar from './components/AppBar'
 import DesktopHeader from './components/DesktopHeader'
 import BottomNav from './components/BottomNav'
@@ -108,7 +108,7 @@ export default function App() {
   // Badge umur data
   const age = useMemo(
     () => dataAge(fetchedAt ? Date.now() - fetchedAt : null),
-    [fetchedAt, data]
+    [fetchedAt]
   )
 
   const loadData = useCallback(
@@ -132,12 +132,12 @@ export default function App() {
         setLoading(false)
       }
     },
-    [lang] // eslint-disable-line react-hooks/exhaustive-deps
+    [tr]
   )
 
   useEffect(() => {
     loadData(selectedLocation)
-  }, [selectedLocation])
+  }, [selectedLocation, loadData])
 
   const onSelectLocation = (loc) => {
     prefs.setLocationId(loc.id)

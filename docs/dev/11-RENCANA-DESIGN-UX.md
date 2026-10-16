@@ -25,7 +25,7 @@ Perbaikan dijadwalkan sebagai 6 paket kerja dengan kriteria terima terukur. Pake
 | Aturan `focus:` eksplisit | 0 | ✅ **sejak P2** (0 penghapus penanda fokus) |
 | `aria-live` untuk pembaruan data | 0 | ✅ **sejak P2** (pembaruan data + status) |
 | Semantik tab (tablist/tab/tabpanel) | tidak ada | ✅ **sejak P2** (penuh + navigasi panah) |
-| Safe-area aktif | `env()` inert (tanpa `viewport-fit=cover`) | aktif di iOS/Android |
+| Safe-area aktif | `env()` inert (tanpa `viewport-fit=cover`) | ✅ **sejak P5** (`viewport-fit=cover` + safe-area header & bilah bawah) |
 | Font data termuat | tidak (hanya deklarasi CSS) | ✅ **sejak P3** (2 berkas WOFF2 42 kB, preload + fallback metrik) |
 
 ## 2. Ruang lingkup
@@ -150,7 +150,8 @@ Setiap paket memuat: tujuan · langkah · berkas sasaran · kriteria terima · u
 4. Audit `min-w-0` pada baris flex (temuan: beberapa kolom grid sudah, beberapa belum).
 **Kriteria terima:** tidak ada animasi > 300 ms; safe-area terbukti aktif di perangkat (bukan emulator); tangkapan layar gelap/terang bersih.
 
-### P6 — Pengaman & tata kelola (usaha **S–M**)
+### P6 — Pengaman & tata kelola (usaha **S–M**) · ✅ **SELESAI 2026-10-16**
+**Hasil terukur:** `eslint.config.js` (flat) + `eslint-plugin-jsx-a11y` + `eslint-plugin-react-hooks` (devDependency, 0 dampak bundel) dan skrip **`npm run lint`** — 70 temuan awal → **0**; CI mendapat langkah lint sebelum tiap paket. Temuan nyata yang diperbaiki: latar dialog `AboutData`/`ReportButton` kini `<button>` sungguhan, `role="tablist"` dipindah ke daftar tab, hook React di `App.jsx` diperbaiki (`useCallback([tr])` + deps lengkap + `useMemo` tanpa dependensi berlebih), konstanta Lanczos ditulis ulang identik, 29 impor `React` mati + impor/variabel mati dibuang. Jalur uji browser didokumentasikan (`docs/how-to/09-uji-browser-a11y.md` + `.pa11yci.json`, ratchet, 4 tab × 2 tema) — dijalankan manual karena runner tidak punya browser.
 1. `check:contrast -- --strict` di CI (langkah sudah ada, tinggal ubah flag setelah P1).
 2. Usul ESLint flat config + `eslint-plugin-jsx-a11y` (devDependency; 0 dampak bundel) dengan skrip `npm run lint`, aturan inti: `alt-text`, `anchor-is-valid`, `no-static-element-interactions`, `click-events-have-key-events`.
 3. Dokumentasikan jalur uji browser (untuk dijalankan manual di mesin Hermes): `npx pa11y-ci` pada halaman produksi + `@axe-core/playwright` untuk 4 tab × 2 tema; ambang dimulai dari kondisi sekarang lalu diturunkan bertahap (ratchet).
@@ -165,7 +166,7 @@ P1 token+kontras  →  check:contrast --strict  →  P2 a11y interaksi
         P3 tipografi+font  →  build+bundle  →  P4 state  →  P5 gerak/safe-area  →  P6 pengaman+docs
 ```
 
-Gerbang setelah tiap paket: `npm test` (377) · `npm run check:coverage` · `npm run check:contrast` · `npm run check:typography` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
+Gerbang setelah tiap paket: `npm run lint` · `npm test` (377) · `npm run check:coverage` · `npm run check:contrast` · `npm run check:typography` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
 **Jangan** menyentuh `tailwind.config.js`/`postcss.config.js` (sudah dihapus pada v2.1.0) dan jangan menambah dependensi runtime.
 
 ## 8. Log 50 putaran (audit → riset → rencana)
@@ -239,7 +240,7 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 
 ## 9. Definisi selesai (Definition of Done)
 
-**Otomatis (CI):** `npm test` (377) · `check:coverage` · `check:contrast --strict` · `check:typography` · `build` · `check:bundle` (≤ 200 kB JS) · `smoke` · `check:outlook` · `check:i18n`.
+**Otomatis (CI):** `npm run lint` · `npm test` (377) · `check:coverage` · `check:contrast --strict` · `check:typography` · `build` · `check:bundle` (≤ 200 kB JS) · `smoke` · `check:outlook` · `check:i18n`.
 **Manual (butuh manusia/telepon nyata):**
 1. **Keyboard:** Tab dari atas → skip-link → seluruh kontrol; tidak ada jebakan fokus; tab tab berpindah dengan panah; Shift+Tab berbalik arah.
 2. **Pembaca layar** (TalkBack/VoiceOver/NVDA): 4 tab terbaca; perubahan status & hasil laporan diumumkan; peta punya ringkasan teks.
@@ -275,7 +276,9 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 | P3 tipografi & font | ✅ selesai 2026-10-16 (commit `P3`) | 212 ukuran → token · 0 teks < 16 px isi / 0 teks < 12 px · JetBrains Mono 42 kB self-host + preload + fallback metrik · gerbang `check:typography` (9 uji) |
 | P4 keadaan aplikasi | ✅ selesai 2026-10-16 (commit `P4`) | `Skeleton` (300 ms, reduced-motion) · `EmptyState` di 10 kartu · pita basi/offline/kembali daring (1 pengumuman) · spinner tombol kirim · `stateContract` 9 uji → 368 uji |
 | P5 gerak & area aman | ✅ selesai 2026-10-16 (commit `P5`) | token gerak · 26 umpan balik tekan/15 berkas · `viewport-fit=cover` + safe-area header & nav · `theme-color` dinamis · `motionContract` 9 uji → 377 uji |
-| P6 pengaman & docs | ⬜ | ESLint `jsx-a11y` · pa11y/axe manual · dokumen |
+| P6 pengaman & docs | ✅ selesai 2026-10-16 (commit `P6`) | ESLint + `jsx-a11y` + react-hooks (0 temuan, langkah CI) · jalur uji browser terdokumentasi (pa11y/axe, ratchet) · dokumen gerbang disinkronkan |
+
+**Catatan teknis P6 yang perlu diingat:** (a) `npm run lint` **wajib** hijau sebelum commit — aturan `jsx-a11y` menangkap klik pada elemen statis, `alt-text`, dan `anchor-is-valid`; (b) latar dialog harus `<button tabIndex={-1} aria-label="Tutup">`, bukan `<div onClick>`; (c) `role="tablist"` hanya di daftar tab, bukan di `<nav>`; (d) jangan menambah `eslint-disable` bila dependansi hook bisa dibetulkan — perbaiki deps-nya; (e) uji browser (pa11y/axe) tetap tugas manusia: `docs/how-to/09-uji-browser-a11y.md`.
 
 **Catatan teknis P5 yang perlu diingat:** (a) `env(safe-area-inset-*)` bernilai 0 tanpa `viewport-fit=cover` — jangan menghapusnya dari `index.html`; (b) `theme-color` satu meta yang diperbarui JS mengikuti tema terpilih, bukan pasangan `media="(prefers-color-scheme: …)"` (aplikasi punya sakelar tema sendiri); (c) jangan memakai `animate-pulse` untuk membawa makna — ada uji yang melarangnya; (d) `min-w-0` wajib pada anak flex berteks panjang, termasuk apa pun yang membungkus `font-data`.
 

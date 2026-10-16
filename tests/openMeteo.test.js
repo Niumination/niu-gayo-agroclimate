@@ -5,16 +5,6 @@ import { LOCATIONS } from '../src/data/locations.js'
 
 const LOC = LOCATIONS[0]
 
-function makeFetch(seqs) {
-  let i = 0
-  return async () => {
-    const item = seqs[Math.min(i, seqs.length - 1)]
-    i++
-    if (item instanceof Error) throw item
-    return { ok: true, status: 200, json: async () => item }
-  }
-}
-
 test('fetchWithRetry: retry eksponensial lalu sukses', async () => {
   let calls = 0
   const f = async () => { calls++; if (calls < 3) throw new Error('fail'); return { ok: true, json: async () => ({ v: 1 }) } }

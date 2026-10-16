@@ -1,4 +1,3 @@
-import React from 'react'
 import { RefreshCw } from 'lucide-react'
 import { LANGS } from '../i18n/messages'
 
@@ -8,7 +7,6 @@ import { LANGS } from '../i18n/messages'
  */
 export default function AppBar({
   selectedLocation,
-  lastUpdated,
   onRefresh,
   loading,
   lang,

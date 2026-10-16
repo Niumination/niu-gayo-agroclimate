@@ -1,4 +1,3 @@
-import React from 'react'
 
 /**
  * EmptyState P4 — kartu data tidak boleh hilang tanpa penjelasan.

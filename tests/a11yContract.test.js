@@ -166,8 +166,10 @@ test('P2 · seluruh tombol punya target sentuh ≥ 44 px', () => {
   let total = 0
   for (const { rel, text } of SRC) {
     if (!text.includes('<button')) continue
-    const consts = classConsts(text)
-    for (const tag of buttonTags(text)) {
+    // Komentar dibuang lebih dulu: contoh `<button>` di dokumentasi JSX bukan tombol nyata (P6).
+    const src = stripComments(text)
+    const consts = classConsts(src)
+    for (const tag of buttonTags(src)) {
       total++
       let ok = TARGET.test(tag)
       if (!ok) {
@@ -177,6 +179,9 @@ test('P2 · seluruh tombol punya target sentuh ≥ 44 px', () => {
           if (name && consts[name] && TARGET.test(consts[name])) ok = true
         }
       }
+      // Tombol latar penuh (`absolute inset-0`) menutupi seluruh layar — target jauh di atas 44 px,
+      // dan nilainya tidak perlu ditulis ulang sebagai kelas tinggi (P6: latar dialog jadi <button>).
+      if (!ok && /\binset-0\b/.test(tag)) ok = true
       if (!ok) offenders.push(`${rel}: ${tag.slice(0, 90).replace(/\s+/g, ' ')}`)
     }
   }

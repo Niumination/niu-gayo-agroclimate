@@ -1,0 +1,15 @@
+{
+  "defaults": {
+    "standard": "WCAG2AA",
+    "timeout": 30000,
+    "wait": 1200,
+    "chromeLaunchConfig": { "args": ["--no-sandbox", "--disable-dev-shm-usage"] },
+    "viewport": { "width": 375, "height": 800 },
+    "reporters": ["cli"]
+  },
+  "urls": [
+    { "url": "http://localhost:4173/", "viewport": { "width": 320, "height": 720 } },
+    { "url": "http://localhost:4173/", "viewport": { "width": 768, "height": 1024 } },
+    { "url": "http://localhost:4173/", "viewport": { "width": 1280, "height": 900 } }
+  ]
+}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import {  useState  } from 'react'
 import outlook from '../data/hazards/climateOutlook.json'
 import { climateBannerModel } from '../domain/climate.js'
 import EmptyState from './EmptyState'

@@ -3,7 +3,7 @@ import assert from 'node:assert'
 import { landslideScore, watershedIndex, watershedRainIndex, landslideRisk } from '../src/domain/disaster.js'
 import { leafWetnessRustRisk } from '../src/domain/coffee.js'
 import { computeRainProbability, rainProbabilities } from '../src/domain/ensemble.js'
-import { LANDSLIDE, WATERSHED, RUST_LW } from '../src/domain/thresholds.js'
+import { LANDSLIDE, RUST_LW } from '../src/domain/thresholds.js'
 
 // ---------- Longsor: skor gabungan ----------
 test('landslideScore: kondisi kering & landai -> rendah', () => {

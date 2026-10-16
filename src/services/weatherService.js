@@ -4,7 +4,7 @@
  */
 import { fetchForecast } from '../api/openMeteo.js'
 import { fetchEnsemblePrecip, memberArrays } from '../api/ensemble.js'
-import { tempStatus, rustRisk, dryingStatus, leafWetnessRustRisk } from '../domain/coffee.js'
+import { tempStatus, dryingStatus, leafWetnessRustRisk } from '../domain/coffee.js'
 import { landslideScore, watershedIndex, windRisk } from '../domain/disaster.js'
 import { rainProbabilities } from '../domain/ensemble.js'
 import { sliceHourlyFromCurrent, currentSolarRad, apiTimestamp } from '../domain/format.js'
@@ -36,7 +36,6 @@ export async function getAgroClimateData(location) {
 
   // --- Agro-kopi (threshold sederhana) ---
   const ts = tempStatus(temp)
-  const rr = rustRisk(rh, temp)
   let ds = dryingStatus(rain, solarRad, rh)
 
   // --- M3: karat daun berbasis leaf wetness rolling 48 jam (skor 0-100) ---
@@ -55,7 +54,6 @@ export async function getAgroClimateData(location) {
   const lw = leafWetnessRustRisk(rolling48h)
 
   // --- M3: longsor — skor gabungan ---
-  const times = hourly.time
   const idx0 = nowIdx >= 0 ? nowIdx : 0
   const rain24 = (hourly.precipitation || [])
     .slice(Math.max(0, idx0 - 23), idx0 + 1)
@@ -171,7 +169,7 @@ export async function getAgroClimateData(location) {
 
   // v2 Fase 0 (ADR-12) — registry multi-bahaya: satu ctx, semua modul; hasil terurut level tertinggi dulu.
   // Kartu lama (DisasterWarning/AirQualityCard/...) tetap memakai field lama; HazardPanel memakai `hazards`.
-  let hazards = null
+  let hazards
   try {
     hazards = evaluateAll(
       {

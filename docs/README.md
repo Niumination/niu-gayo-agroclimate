@@ -29,9 +29,10 @@ Dua direktori di luar empat kuadran itu adalah **arsip & aset**, bukan bacaan:
 | menyiapkan data untuk validasi musiman (POD/FAR) | [how-to/06-kumpulkan-data-validasi.md](how-to/06-kumpulkan-data-validasi.md) |
 | meninjau label bahasa Gayo `[?]` bersama penutur asli | [how-to/07-tinjau-label-gayo.md](how-to/07-tinjau-label-gayo.md) |
 | mengaktifkan & memverifikasi hotspot NASA FIRMS (kunci H-1) | [how-to/08-aktifkan-hotspot-firms.md](how-to/08-aktifkan-hotspot-firms.md) |
+| menguji aksesibilitas di browser sungguhan (pa11y/axe, manual) | [how-to/09-uji-browser-a11y.md](how-to/09-uji-browser-a11y.md) |
 | mencari daftar endpoint API | [reference/ENDPOINT-API.md](reference/ENDPOINT-API.md) |
 | mencari arti variabel `.env` | [reference/KONFIGURASI-ENV.md](reference/KONFIGURASI-ENV.md) |
-| mencari daftar perintah npm & gerbang CI | [reference/SKRIP-NPM.md](reference/SKRIP-NPM.md) |
+| mencari daftar perintah npm & gerbang CI (termasuk `npm run lint`) | [reference/SKRIP-NPM.md](reference/SKRIP-NPM.md) |
 | menyempurnakan tampilan, kontras, atau aksesibilitas | [reference/DESIGN-TOKENS.md](reference/DESIGN-TOKENS.md) · [dev/11-RENCANA-DESIGN-UX.md](dev/11-RENCANA-DESIGN-UX.md) |
 | mencari angka ambang & rumus per bahaya | [reference/THRESHOLDS.md](reference/THRESHOLDS.md) |
 | mengukur apakah indeks bahaya benar di lapangan | [reference/VALIDATION.md](reference/VALIDATION.md) |

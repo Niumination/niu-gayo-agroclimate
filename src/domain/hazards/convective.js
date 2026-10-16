@@ -7,7 +7,6 @@
 import { CONVECTIVE, WIND_GUST } from '../thresholds.js'
 
 const RANK = { 'n/a': -1, rendah: 0, waspada: 1, bahaya: 2, ekstrem: 3 }
-const LEVELS = ['rendah', 'waspada', 'bahaya', 'ekstrem']
 const num = (v) => (v == null || Number.isNaN(Number(v)) ? null : Number(v))
 const isTs = (code) => code != null && code >= 95 && code <= 99
 const isHailCode = (code) => code === 96 || code === 99

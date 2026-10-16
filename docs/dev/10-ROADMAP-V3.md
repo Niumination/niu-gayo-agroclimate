@@ -40,7 +40,7 @@
 | **D-3** | Skala tipografi (teks isi ≥ 16 px) + self-host JetBrains Mono subset | ✅ **SELESAI (P3, 2026-10-16)** — 212 ukuran arbitrer → token skala (0 teks isi < 16 px, 0 teks < 12 px), `truncate` dihapus, `tabular-nums` menyeluruh, JetBrains Mono variable self-host 42 kB (latin + latin-ext) dengan preload + fallback metrik; gerbang `npm run check:typography` (+9 uji → 359) |
 | **D-4** | Keadaan menunggu/kosong/basi/gagal (skeleton, ajakan tindakan, `aria-live`) | ✅ **SELESAI (P4, 2026-10-16)** — `Skeleton` (tunda 300 ms, mati saat reduced-motion), `EmptyState` di 10 kartu data, pita data basi + “Muat ulang sekarang”, pita offline terpusat + penanda cache, pita “koneksi kembali” yang bisa ditutup, spinner + anti kirim ganda pada tombol laporan; `tests/stateContract.test.js` (9 uji → 368) |
 | **D-5** | Gerak (≤ 300 ms, umpan balik tekan) & area aman (`viewport-fit=cover`) | ✅ **SELESAI (P5, 2026-10-16)** — token `--ease-enter`/`--ease-exit`, 0 denyut bermakna, 0 durasi > 300 ms, umpan balik tekan di 26 tempat/15 berkas, `viewport-fit=cover` + safe-area header & nav, `theme-color` dinamis; `tests/motionContract.test.js` (9 uji → 377) |
-| **D-6** | Pengaman: `check:contrast --strict` + ESLint `jsx-a11y` + uji browser manual (pa11y/axe) | paket **P6** |
+| **D-6** | Pengaman: `check:contrast --strict` + ESLint `jsx-a11y` + uji browser manual (pa11y/axe) | ✅ **SELESAI (P6, 2026-10-16)** — `check:contrast --strict` di CI sejak P1 · `npm run lint` (ESLint + jsx-a11y + react-hooks) 0 temuan + langkah CI · jalur uji browser terdokumentasi (`docs/how-to/09-uji-browser-a11y.md`, `.pa11yci.json`, ratchet) |
 
 ## 3. Yang sengaja tidak dilakukan
 - Memberi label "peringatan dini resmi" pada keluaran apa pun — mandat BMKG/BPBD/PVMBG.

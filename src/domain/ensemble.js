@@ -14,7 +14,6 @@ export function sumPrecipPerWindow(memberPrecip, hours = 24) {
 export function computeRainProbability(memberPrecip, thresholdMm = 25, hours = 24) {
   const windows = sumPrecipPerWindow(memberPrecip, hours)
   if (windows.length === 0) return { probability: 0, exceedances: 0, members: 0 }
-  const exceeds = windows.filter((w) => w.filter((v) => v > thresholdMm).length / w.length > 0)
   // per window: jumlah member yang melampaui threshold
   const result = windows.map((w) => Math.round((w.filter((v) => v > thresholdMm).length * 100) / w.length))
   return {

@@ -47,7 +47,6 @@ test('parseImergAsciiValue: error Hyrax / tanpa baris data → null', () => {
 
 const TOKEN_LINE = 'machine urs.earthdata.nasa.gov login uid-xxx password SECRET-TOKEN'
 test('readEarthdataToken: field ke-6 baris machine', async () => {
-  const { readFile } = await import('node:fs/promises')
   // tulis netrc sementara
   const os = await import('node:os')
   const path = await import('node:path')

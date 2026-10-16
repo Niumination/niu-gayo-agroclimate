@@ -1,4 +1,3 @@
-import React from 'react'
 import { LEVEL_LABEL } from '../domain/hazards/levels.js'
 
 /**

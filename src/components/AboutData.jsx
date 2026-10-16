@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import {  useEffect, useRef  } from 'react'
 
 /**
  * FR-X-9 — halaman/modal "Tentang data & batasan": sumber + lisensi, arti "estimasi", cara membaca level,
@@ -26,15 +26,23 @@ export default function AboutData({ open, onClose }) {
   }, [open, onClose])
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/50 p-0 sm:p-6" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
+      {/* Latar penutup = <button> sungguhan: bisa dibaca pembaca layar, dan tidak
+          menuntut jalur papan-ketik tambahan. Escape & tombol "Tutup" tetap jalur utama. */}
+      <button
+        type="button"
+        aria-label="Tutup"
+        tabIndex={-1}
+        onClick={onClose}
+        className="absolute inset-0 bg-ink/50"
+      />
       <div
         ref={ref}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="about-title"
-        onClick={(e) => e.stopPropagation()}
-        className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-t-card sm:rounded-card p-5 text-ink dark:text-mist"
+        className="relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-t-card sm:rounded-card p-5 text-ink dark:text-mist"
       >
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-ink/10 dark:border-mist/10">
           <div>

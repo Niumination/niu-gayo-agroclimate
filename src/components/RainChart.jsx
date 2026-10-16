@@ -1,4 +1,3 @@
-import React from 'react'
 
 // Grafik hujan SVG ringan (tanpa recharts) — 24 jam, batang mm/jam.
 // Tick marks tiap 4 jam; skala penuh (tanpa min-width → tidak ada horizontal

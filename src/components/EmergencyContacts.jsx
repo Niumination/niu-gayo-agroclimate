@@ -1,4 +1,3 @@
-import React from 'react'
 import { contactsFor } from '../data/contacts.js'
 import sentraKecamatan from '../data/hazards/sentraKecamatan.json'
 

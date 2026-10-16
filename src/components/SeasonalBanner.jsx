@@ -1,4 +1,3 @@
-import React from 'react'
 import EmptyState from './EmptyState'
 
 // F7 — banner kalender musiman. Fase: tinggi=cherry, sedang=husk, rendah=leaf.

@@ -42,7 +42,7 @@ test('cached: SWR tidak memblokir pemanggil saat upstream lambat', async () => {
   // Expire, lalu ambil lagi — harus kembali instan dengan nilai lama.
   await new Promise((r) => setTimeout(r, 10))
   const t0 = Date.now()
-  const v = await cached('slow', 1, fetcher)
+  await cached('slow', 1, fetcher)
   const elapsed = Date.now() - t0
   assert.ok(elapsed < 100, `pemanggil terblokir ${elapsed}ms, seharusnya non-blokir`)
 })

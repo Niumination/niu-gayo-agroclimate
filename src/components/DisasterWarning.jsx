@@ -1,4 +1,3 @@
-import React from 'react'
 import EmptyState from './EmptyState'
 
 // Palet risiko mengikuti token Stasiun Cuaca Kebun (tone AA per tema).
@@ -53,14 +52,13 @@ function Row({ label, item, children }) {
   )
 }
 
-export default function DisasterWarning({ disaster, dailyRainSum, location, tr = (k) => k }) {
+export default function DisasterWarning({ disaster, dailyRainSum, tr = (k) => k }) {
   if (!disaster) {
     return <EmptyState title={tr('emptyWarning')} hint={tr('emptyHint')} />
   }
   const confidence = disaster.confidence
   const consensus = disaster.consensus
   const bmkg = disaster.bmkgNowcast
-  const ari = disaster.landslide?.antecedentSource
 
   return (
     <section

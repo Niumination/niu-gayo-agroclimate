@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import {  useState  } from 'react'
 import { GROUP_LABEL } from '../domain/hazards/index.js'
 import { LEVEL_LABEL } from '../domain/hazards/levels.js'
 import { InteractionsList } from './HazardFocusCards.jsx'

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import {  useMemo  } from 'react'
 import kecamatan from '../data/geo/kecamatan.json'
 import { LOCATIONS } from '../data/locations.js'
 import { makeProjection, geometryToPath, featureBbox, haversineKm, placeLabels, BURNI_TELONG } from '../domain/geo.js'

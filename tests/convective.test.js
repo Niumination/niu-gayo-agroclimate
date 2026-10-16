@@ -10,7 +10,7 @@ import { CONVECTIVE } from '../src/domain/thresholds.js'
 const ecmwfFx = JSON.parse(fs.readFileSync(new URL('./fixtures/hazards/openmeteo-ecmwf-convective.json', import.meta.url), 'utf8'))
 const gfsFx = JSON.parse(fs.readFileSync(new URL('./fixtures/hazards/openmeteo-gfs-cape-li.json', import.meta.url), 'utf8'))
 
-const hours = (n, start = '2026-10-15T06:00') => Array.from({ length: n }, (_, i) => `2026-10-15T${String(6 + i).padStart(2, '0')}:00`)
+const hours = (n) => Array.from({ length: n }, (_, i) => `2026-10-15T${String(6 + i).padStart(2, '0')}:00`)
 
 test('ambang per jam: ECMWF (CAPE/kode) & GFS (LI/CAPE) sesuai PRD', () => {
   assert.equal(levelEcmwfHour(500, 3), 'rendah')

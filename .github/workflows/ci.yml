@@ -26,6 +26,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Fase design/UX (P6 selesai 2026-10-16): ESLint + eslint-plugin-jsx-a11y + react-hooks.
+      # Menjaga temuan aksesibilitas JSX (alt-text, anchor-is-valid, klik pada elemen statis, dst.)
+      # dan hook React agar tidak kembali. 0 berkas diabaikan; temuan = gagal.
+      - name: Lint (ESLint + jsx-a11y + react-hooks)
+        run: npm run lint
+
       - name: Run unit tests
         run: npm test
 
@@ -67,3 +73,6 @@ jobs:
       # Fase 4.4 — smoke test API offline: server dinyalakan tanpa kunci; semua endpoint harus menjawab JSON (degraded boleh, 5xx tidak)
       - name: API smoke test (offline-tolerant)
         run: npm run smoke
+      # CATATAN (P6): uji aksesibilitas berbasis BROWSER (pa11y-ci, axe-core/Playwright) sengaja
+      # TIDAK dijalankan di CI ini — runner repo tidak memasang browser. Jalur manualnya ada di
+      # docs/how-to/09-uji-browser-a11y.md (ratchet: mulai dari kondisi sekarang, turunkan bertahap).

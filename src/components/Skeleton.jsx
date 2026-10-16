@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import {  useEffect, useState  } from 'react'
 
 /**
  * Skeleton P4 — kerangka bertata tetap selama data dimuat.

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import {  useEffect, useRef, useState  } from 'react'
 
 // F8 — tombol 'Lapor kejadian' + modal form (bukan PII).
 // Aksesibilitas: focus trap sederhana, Esc menutup, label eksplisit, fokus awal di select.
@@ -139,16 +139,20 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
       </button>
 
       {open && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
-        >
+        <div className="fixed inset-0 z-50 grid place-items-center p-4">
+          <button
+            type="button"
+            aria-label="Tutup"
+            tabIndex={-1}
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 bg-black/40"
+          />
           <div
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="report-title"
-            className="w-full max-w-md bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
+            className="relative w-full max-w-md bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
           >
             <h2 id="report-title" className="text-body font-semibold text-ink dark:text-mist">
               Lapor kejadian — {location.name}

@@ -1,4 +1,3 @@
-import React from 'react'
 
 /**
  * Kontainer konten mobile dengan transisi pindah tab (satu momen motion).

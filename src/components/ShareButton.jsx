@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import {  useState  } from 'react'
 import { whatsappText, smsText, waShareUrl, smsShareUrl } from '../domain/share.js'
 
 /**
