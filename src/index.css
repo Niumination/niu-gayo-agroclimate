@@ -122,6 +122,12 @@
   --text-caption: 0.75rem;           /* 12 px — stempel waktu, catatan kaki */
   --text-caption--line-height: 1.45;
 
+  /* Gerak (P5; tabel: docs/reference/DESIGN-TOKENS.md §5).
+     tekan 90–100 ms · hover 120 ms · masuk tab/halaman 200 ms · sheet 240 ms;
+     ease-out masuk, ease-in keluar; tidak ada animasi fungsional > 500 ms. */
+  --ease-enter: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-exit: cubic-bezier(0.5, 0, 0.75, 0);
+
   --font-data: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --max-width-shell: 1400px;
   --radius-card: 16px;
@@ -187,7 +193,7 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 .anim-enter {
-  animation: nga-enter 200ms ease-out both;
+  animation: nga-enter 200ms var(--ease-enter) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

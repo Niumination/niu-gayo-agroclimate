@@ -25,7 +25,7 @@ export default function AppBar({
     : 'text-leaf-deep border-leaf/40 bg-leaf/10'
 
   return (
-    <header className="sticky top-0 z-40 bg-surface/90 dark:bg-soil/90 backdrop-blur-md border-b border-ink/10 dark:border-mist/10">
+    <header className="sticky top-0 z-40 bg-surface/90 dark:bg-soil/90 backdrop-blur-md border-b border-ink/10 dark:border-mist/10 pt-[env(safe-area-inset-top)]">
       <div className="px-4 pt-3 pb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h1 className="text-base font-semibold tracking-tight text-ink dark:text-mist break-words leading-tight">

@@ -142,7 +142,8 @@ Setiap paket memuat: tujuan · langkah · berkas sasaran · kriteria terima · u
 5. Offline: banner tetap + penanda data dari cache; setelah kembali online, tawarkan muat ulang (jangan paksa).
 **Kriteria terima:** keempat keadaan ada di setiap kartu data; tidak ada layar kosong tanpa penjelasan; pembaruan diumumkan lewat `aria-live`.
 
-### P5 — Gerak, area aman & polish visual (usaha **S**)
+### P5 — Gerak, area aman & polish visual (usaha **S**) · ✅ **SELESAI 2026-10-16**
+**Hasil terukur:** token gerak `--ease-enter`/`--ease-exit` dipakai `.anim-enter`; **0** `animate-pulse`/`animate-bounce` dan **0** durasi > 300 ms di `src/`; umpan balik tekan `active:scale-[.97]` di **26 tempat / 15 berkas**; `viewport-fit=cover` aktif + `env(safe-area-inset-top)` di kedua header dan `env(safe-area-inset-bottom)` di navigasi bawah; `theme-color` dinamis mengikuti tema terpilih + `meta color-scheme`; `tests/motionContract.test.js` (9 uji) → suite **377 uji**.
 1. Terapkan tabel motion §5; tambah umpan balik tekan (`active:scale-[.97]` 90 ms) pada tombol utama.
 2. Hapus makna dari `animate-pulse` (level ekstrem tetap dikenali tanpa denyut), jaga blok `prefers-reduced-motion`.
 3. `index.html`: `viewport-fit=cover`, `theme-color` untuk terang & gelap (`media="(prefers-color-scheme: dark)"`).
@@ -164,7 +165,7 @@ P1 token+kontras  →  check:contrast --strict  →  P2 a11y interaksi
         P3 tipografi+font  →  build+bundle  →  P4 state  →  P5 gerak/safe-area  →  P6 pengaman+docs
 ```
 
-Gerbang setelah tiap paket: `npm test` (368) · `npm run check:coverage` · `npm run check:contrast` · `npm run check:typography` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
+Gerbang setelah tiap paket: `npm test` (377) · `npm run check:coverage` · `npm run check:contrast` · `npm run check:typography` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
 **Jangan** menyentuh `tailwind.config.js`/`postcss.config.js` (sudah dihapus pada v2.1.0) dan jangan menambah dependensi runtime.
 
 ## 8. Log 50 putaran (audit → riset → rencana)
@@ -238,7 +239,7 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 
 ## 9. Definisi selesai (Definition of Done)
 
-**Otomatis (CI):** `npm test` (368) · `check:coverage` · `check:contrast --strict` · `check:typography` · `build` · `check:bundle` (≤ 200 kB JS) · `smoke` · `check:outlook` · `check:i18n`.
+**Otomatis (CI):** `npm test` (377) · `check:coverage` · `check:contrast --strict` · `check:typography` · `build` · `check:bundle` (≤ 200 kB JS) · `smoke` · `check:outlook` · `check:i18n`.
 **Manual (butuh manusia/telepon nyata):**
 1. **Keyboard:** Tab dari atas → skip-link → seluruh kontrol; tidak ada jebakan fokus; tab tab berpindah dengan panah; Shift+Tab berbalik arah.
 2. **Pembaca layar** (TalkBack/VoiceOver/NVDA): 4 tab terbaca; perubahan status & hasil laporan diumumkan; peta punya ringkasan teks.
@@ -273,8 +274,10 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 | P2 a11y interaksi | ✅ selesai 2026-10-16 (commit `P2`) | 0/25 tombol < 44 px · tablist+tabpanel penuh · skip-link + `aria-live` · `a11yContract` 10 uji · skala teks jadi token · 15 label i18n |
 | P3 tipografi & font | ✅ selesai 2026-10-16 (commit `P3`) | 212 ukuran → token · 0 teks < 16 px isi / 0 teks < 12 px · JetBrains Mono 42 kB self-host + preload + fallback metrik · gerbang `check:typography` (9 uji) |
 | P4 keadaan aplikasi | ✅ selesai 2026-10-16 (commit `P4`) | `Skeleton` (300 ms, reduced-motion) · `EmptyState` di 10 kartu · pita basi/offline/kembali daring (1 pengumuman) · spinner tombol kirim · `stateContract` 9 uji → 368 uji |
-| P5 gerak & area aman | ⬜ | durasi motion · `viewport-fit=cover` · `min-w-0` |
+| P5 gerak & area aman | ✅ selesai 2026-10-16 (commit `P5`) | token gerak · 26 umpan balik tekan/15 berkas · `viewport-fit=cover` + safe-area header & nav · `theme-color` dinamis · `motionContract` 9 uji → 377 uji |
 | P6 pengaman & docs | ⬜ | ESLint `jsx-a11y` · pa11y/axe manual · dokumen |
+
+**Catatan teknis P5 yang perlu diingat:** (a) `env(safe-area-inset-*)` bernilai 0 tanpa `viewport-fit=cover` — jangan menghapusnya dari `index.html`; (b) `theme-color` satu meta yang diperbarui JS mengikuti tema terpilih, bukan pasangan `media="(prefers-color-scheme: …)"` (aplikasi punya sakelar tema sendiri); (c) jangan memakai `animate-pulse` untuk membawa makna — ada uji yang melarangnya; (d) `min-w-0` wajib pada anak flex berteks panjang, termasuk apa pun yang membungkus `font-data`.
 
 **Catatan teknis P4 yang perlu diingat:** (a) skeleton hanya dirender setelah 300 ms (`useDelayedVisible`) — jangan menampilkannya seketika, getaran itulah yang membuat aplikasi terasa lambat; (b) pengumuman offline **hanya** dari `App` (pita `Notice`), jangan menambahkannya lagi di header agar pembaca layar tidak mengulang; (c) `EmptyState` wajib memuat petunjuk langkah berikutnya, bukan hanya “tidak ada data”; (d) pita keadaan memakai `role="status"` (sopan) bukan `alert` — kecuali galat yang menghentikan alur.
 

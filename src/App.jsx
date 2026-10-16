@@ -401,7 +401,7 @@ export default function App() {
 
       <footer className="border-t border-ink/10 dark:border-mist/10 py-4 text-center text-caption text-ink-muted dark:text-mist-subtle">
         Niu Gayo Agro-Climate &bull; {tr('footer')} &bull;{' '}
-        <button type="button" onClick={() => setAboutOpen(true)} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist">
+        <button type="button" onClick={() => setAboutOpen(true)} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist transition duration-100 ease-out active:scale-[.97]">
           {tr('aboutData')}
         </button>
       </footer>

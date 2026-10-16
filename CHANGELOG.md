@@ -1,6 +1,6 @@
 # Changelog
 
-## [Belum dirilis] — Fase design/frontend/UX (P1–P4 ✅ · P5–P6 menyusul)
+## [Belum dirilis] — Fase design/frontend/UX (P1–P5 ✅ · P6 menyusul)
 
 ### P1 — Token semantik & kontras (2026-10-16) ✅
 - **Nol teks di bawah 4,5:1.** 417 utilitas teks beropasitas (`text-ink/45`, `dark:text-mist/40`, …) di **66 berkas** diganti token peran; pindai ulang menemukan **0** sisa. Sebelumnya 262 pemakaian gagal ambang WCAG AA di 21 berkas.
@@ -37,6 +37,13 @@
 - **Aksi kirim punya umpan balik:** tombol **Kirim laporan** menampilkan spinner di dalam tombol (menghormati `prefers-reduced-motion`), tetap dinonaktifkan selama mengirim (anti kirim ganda), dan konfirmasi sukses diumumkan lewat `role="status"`.
 - **Pengaman baru:** `tests/stateContract.test.js` (**9 uji**) mengunci keempat keadaan, larangan pengumuman offline ganda, dan ketersediaan label kedua bahasa.
 - Uji **359 → 368** · `check:i18n` 67 → **76** placeholder Gayo `[?]` (9 label keadaan baru menunggu tinjauan penutur asli — tugas manusia H-4) · cakupan 95,74 / 84,35 / 95,93 % · bundel tetap di bawah anggaran · `check:contrast --strict`, `check:typography`, `smoke`, dan pemeriksa tautan docs semuanya hijau.
+
+### P5 — Gerak, area aman & polish visual (2026-10-16) ✅
+- **Gerak konsisten & token**: token easing `--ease-enter` / `--ease-exit` di `@theme` (tabel §5 `DESIGN-TOKENS`); `.anim-enter` kini memakai token; **tidak ada animasi > 300 ms** dan tidak ada `animate-pulse`/`animate-bounce` di seluruh `src/` (level bahaya dibaca dari warna + ikon + teks, bukan denyutan).
+- **Umpan balik tekan merata**: `active:scale-[.97]` + `duration-100 ease-out` kini di **26 tempat / 15 berkas** (sebelumnya hanya `App`), termasuk Baris bahaya `HazardPanel`, chip riwayat bencana, item `LocationRail`, tombol kirim laporan, dan Pita keadaan P4.
+- **Area aman**: `index.html` memakai **`viewport-fit=cover`** (tanpa ini `env(safe-area-inset-*)` selalu 0 — termasuk di emulator); `AppBar`/`DesktopHeader` mendapat `pt-[env(safe-area-inset-top)]`, `BottomNav` tetap `pb-[env(safe-area-inset-bottom)]`; `theme-color` diperbarui mengikuti **tema terpilih** (bukan hanya `prefers-color-scheme`) + `meta color-scheme`.
+- **Pengaman baru**: `tests/motionContract.test.js` (**9 uji**) mengunci larangan denyut, batas 300/500 ms, token gerak, `reduced-motion`, kehadiran umpan balik tekan, `min-w-0`, dan area aman.
+- Uji **368 → 377** · cakupan 95,75 / 84,41 / 95,97 % · bundel JS 134,6 kB gzip · `check:contrast --strict`, `check:typography`, `smoke` hijau.
 
 ### Tahap audit & rencana (commit `bfa8315`) — belum mengubah UI
 

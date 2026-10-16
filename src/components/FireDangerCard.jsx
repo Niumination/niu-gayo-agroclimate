@@ -194,7 +194,7 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
           ))}
         </ul>
         {a.advice.length > 2 && (
-          <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-1 text-caption font-medium text-leaf-deep dark:text-leaf-soft hover:underline min-h-11">
+          <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-1 text-caption font-medium text-leaf-deep dark:text-leaf-soft hover:underline min-h-11 transition duration-100 ease-out active:scale-[.97]">
             {showAll ? 'Sembunyikan' : `Lihat ${a.advice.length - 2} anjuran lain`}
           </button>
         )}

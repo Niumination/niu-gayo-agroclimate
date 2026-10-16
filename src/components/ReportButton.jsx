@@ -133,7 +133,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
       <button
         type="button"
         onClick={() => { setStatus(null); setOpen(true) }}
-        className={`inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-card border border-ink/15 dark:border-mist/15 text-body font-medium text-ink dark:text-mist hover:bg-ink/5 dark:hover:bg-mist/10 transition-colors ${className}`}
+        className={`inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-card border border-ink/15 dark:border-mist/15 text-body font-medium text-ink dark:text-mist hover:bg-ink/5 dark:hover:bg-mist/10 transition-colors duration-100 ease-out active:scale-[.97] ${className}`}
       >
         <span aria-hidden="true">⚠</span> Lapor kejadian
       </button>
@@ -264,14 +264,14 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="min-h-[44px] px-4 rounded-card text-body text-ink-body dark:text-mist-muted hover:bg-ink/5 dark:hover:bg-mist/10"
+                  className="min-h-[44px] px-4 rounded-card text-body text-ink-body dark:text-mist-muted hover:bg-ink/5 dark:hover:bg-mist/10 transition duration-100 ease-out active:scale-[.97]"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={status === 'sending' || status === 'ok'}
-                  className="min-h-[44px] px-4 inline-flex items-center gap-2 rounded-card bg-leaf text-white text-body font-medium disabled:opacity-50"
+                  className="min-h-[44px] px-4 inline-flex items-center gap-2 rounded-card bg-leaf text-white text-body font-medium disabled:opacity-50 transition duration-100 ease-out active:scale-[.97]"
                 >
                   {status === 'sending' ? (
                     <>

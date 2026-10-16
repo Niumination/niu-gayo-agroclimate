@@ -9,7 +9,7 @@
 | `npm run dev` | Vite dev server (:5188) | UI + proxy `/api` ke `127.0.0.1:7455` |
 | `npm run build` | Vite 8 / Rolldown → `dist/` | bundle produksi, ± 0,5 detik |
 | `npm run preview` | Vite preview | menyajikan `dist/` (uji PWA/offline) |
-| `npm test` | `node --test tests/*.test.js` | **368 uji**, semua panggilan jaringan di-mock (termasuk 10 uji kontrak a11y, 9 uji gerbang tipografi, 9 uji kontrak keadaan) |
+| `npm test` | `node --test tests/*.test.js` | **377 uji**, semua panggilan jaringan di-mock (termasuk 10 uji kontrak a11y, 9 uji gerbang tipografi, 9 uji kontrak keadaan, 9 uji kontrak gerak) |
 | `npm run test:coverage` | sama + `--experimental-test-coverage` | laporan cakupan mentah (tanpa ambang) |
 | **`npm run check:coverage`** | `scripts/check-coverage.mjs` | **gerbang cakupan**: baris ≥ 95 %, cabang ≥ 80 %, fungsi ≥ 92 % + tren vs baseline |
 | **`npm run check:bundle`** | `scripts/check-bundle.mjs` | JS utama ≤ 150 kB gzip · total ≤ 200 kB (atur lewat `BUNDLE_MAX_KB`/`BUNDLE_TOTAL_MAX_KB`) |
@@ -48,6 +48,8 @@ npm ci → npm test → npm run check:coverage → npm audit --omit=dev --audit-
 ```
 
 Angka acuan saat rilis v2.1.0 (semua hijau): 327 uji · cakupan 96,46/83,86/96,00 · bundle 65,8 kB gzip (utama) & 131,6 kB (total) · CSS 8,09 kB gzip · outlook berlaku sampai 2026-11-12 · `npm audit` **0**.
+Angka setelah **P5 (gerak & area aman, 16 Okt 2026)**: **377 uji** · cakupan 95,75/84,41/95,97 % · bundel JS 134,6 kB gzip · seluruh gerbang hijau.
+
 Angka setelah **P4 (keadaan aplikasi, 16 Okt 2026)**: **368 uji** · cakupan 95,74/84,35/95,93 % · seluruh gerbang hijau (`check:contrast --strict`, `check:typography`, `check:bundle`, `smoke`, `check:outlook`, `check:i18n`).
 
 Angka setelah **P3 (tipografi & font, 16 Okt 2026)**: **359 uji** · cakupan 95,70/84,31/95,91 % · `check:contrast --strict` hijau (34/34 pasangan) · `check:typography` hijau (0 teks < 16 px isi, 0 `truncate`, font 42 kB terbangun di `dist/fonts/`) · 0 dari 25 tombol < 44 px · bundel JS 132,9 kB gzip (font di luar anggaran JS) · precache PWA 16 entri / 536 KiB.

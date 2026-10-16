@@ -206,7 +206,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
               type="button"
               onClick={() => setShowCleanRoom((v) => !v)}
               aria-expanded={showCleanRoom}
-              className="min-h-11 inline-flex items-center text-caption font-medium underline underline-offset-2 text-ink-body dark:text-mist-muted"
+              className="min-h-11 inline-flex items-center text-caption font-medium underline underline-offset-2 text-ink-body dark:text-mist-muted transition duration-100 ease-out active:scale-[.97]"
             >
               {showCleanRoom ? 'Sembunyikan' : 'Tampilkan'} daftar periksa {a.advice.cleanRoomTitle?.toLowerCase() || 'ruang bersih'}
             </button>

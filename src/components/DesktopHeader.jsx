@@ -24,7 +24,7 @@ export default function DesktopHeader({
     : 'text-leaf-deep dark:text-leaf-soft border-leaf/40 bg-leaf/10'
 
   return (
-    <header className="sticky top-0 z-40 bg-surface/90 dark:bg-soil/90 backdrop-blur-md border-b border-ink/10 dark:border-mist/10">
+    <header className="sticky top-0 z-40 bg-surface/90 dark:bg-soil/90 backdrop-blur-md border-b border-ink/10 dark:border-mist/10 pt-[env(safe-area-inset-top)]">
       <div className="max-w-shell mx-auto px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-baseline gap-3 min-w-0">
           <span className="font-semibold tracking-tight text-ink dark:text-mist">Niu Gayo Agro-Climate</span>

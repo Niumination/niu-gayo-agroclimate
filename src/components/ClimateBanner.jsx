@@ -21,7 +21,7 @@ export default function ClimateBanner({ drought, now, tr = (k) => k }) {
   }
   return (
     <div role="status" className={`border rounded-card px-4 py-3 text-body ${STYLE[m.tone] || STYLE.sedang}`}>
-      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="min-h-11 inline-flex items-center w-full text-left flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="min-h-11 inline-flex items-center w-full text-left flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 transition duration-100 ease-out active:scale-[.97]">
         <span className="font-semibold">{m.title}</span>
         <span className="text-caption opacity-75">{m.summary}{m.issuedAt ? ` · rilis ${m.issuedAt}` : ''} {open ? '▴' : '▾'}</span>
       </button>

@@ -144,6 +144,8 @@ Aturan: (a) jangan ada teks di bawah 12 px; (b) `text-[10px]/[11px]` dinaikkan k
 
 Aturan: tidak ada animasi fungsional > 500 ms; `prefers-reduced-motion: reduce` **mematikan gerak, bukan fungsi** (konten akhir tetap muncul); jangan pakai `animate-pulse` untuk membawa makna.
 
+**Diterapkan P5 (2026-10-16):** token `--ease-enter` (ease-out quart) & `--ease-exit` (ease-in quart) ada di `@theme`; `.anim-enter` memakai `var(--ease-enter)`; umpan balik tekan `active:scale-[.97] duration-100 ease-out` di **26 tempat / 15 berkas**; tidak ada `animate-pulse`/`animate-bounce` dan tidak ada durasi > 300 ms di `src/` (dijaga `tests/motionContract.test.js`).
+
 ## 6. Target sentuh, fokus, dan area aman
 
 | Butir | Ketentuan |
@@ -151,7 +153,8 @@ Aturan: tidak ada animasi fungsional > 500 ms; `prefers-reduced-motion: reduce` 
 | Tombol utama | ≥ 44×44 px (saat ini 24 tombol: 10 `min-h-[44px]`, 2 `h-11 w-11`) |
 | Target sekunder | ≥ 24×24 px + jarak ≥ 24 px antar-target |
 | Baris bawah (BottomNav) | tinggi ≥ 56 px + `padding-bottom: env(safe-area-inset-bottom)` |
-| `viewport-fit=cover` | wajib di `index.html`, jika tidak `env(safe-area-inset-*)` selalu bernilai 0 |
+| `viewport-fit=cover` | ✅ aktif sejak P5 (wajib di `index.html`, jika tidak `env(safe-area-inset-*)` selalu bernilai 0) |
+| Header lengket | ✅ P5: `pt-[env(safe-area-inset-top)]` di `AppBar` & `DesktopHeader` |
 | Cincin fokus | 2 px `outline` + `outline-offset: 2px`; warna `leaf-deep` (7,46:1 di terang) / `leaf-soft` (8,58:1 di gelap) |
 | Larangan | `focus-visible:outline-none` tanpa pengganti (ada di `AppBar`), serta reset `blur` pada tombol |
 

@@ -41,7 +41,7 @@ export default function AboutData({ open, onClose }) {
             <h2 id="about-title" className="text-body font-semibold tracking-tight">Tentang data &amp; batasan</h2>
             <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">Niu Gayo Agro-Climate adalah informasi pendukung keputusan — bukan peringatan dini resmi.</p>
           </div>
-          <button type="button" onClick={onClose} className="min-h-11 px-3 rounded-lg border border-ink/15 dark:border-mist/15 text-body">Tutup</button>
+          <button type="button" onClick={onClose} className="min-h-11 px-3 rounded-lg border border-ink/15 dark:border-mist/15 text-body transition duration-100 ease-out active:scale-[.97]">Tutup</button>
         </div>
 
         <div className="space-y-5 pt-4 text-body leading-relaxed">
