@@ -19,6 +19,7 @@ import {
   parseHex,
   parseThemeTokens,
   scanOpacityText,
+  stripBlockComments,
   walkSource,
 } from '../scripts/check-contrast.mjs'
 
@@ -133,4 +134,22 @@ test('scanOpacityText & countSmallText tahan berkas tak terbaca', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nga-kontras-'))
   assert.deepEqual(scanOpacityText([path.join(dir, 'hilang.jsx')], TOKENS), [])
   assert.deepEqual(countSmallText([path.join(dir, 'hilang.jsx')]), {})
+})
+
+test('stripBlockComments membuang contoh anti-pola di komentar CSS/JSX dan tetap utuh di kode', () => {
+  const css = `/* jangan pakai text-ink/45 untuk teks */\n.x { color: var(--color-ink-muted); }`
+  assert.equal(stripBlockComments(css).includes('text-ink/45'), false)
+  const jsx = `<div>{/* contoh text-mist/40 */}<span className="text-ink-muted" /></div>`
+  assert.equal(stripBlockComments(jsx).includes('text-mist/40'), false)
+  assert.ok(stripBlockComments(jsx).includes('text-ink-muted'))
+  assert.equal(stripBlockComments('tanpa komentar').trim(), 'tanpa komentar')
+})
+
+test('scanOpacityText melewati komentar (temuan hanya dari kode nyata)', () => {
+  const dir = tmpDir({
+    'K.jsx': `/* contoh text-ink/45 */\n<span className="text-ink/45" />`,
+  })
+  const hits = scanOpacityText(walkSource(dir), TOKENS)
+  assert.equal(hits.length, 1, 'hanya pemakaian nyata yang dihitung')
+  assert.equal(hits[0].line, 2)
 })

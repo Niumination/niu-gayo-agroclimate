@@ -38,6 +38,44 @@
   --color-surface: #FAF7F2;     /* kertas penjemuran (mode terang) */
   --color-ink: #221C18;         /* teks mode terang */
 
+  /* --- Token semantik peran (fase design/UX, 2026-10-16) -------------------
+     Nilai & kontras terukur ada di docs/reference/DESIGN-TOKENS.md.
+     Pemakaian: `text-ink-muted`, `dark:text-mist-body`, `bg-surface-raised`, dst.
+     Jangan kembali memakai opasitas (text-ink/45) untuk teks — gerbang
+     `npm run check:contrast -- --strict` akan menolaknya. */
+  --color-surface-raised: #FFFFFF;   /* kartu di atas permukaan (terang) */
+  --color-surface-sunken: #F1ECE4;   /* area terbenam (terang) */
+  --color-ink-soft: #3D352E;         /* teks sekunder kuat     (11,25:1) */
+  --color-ink-body: #524941;         /* teks isi               ( 8,23:1) */
+  --color-ink-muted: #6A6058;        /* metadata/label         ( 5,73:1) */
+  --color-ink-subtle: #70665C;       /* teks bantuan           ( 5,25:1) */
+  --color-mist-soft: #D3CCC2;        /* padanan gelap dari ink-soft   (11,37:1) */
+  --color-mist-body: #B8B1A7;        /* padanan gelap dari ink-body   ( 8,52:1) */
+  --color-mist-muted: #A79F95;       /* padanan gelap dari ink-muted  ( 6,93:1) */
+  --color-mist-subtle: #8F877E;      /* padanan gelap dari ink-subtle ( 5,12:1) */
+  --color-soil-raised: #241E19;      /* kartu tema gelap */
+  --color-soil-sunken: #120E0B;      /* area terbenam tema gelap */
+  --color-line-strong: #8A8078;      /* batas kontrol (3,61:1) */
+  --color-line-subtle: #DCD4C8;      /* pemisah dekoratif */
+  --color-line-strong-dark: #6B635C; /* batas kontrol tema gelap (3,07:1) */
+  --color-line-subtle-dark: #3A322B; /* pemisah dekoratif tema gelap */
+  --color-on-accent: #FFFFFF;        /* teks di atas aksen berwarna */
+
+  /* Ramp level bahaya: warna + label + ikon (jangan warna saja — R5).
+     Tint = latar lencana/kartu level; pemakaian ikut paket P2/P5. */
+  --color-level-rendah: #3F6B4A;
+  --color-level-waspada: #7A5A0B;
+  --color-level-bahaya: #9C4221;
+  --color-level-ekstrem: #7A2118;
+  --color-level-rendah-tint: #E4E6DE;
+  --color-level-waspada-tint: #EBE4D6;
+  --color-level-bahaya-tint: #EFE1D9;
+  --color-level-ekstrem-tint: #EBDDD8;
+  --color-level-rendah-dark: #8FC49A;
+  --color-level-waspada-dark: #E6C868;
+  --color-level-bahaya-dark: #F0A184;
+  --color-level-ekstrem-dark: #F29BA0;
+
   --font-data: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --max-width-shell: 1400px;
   --radius-card: 16px;

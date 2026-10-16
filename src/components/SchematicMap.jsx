@@ -8,7 +8,7 @@ import { makeProjection, geometryToPath, featureBbox, haversineKm, placeLabels, 
  * 15 sentra diwarnai level bahaya tertinggi (dari /api/hazards?location=all), Burni Telong + radius rekomendasi 3 km,
  * titik panas terdekat (bila ada). Tanpa tile/pustaka peta; dapat dirender offline (PWA). Klik sentra → pilih lokasi.
  */
-const FILL = { ekstrem: '#b3261e', bahaya: '#c2410c', waspada: '#b45309', rendah: '#3f6212', 'n/a': '#9ca3af' }
+const FILL = { ekstrem: 'var(--color-level-ekstrem)', bahaya: 'var(--color-level-bahaya)', waspada: 'var(--color-level-waspada)', rendah: 'var(--color-level-rendah)', 'n/a': 'var(--color-line-strong)' }
 const LABEL = { ekstrem: 'Ekstrem', bahaya: 'Bahaya', waspada: 'Waspada', rendah: 'Rendah', 'n/a': 'Tidak tersedia' }
 
 export default function SchematicMap({ hazardsAll, selectedLocation, onSelectLocation, hotspots = [], compact = false }) {
@@ -42,10 +42,10 @@ export default function SchematicMap({ hazardsAll, selectedLocation, onSelectLoc
       <div className="pb-3 flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">Peta skematik bahaya</h2>
-          <p className="text-[13px] text-ink/55 dark:text-mist/50 mt-0.5">Warna = level tertinggi per sentra{asOf ? ` · ${asOf} WIB` : ''} · bukan peta navigasi</p>
+          <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">Warna = level tertinggi per sentra{asOf ? ` · ${asOf} WIB` : ''} · bukan peta navigasi</p>
         </div>
         {hazardsAll?.worst && (
-          <span className="text-[11px] text-ink/60 dark:text-mist/55 text-right">
+          <span className="text-[11px] text-ink-muted dark:text-mist-muted text-right">
             Tertinggi: <span className="font-semibold" style={{ color: FILL[hazardsAll.worst.level] }}>{hazardsAll.worst.name}</span>
           </span>
         )}
@@ -58,11 +58,11 @@ export default function SchematicMap({ hazardsAll, selectedLocation, onSelectLoc
           </path>
         ))}
         {/* Burni Telong: radius rekomendasi PVMBG 3 km + segitiga */}
-        <circle cx={volcano[0]} cy={volcano[1]} r={radiusPx} fill="#b3261e" fillOpacity={0.12} stroke="#b3261e" strokeOpacity={0.6} strokeWidth={0.8} strokeDasharray="2 2" />
-        <polygon points={`${volcano[0]},${volcano[1] - 6} ${volcano[0] - 5},${volcano[1] + 4} ${volcano[0] + 5},${volcano[1] + 4}`} fill="#b3261e">
+        <circle cx={volcano[0]} cy={volcano[1]} r={radiusPx} fill="var(--color-level-bahaya)" fillOpacity={0.12} stroke="var(--color-level-bahaya)" strokeOpacity={0.6} strokeWidth={0.8} strokeDasharray="2 2" />
+        <polygon points={`${volcano[0]},${volcano[1] - 6} ${volcano[0] - 5},${volcano[1] + 4} ${volcano[0] + 5},${volcano[1] + 4}`} fill="var(--color-level-bahaya)">
           <title>{`${BURNI_TELONG.name} — Level ${BURNI_TELONG.level}, radius ${BURNI_TELONG.radiusKm} km (${BURNI_TELONG.source})`}</title>
         </polygon>
-        <text x={volcano[0] + 8} y={volcano[1] - 4} fontSize="9" fill="#b3261e">Burni Telong (Lv II)</text>
+        <text x={volcano[0] + 8} y={volcano[1] - 4} fontSize="9" fill="var(--color-level-bahaya)">Burni Telong (Lv II)</text>
         {/* Titik panas terdekat (opsional) */}
         {hotspots.map((h, i) => {
           const [x, y] = proj.project(h.lon, h.lat)
@@ -84,15 +84,15 @@ export default function SchematicMap({ hazardsAll, selectedLocation, onSelectLoc
           )
         })}
       </svg>
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink/55 dark:text-mist/50">
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-muted dark:text-mist-muted">
         {['ekstrem', 'bahaya', 'waspada', 'rendah', 'n/a'].map((k) => (
           <span key={k} className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: FILL[k] }} />{LABEL[k]}</span>
         ))}
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 bg-[#b3261e]" style={{ clipPath: 'polygon(50% 0,0 100%,100% 100%)' }} />gunung api</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 bg-level-bahaya" style={{ clipPath: 'polygon(50% 0,0 100%,100% 100%)' }} />gunung api</span>
         <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#f97316]" />hotspot</span>
       </div>
       {nearVolcano.length > 0 && (
-        <p className="mt-2 text-[11px] text-ink/45 dark:text-mist/40">
+        <p className="mt-2 text-[11px] text-ink-muted dark:text-mist-subtle">
           Jarak ke Burni Telong: {nearVolcano.map((s) => `${s.name.replace(/\s*\(.*\)$/, '')} ${s.distVolcanoKm.toFixed(1)} km`).join(' · ')}. Status gunung api dari PVMBG/MAGMA (tidak otomatis).
         </p>
       )}

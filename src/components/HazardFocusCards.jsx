@@ -11,9 +11,9 @@ import { LEVEL_LABEL } from '../domain/hazards/levels.js'
  * Tanpa dependensi grafik; semua angka diformat id-ID.
  */
 
-const TONE = { ekstrem: 'text-cherry-deep dark:text-cherry-soft', bahaya: 'text-cherry-deep dark:text-cherry-soft', waspada: 'text-husk-deep dark:text-husk-soft', rendah: 'text-leaf-deep dark:text-leaf-soft', 'n/a': 'text-ink/50 dark:text-mist/45' }
-const DOT = { ekstrem: 'bg-cherry', bahaya: 'bg-cherry', waspada: 'bg-husk', rendah: 'bg-leaf', 'n/a': 'bg-ink/20 dark:bg-mist/20' }
-const FILL = { ekstrem: '#b3261e', bahaya: '#b3261e', waspada: '#b7791f', rendah: '#2f855a', 'n/a': '#9ca3af' }
+const TONE = { ekstrem: 'text-level-ekstrem dark:text-level-ekstrem-dark', bahaya: 'text-level-bahaya dark:text-level-bahaya-dark', waspada: 'text-level-waspada dark:text-level-waspada-dark', rendah: 'text-level-rendah dark:text-level-rendah-dark', 'n/a': 'text-ink-muted dark:text-mist-muted' }
+const DOT = { ekstrem: 'bg-level-ekstrem', bahaya: 'bg-level-bahaya', waspada: 'bg-level-waspada', rendah: 'bg-level-rendah', 'n/a': 'bg-ink/20 dark:bg-mist/20' }
+const FILL = { ekstrem: 'var(--color-level-ekstrem)', bahaya: 'var(--color-level-bahaya)', waspada: 'var(--color-level-waspada)', rendah: 'var(--color-level-rendah)', 'n/a': 'var(--color-line-strong)' }
 const num = (v, d = 0) => (v == null || Number.isNaN(Number(v)) ? '—' : Number(v).toLocaleString('id-ID', { maximumFractionDigits: d, minimumFractionDigits: d }))
 const hhmm = (t) => (t ? `${String(t).slice(11, 16)}` : '—')
 const ddmm = (d) => (d ? `${d.slice(8, 10)}/${d.slice(5, 7)}` : '—')
@@ -24,7 +24,7 @@ function Shell({ title, subtitle, level, children, footer, ariaLabel }) {
       <div className="pb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">{title}</h2>
-          {subtitle && <p className="text-[13px] text-ink/55 dark:text-mist/50 mt-0.5">{subtitle}</p>}
+          {subtitle && <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">{subtitle}</p>}
         </div>
         {level && (
           <span className={`inline-flex items-center gap-1.5 text-[13px] font-semibold shrink-0 ${TONE[level] || TONE['n/a']}`}>
@@ -34,7 +34,7 @@ function Shell({ title, subtitle, level, children, footer, ariaLabel }) {
         )}
       </div>
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10 space-y-3">{children}</div>
-      {footer && <p className="mt-3 pt-3 border-t border-ink/10 dark:border-mist/10 text-[11px] text-ink/45 dark:text-mist/40">{footer}</p>}
+      {footer && <p className="mt-3 pt-3 border-t border-ink/10 dark:border-mist/10 text-[11px] text-ink-muted dark:text-mist-subtle">{footer}</p>}
     </section>
   )
 }
@@ -42,10 +42,10 @@ function Shell({ title, subtitle, level, children, footer, ariaLabel }) {
 function Metric({ label, value, unit }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] uppercase tracking-wide text-ink/50 dark:text-mist/45">{label}</p>
+      <p className="text-[11px] uppercase tracking-wide text-ink-muted dark:text-mist-muted">{label}</p>
       <p className="font-data text-[15px] font-medium text-ink dark:text-mist tabular-nums">
         {value}
-        {unit && <span className="text-[11px] font-normal text-ink/50 dark:text-mist/45 ml-1">{unit}</span>}
+        {unit && <span className="text-[11px] font-normal text-ink-muted dark:text-mist-muted ml-1">{unit}</span>}
       </p>
     </div>
   )
@@ -58,8 +58,8 @@ function AdviceList({ advice, keys = ['umum', 'kebun', 'rentan', 'sekolah'], max
   return (
     <ul className="space-y-1.5">
       {items.map(({ k, t }, i) => (
-        <li key={i} className="text-[13px] text-ink/80 dark:text-mist/75 leading-snug flex gap-2">
-          <span className="text-[10px] uppercase tracking-wide text-ink/45 dark:text-mist/40 mt-[3px] shrink-0 w-14">{LABEL[k]}</span>
+        <li key={i} className="text-[13px] text-ink-body dark:text-mist-body leading-snug flex gap-2">
+          <span className="text-[10px] uppercase tracking-wide text-ink-muted dark:text-mist-subtle mt-[3px] shrink-0 w-14">{LABEL[k]}</span>
           <span>{t}</span>
         </li>
       ))}
@@ -85,7 +85,7 @@ export function StormCard({ hazards }) {
               <span key={h.time} title={`${hhmm(h.time)} WIB: ${LEVEL_LABEL[h.level]} · CAPE ${num(h.capeEcmwf)} J/kg${h.li != null ? ` · LI ${h.li}` : ''}${h.gust ? ` · hembusan ${num(h.gust)} km/jam` : ''}`} className="flex-1 rounded-xs" style={{ backgroundColor: FILL[h.level], opacity: h.level === 'rendah' ? 0.35 : 0.9 }} />
             ))}
           </div>
-          <div className="flex justify-between text-[10px] text-ink/45 dark:text-mist/40 mt-1">
+          <div className="flex justify-between text-[10px] text-ink-muted dark:text-mist-subtle mt-1">
             <span>{hhmm(hours[0].time)}</span>
             <span>{f.peakTime ? `puncak ${hhmm(f.peakTime)}` : ''}</span>
             <span>{hhmm(hours[hours.length - 1].time)}</span>
@@ -99,7 +99,7 @@ export function StormCard({ hazards }) {
       </div>
       <div className="flex flex-wrap gap-2 text-[11px]">
         {f.signals && (
-          <span className={`px-2 py-0.5 rounded-full border ${f.agreement === false ? 'border-husk/60 text-husk-deep dark:text-husk-soft' : 'border-ink/15 dark:border-mist/15 text-ink/60 dark:text-mist/55'}`}>
+          <span className={`px-2 py-0.5 rounded-full border ${f.agreement === false ? 'border-husk/60 text-husk-deep dark:text-husk-soft' : 'border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted'}`}>
             ECMWF {LEVEL_LABEL[f.signals.ecmwf] ?? '–'} · GFS {LEVEL_LABEL[f.signals.gfs] ?? '–'}{f.agreement === false ? ' — tidak sepakat' : f.agreement ? ' — sepakat' : ''}
           </span>
         )}
@@ -131,7 +131,7 @@ function DischargeChart({ cell }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label={`Debit GloFAS sel ${cell.name} 14 hari dengan median dan p95 klimatologi`}>
       {band && <path d={band} fill="#2b6cb0" opacity="0.12" />}
-      {d.climP95.some((v) => v != null) && <path d={path(d.climP95)} fill="none" stroke="#b3261e" strokeWidth="1" strokeDasharray="3 3" opacity="0.8" />}
+      {d.climP95.some((v) => v != null) && <path d={path(d.climP95)} fill="none" stroke="var(--color-level-bahaya)" strokeWidth="1" strokeDasharray="3 3" opacity="0.8" />}
       {d.climMedian.some((v) => v != null) && <path d={path(d.climMedian)} fill="none" stroke="#2f855a" strokeWidth="1" strokeDasharray="4 2" opacity="0.9" />}
       <path d={path(d.discharge)} fill="none" stroke="#2b6cb0" strokeWidth="2" />
       <line x1={todayX} x2={todayX} y1={4} y2={H - padB} stroke="currentColor" opacity="0.3" strokeWidth="1" />
@@ -150,10 +150,10 @@ export function FloodCard({ hazards, flood }) {
     <Shell title="Debit Sungai & Luapan DAS Peusangan" subtitle={`GloFAS v4 (Copernicus) sel ${cell.name} · klimatologi ${flood.climatology?.period?.split(' ')[0] ?? '1997'}–2025`} level={r.level} ariaLabel="Debit sungai dan luapan DAS Peusangan" footer={`${flood.label ?? 'Model hidrologi global — bukan muka air terukur.'}${cell.stale ? ' · nilai terakhir (API gagal)' : ''}`}>
       <p className={`text-[13px] font-medium ${TONE[r.level]}`}>{r.headline}</p>
       <DischargeChart cell={cell} />
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink/55 dark:text-mist/50">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-ink-muted dark:text-mist-muted">
         <span><span className="inline-block w-3 border-t-2 border-[#2b6cb0] align-middle mr-1" />debit (garis tebal) · pita = sebaran ensemble</span>
         <span><span className="inline-block w-3 border-t border-dashed border-[#2f855a] align-middle mr-1" />median musiman</span>
-        <span><span className="inline-block w-3 border-t border-dashed border-[#b3261e] align-middle mr-1" />p95</span>
+        <span><span className="inline-block w-3 border-t border-dashed border-level-bahaya align-middle mr-1" />p95</span>
       </div>
       <div className="grid grid-cols-3 gap-3">
         <Metric label="Debit hari ini" value={num(cell.today?.discharge, 1)} unit="m³/s" />
@@ -164,7 +164,7 @@ export function FloodCard({ hazards, flood }) {
         <ul className="grid grid-cols-2 gap-x-4 gap-y-1 text-[12px]">
           {flood.cells.map((c) => (
             <li key={c.id} className="flex items-center justify-between gap-2">
-              <span className="text-ink/70 dark:text-mist/65 truncate">{c.name}</span>
+              <span className="text-ink-body dark:text-mist-body truncate">{c.name}</span>
               <span className={`font-data tabular-nums ${TONE[c.levelNext7] || TONE['n/a']}`}>{num(c.peak?.ratio, 1)}×</span>
             </li>
           ))}
@@ -187,16 +187,16 @@ export function TemperatureCard({ hazards }) {
       <div className="grid grid-cols-3 gap-2">
         {days.map((d) => (
           <div key={d.date} className="rounded-lg border border-ink/10 dark:border-mist/10 p-2">
-            <p className="text-[11px] text-ink/50 dark:text-mist/45">{ddmm(d.date)}</p>
-            <p className="font-data text-[15px] tabular-nums text-ink dark:text-mist"><span className={TONE[d.cold] || ''}>{num(d.tmin, 1)}</span> <span className="text-ink/40 dark:text-mist/35">/</span> <span className={TONE[d.heat] || ''}>{num(d.tmax, 1)}</span> <span className="text-[10px] text-ink/45">°C</span></p>
-            {d.vpd != null && <p className="text-[10px] text-ink/45 dark:text-mist/40">VPD {num(d.vpd, 2)} kPa</p>}
+            <p className="text-[11px] text-ink-muted dark:text-mist-muted">{ddmm(d.date)}</p>
+            <p className="font-data text-[15px] tabular-nums text-ink dark:text-mist"><span className={TONE[d.cold] || ''}>{num(d.tmin, 1)}</span> <span className="text-ink-subtle dark:text-mist-subtle">/</span> <span className={TONE[d.heat] || ''}>{num(d.tmax, 1)}</span> <span className="text-[10px] text-ink-muted">°C</span></p>
+            {d.vpd != null && <p className="text-[10px] text-ink-muted dark:text-mist-subtle">VPD {num(d.vpd, 2)} kPa</p>}
           </div>
         ))}
       </div>
       <div className="flex flex-wrap gap-2 text-[11px]">
         {r.flags?.frost && <span className="px-2 py-0.5 rounded-full border border-cherry/60 text-cherry-deep dark:text-cherry-soft">Potensi embun upas</span>}
-        {r.flags?.flowering && <span className="px-2 py-0.5 rounded-full border border-ink/15 dark:border-mist/15 text-ink/60 dark:text-mist/55">Fase bunga (indikatif)</span>}
-        {r.flags?.elevationAdjusted && <span className="px-2 py-0.5 rounded-full border border-ink/15 dark:border-mist/15 text-ink/60 dark:text-mist/55">Koreksi −1 °C (≥ 1.400 m)</span>}
+        {r.flags?.flowering && <span className="px-2 py-0.5 rounded-full border border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted">Fase bunga (indikatif)</span>}
+        {r.flags?.elevationAdjusted && <span className="px-2 py-0.5 rounded-full border border-ink/15 dark:border-mist/15 text-ink-muted dark:text-mist-muted">Koreksi −1 °C (≥ 1.400 m)</span>}
       </div>
       <AdviceList advice={r.advice} keys={['kebun', 'rentan', 'umum', 'sekolah']} />
     </Shell>
@@ -215,7 +215,7 @@ export function QuakeCard({ hazards }) {
         <ul className="divide-y divide-ink/10 dark:divide-mist/10 text-[12px]">
           {recent.map((q) => (
             <li key={q.id} className="py-1.5 flex items-center justify-between gap-2">
-              <span className="min-w-0 truncate text-ink/75 dark:text-mist/70">{String(q.time).slice(0, 16).replace('T', ' ')} · M{num(q.mag, 1)} · {num(q.depthKm)} km · {q.region}</span>
+              <span className="min-w-0 truncate text-ink-body dark:text-mist-body">{String(q.time).slice(0, 16).replace('T', ' ')} · M{num(q.mag, 1)} · {num(q.depthKm)} km · {q.region}</span>
               <span className={`font-data tabular-nums shrink-0 ${TONE[q.level] || TONE['n/a']}`}>{num(q.distKm)} km · {q.mmi ?? '–'}</span>
             </li>
           ))}
@@ -252,16 +252,16 @@ export function ExternalReportsCard({ externalReports }) {
   return (
     <Shell title="Laporan Warga PetaBencana.id" subtitle="Dataran Tinggi Gayo (Aceh Tengah, Bener Meriah, Gayo Lues) · 7 hari terakhir" ariaLabel="Laporan warga PetaBencana" footer={`${d.attribution}.`}>
       {d.total === 0 ? (
-        <p className="text-[13px] text-ink/60 dark:text-mist/55">Belum ada laporan warga di wilayah Gayo dalam 7 hari terakhir. Lapor via <a className="underline" href="https://petabencana.id" target="_blank" rel="noreferrer noopener">petabencana.id</a> atau tombol Lapor di aplikasi ini.</p>
+        <p className="text-[13px] text-ink-muted dark:text-mist-muted">Belum ada laporan warga di wilayah Gayo dalam 7 hari terakhir. Lapor via <a className="underline" href="https://petabencana.id" target="_blank" rel="noreferrer noopener">petabencana.id</a> atau tombol Lapor di aplikasi ini.</p>
       ) : (
         <ul className="divide-y divide-ink/10 dark:divide-mist/10">
           {d.reports.slice(0, 6).map((r) => (
             <li key={r.id} className="py-2 text-[12px]">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-medium text-ink dark:text-mist">{PB_TYPE[r.type] ?? r.type}</span>
-                <span className="text-ink/50 dark:text-mist/45 tabular-nums">{r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) : ''} · {r.distanceKm} km</span>
+                <span className="text-ink-muted dark:text-mist-muted tabular-nums">{r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) : ''} · {r.distanceKm} km</span>
               </div>
-              {r.text && <p className="text-ink/70 dark:text-mist/65 leading-snug mt-0.5">{r.text}</p>}
+              {r.text && <p className="text-ink-body dark:text-mist-body leading-snug mt-0.5">{r.text}</p>}
             </li>
           ))}
         </ul>
@@ -278,8 +278,8 @@ export function InteractionsList({ interactions }) {
       {interactions.map((i) => (
         <li key={i.id} className={`text-[12px] leading-snug rounded-lg border px-3 py-2 ${i.severity === 'bahaya' || i.severity === 'ekstrem' ? 'border-cherry/40 bg-cherry/5' : 'border-husk/40 bg-husk/5'}`}>
           <span className="font-semibold text-ink dark:text-mist">{i.label}</span>
-          {i.bumped && <span className="ml-1 text-[11px] text-ink/60 dark:text-mist/55">({i.bumped.id}: {LEVEL_LABEL[i.bumped.from]} → {LEVEL_LABEL[i.bumped.to]})</span>}
-          <p className="text-ink/75 dark:text-mist/70 mt-0.5">{i.note}</p>
+          {i.bumped && <span className="ml-1 text-[11px] text-ink-muted dark:text-mist-muted">({i.bumped.id}: {LEVEL_LABEL[i.bumped.from]} → {LEVEL_LABEL[i.bumped.to]})</span>}
+          <p className="text-ink-body dark:text-mist-body mt-0.5">{i.note}</p>
         </li>
       ))}
     </ul>

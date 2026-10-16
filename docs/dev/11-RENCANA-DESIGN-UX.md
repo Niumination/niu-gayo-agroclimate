@@ -18,7 +18,7 @@ Perbaikan dijadwalkan sebagai 6 paket kerja dengan kriteria terima terukur. Pake
 
 | Metrik | Sekarang (audit) | Target setelah P1–P6 |
 |---|---|---|
-| Pasangan teks < 4,5:1 | 262 pemakaian di 21 berkas | 0 (`check:contrast --strict`) |
+| Pasangan teks < 4,5:1 | 262 pemakaian di 21 berkas | ✅ **0 sejak P1** (417 utilitas diganti) |
 | Teks isi ≥ 16 px | tidak ada | semua teks isi & aksi |
 | Teks < 12 px | 107 pemakaian (10–11 px) | 0 |
 | Tombol ≥ 44 px | 12 dari 24 | seluruh aksi utama |
@@ -95,8 +95,9 @@ Satu animasi masuk 200 ms (sesuai rekomendasi) + `prefers-reduced-motion` sudah 
 
 Setiap paket memuat: tujuan · langkah · berkas sasaran · kriteria terima · ukuran usaha (S/M/L).
 
-### P1 — Token semantik & kontras (usaha **M** — dampak terbesar)
+### P1 — Token semantik & kontras (usaha **M** — dampak terbesar) · ✅ **SELESAI 2026-10-16**
 **Tujuan:** nol pemakaian teks < 4,5:1; warna berperan, bukan opasitas.
+**Hasil terukur:** 417 utilitas teks beropasitas → token peran di **66 berkas**; `text-(ink|mist)/NN` sisa **0**; `check:contrast --strict` **34/34 pasangan lulus** (56 token terbaca); `ErrorBoundary` keluar dari palet `slate/rose`; `SchematicMap` bebas heks mentah; `AppBar` tidak lagi menghapus penanda fokus; glyph bentuk per tingkat (`LevelGlyph`) dipasang di lencana `HazardPanel`; angka uji **340** (2 uji baru: pemetaan pita & komentar), bundel 131,6 → **132,0 kB**. Sisa P1: tint latar kartu level + ikon di komponen lain (dikerjakan bersama P2).
 **Langkah**
 1. Tambah token §3 `DESIGN-TOKENS.md` ke `src/index.css` (`@theme` + blok `:root` / `html.dark`).
 2. Ganti 262 pemakaian opasitas memakai tabel pemetaan §3.2 (terang → `ink-muted`/`ink-subtle`, gelap → `mist-muted`/`mist-subtle`), lalu hapus pasangan `dark:` yang menjadi mubazir.
@@ -249,8 +250,21 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 | Perubahan tema besar di Tailwind 4 | Risiko keluaran kompilasi tak terduga | P1 hanya menambah token (tanpa menghapus kelas lama); pembersihan pasangan `dark:` dilakukan per komponen dengan uji + tangkapan layar |
 | Label Gayo (H-4) belum selesai | Uji pemuaian teks tak bisa final | Struktur tahan panjang (boleh membungkus) diuji lebih dulu dengan versi panjang buatan |
 
-**Butuh keputusan pengguna (bukan otomatis):**
-1. **Urutan prioritas** — jalankan P1→P6 berurutan, atau lompat ke P4 (keadaan menunggu/offline) lebih dulu karena itu yang paling dirasakan di lapangan?
-2. **ESLint + `eslint-plugin-jsx-a11y`** — boleh menambah devDependency & langkah lint baru (0 dampak bundel)?
-3. **Font** — setuju membundel `JetBrains Mono` subset (±30–40 kB) atau tetap sistem monospace supaya paling ringan?
-4. **Gambar/ilustrasi panduan aksi** — mau menambah ikon panduan (bukan foto) untuk petani literasi rendah, mengingat paket ikon `lucide` sudah tersedia?
+**Keputusan pengguna (16 Okt 2026) — sudah dijawab:**
+1. ✅ **Urutan:** kerjakan **P1→P6 berurutan otomatis**, tiap paket lewat gerbang CI dan dikirim sebagai paket Drive tersendiri.
+2. ✅ **ESLint + `eslint-plugin-jsx-a11y`:** **boleh** (devDependency, 0 dampak bundel) — dipasang di P6.
+3. ✅ **Font:** **bundel** `JetBrains Mono` subset latin+latin-ext (±30–40 kB) — dikerjakan di P3.
+4. ✅ **Ikon panduan aksi petani:** boleh menambah ikon (bukan foto) memakai paket `lucide` yang sudah ada — dikerjakan bersama P3/P4.
+
+## 11. Catatan pelaksanaan
+
+| Paket | Status | Bukti |
+|---|---|---|
+| P1 token & kontras | ✅ selesai 2026-10-16 (commit `P1`) | 417 penggantian · `check:contrast --strict` hijau (34/34) · CI memakai `--strict` · `LevelGlyph` di `HazardPanel` · 340 uji · bundel 132,0 kB |
+| P2 a11y interaksi | ⬜ berikutnya | target 44 px · fokus terlihat · semantik tab · `aria-live` · skip-link · ikon level di kartu lain |
+| P3 tipografi & font | ⬜ | skala 16 px · self-host JetBrains Mono subset · `tabular-nums` |
+| P4 keadaan aplikasi | ⬜ | skeleton · empty · basi + muat ulang · spinner tombol |
+| P5 gerak & area aman | ⬜ | durasi motion · `viewport-fit=cover` · `min-w-0` |
+| P6 pengaman & docs | ⬜ | ESLint `jsx-a11y` · pa11y/axe manual · dokumen |
+
+**Catatan teknis P1 yang perlu diingat:** (a) token baru tidak menambah dependensi dan hanya menambah ±0,4 kB gzip; (b) `check-contrast.mjs` kini mengabaikan komentar blok sehingga contoh anti-pola di dokumentasi/kode tidak dihitung sebagai temuan; (c) dua token jembatan `ink-body`/`mist-body` (~8:1) ditambahkan supaya teks isi tidak menyatu dengan judul saat opasitas dinaikkan; (d) tangkapan layar terang/gelap tetap perlu dilakukan manusia (sandbox tanpa browser).

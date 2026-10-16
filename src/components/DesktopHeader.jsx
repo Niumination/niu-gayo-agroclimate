@@ -29,7 +29,7 @@ export default function DesktopHeader({
       <div className="max-w-shell mx-auto px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-baseline gap-3 min-w-0">
           <span className="font-semibold tracking-tight text-ink dark:text-mist">Niu Gayo Agro-Climate</span>
-          <span className="font-data text-[11px] text-ink/45 dark:text-mist/40">ecmwf_ifs025</span>
+          <span className="font-data text-[11px] text-ink-muted dark:text-mist-subtle">ecmwf_ifs025</span>
           {age && (
             <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border ${ageTone}`}>
               <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${age.stale ? 'bg-husk' : 'bg-leaf'}`} />
@@ -44,7 +44,7 @@ export default function DesktopHeader({
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {lastUpdated && (
-            <span className="font-data text-[11px] text-ink/45 dark:text-mist/40">
+            <span className="font-data text-[11px] text-ink-muted dark:text-mist-subtle">
               {tr('updated')} {lastUpdated}
             </span>
           )}
@@ -52,7 +52,7 @@ export default function DesktopHeader({
             aria-label={tr('language')}
             value={lang}
             onChange={(e) => onLangChange(e.target.value)}
-            className="h-9 bg-transparent text-[13px] text-ink/70 dark:text-mist/70 rounded-lg px-1 focus-visible:outline-none"
+            className="h-9 bg-transparent text-[13px] text-ink-body dark:text-mist-body rounded-lg px-1 focus-visible:outline-none"
           >
             {LANGS.map((l) => (
               <option key={l.id} value={l.id}>{l.label}</option>
@@ -63,7 +63,7 @@ export default function DesktopHeader({
             onClick={onToggleTheme}
             onDoubleClick={isAuto ? undefined : onResetTheme}
             aria-label={theme === 'dark' ? tr('themeLight') : tr('themeDark')}
-            className="h-9 w-9 grid place-items-center rounded-lg text-ink/70 dark:text-mist/70 hover:bg-ink/5 dark:hover:bg-mist/5"
+            className="h-9 w-9 grid place-items-center rounded-lg text-ink-body dark:text-mist-body hover:bg-ink/5 dark:hover:bg-mist/5"
           >
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
@@ -72,7 +72,7 @@ export default function DesktopHeader({
             onClick={onRefresh}
             disabled={loading}
             aria-label={loading ? tr('refreshing') : tr('refresh')}
-            className="h-9 px-3 inline-flex items-center gap-2 rounded-lg text-[13px] font-medium text-ink/80 dark:text-mist/80 hover:bg-ink/5 dark:hover:bg-mist/5 disabled:opacity-40"
+            className="h-9 px-3 inline-flex items-center gap-2 rounded-lg text-[13px] font-medium text-ink-body dark:text-mist-body hover:bg-ink/5 dark:hover:bg-mist/5 disabled:opacity-40"
           >
             <RefreshCw size={15} aria-hidden="true" className={loading ? 'animate-spin' : ''} />
             {loading ? tr('refreshing') : tr('refresh')}

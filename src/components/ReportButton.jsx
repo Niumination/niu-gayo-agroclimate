@@ -153,13 +153,13 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
             <h2 id="report-title" className="text-sm font-semibold text-ink dark:text-mist">
               Lapor kejadian — {location.name}
             </h2>
-            <p className="mt-1 text-[11px] text-ink/50 dark:text-mist/45">
+            <p className="mt-1 text-[11px] text-ink-muted dark:text-mist-muted">
               Laporan diteruskan ke koordinator BPBD. Tidak ada data pribadi yang dikumpulkan.
               {type === 'kebakaran' && <strong className="block mt-1 text-cherry-deep dark:text-cherry-soft">Api besar/mengancam rumah: hubungi Damkar 113 / BPBD lebih dulu.</strong>}
             </p>
             <form onSubmit={submit} className="mt-4 space-y-3">
               <div>
-                <label htmlFor="report-type" className="block text-[13px] font-medium text-ink/70 dark:text-mist/60">
+                <label htmlFor="report-type" className="block text-[13px] font-medium text-ink-body dark:text-mist-muted">
                   Jenis kejadian
                 </label>
                 <select
@@ -176,7 +176,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
               {type === 'asap' && (
                 <>
                   <div>
-                    <label htmlFor="report-visibility" className="block text-[13px] font-medium text-ink/70 dark:text-mist/60">
+                    <label htmlFor="report-visibility" className="block text-[13px] font-medium text-ink-body dark:text-mist-muted">
                       Seberapa pekat asapnya?
                     </label>
                     <select
@@ -189,25 +189,25 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                         <option key={v.value} value={v.value}>{v.label}</option>
                       ))}
                     </select>
-                    <p className="mt-1 text-[11px] text-ink/50 dark:text-mist/45">
+                    <p className="mt-1 text-[11px] text-ink-muted dark:text-mist-muted">
                       Patokan: bukit/menara yang biasanya terlihat jelas tidak tampak = &lt; 1 km.
                     </p>
                   </div>
-                  <label className="flex items-center gap-2 min-h-[44px] text-[13px] text-ink/75 dark:text-mist/70">
+                  <label className="flex items-center gap-2 min-h-[44px] text-[13px] text-ink-body dark:text-mist-body">
                     <input type="checkbox" checked={smell} onChange={(e) => setSmell(e.target.checked)} className="w-4 h-4" />
                     Bau asap menyengat / mata perih
                   </label>
                 </>
               )}
               {type === 'kebakaran' && (
-                <label className="flex items-center gap-2 min-h-[44px] text-[13px] text-ink/75 dark:text-mist/70">
+                <label className="flex items-center gap-2 min-h-[44px] text-[13px] text-ink-body dark:text-mist-body">
                   <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="w-4 h-4" />
                   Api masih menyala saat ini
                 </label>
               )}
               {KIND_OPTIONS[type] && (
                 <div>
-                  <label htmlFor="report-kind" className="block text-[13px] font-medium text-ink/70 dark:text-mist/60">
+                  <label htmlFor="report-kind" className="block text-[13px] font-medium text-ink-body dark:text-mist-muted">
                     {KIND_OPTIONS[type].label}
                   </label>
                   <select
@@ -224,9 +224,9 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
               )}
               {type === 'kekeringan' && (
                 <fieldset>
-                  <legend className="text-[13px] font-medium text-ink/70 dark:text-mist/60">Tanda yang terlihat</legend>
+                  <legend className="text-[13px] font-medium text-ink-body dark:text-mist-muted">Tanda yang terlihat</legend>
                   {DROUGHT_SIGNS.map((d) => (
-                    <label key={d.value} className="flex items-center gap-2 min-h-[40px] text-[13px] text-ink/75 dark:text-mist/70">
+                    <label key={d.value} className="flex items-center gap-2 min-h-[40px] text-[13px] text-ink-body dark:text-mist-body">
                       <input
                         type="checkbox"
                         checked={signs.includes(d.value)}
@@ -239,7 +239,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                 </fieldset>
               )}
               <div>
-                <label htmlFor="report-note" className="block text-[13px] font-medium text-ink/70 dark:text-mist/60">
+                <label htmlFor="report-note" className="block text-[13px] font-medium text-ink-body dark:text-mist-muted">
                   Catatan (opsional)
                 </label>
                 <textarea
@@ -264,7 +264,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="min-h-[44px] px-4 rounded-card text-[13px] text-ink/70 dark:text-mist/60 hover:bg-ink/5 dark:hover:bg-mist/10"
+                  className="min-h-[44px] px-4 rounded-card text-[13px] text-ink-body dark:text-mist-muted hover:bg-ink/5 dark:hover:bg-mist/10"
                 >
                   Batal
                 </button>

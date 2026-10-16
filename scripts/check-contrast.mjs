@@ -103,14 +103,24 @@ export const REQUIRED_TOKENS = [
   'surface-sunken',
   'ink',
   'ink-soft',
+  'ink-body',
   'ink-muted',
   'ink-subtle',
   'mist',
   'mist-soft',
+  'mist-body',
   'mist-muted',
   'mist-subtle',
+  'soil-raised',
+  'soil-sunken',
   'line-strong',
   'line-subtle',
+  'line-strong-dark',
+  'line-subtle-dark',
+  'level-rendah',
+  'level-waspada',
+  'level-bahaya',
+  'level-ekstrem',
 ]
 
 /**
@@ -144,6 +154,19 @@ export const PAIRS = [
   { fg: 'on-accent', bg: 'leaf-deep', min: MIN.text, why: 'teks di tombol utama' },
   { fg: 'on-accent', bg: 'cherry', min: MIN.text, why: 'teks di tombol bahaya' },
   { fg: 'ink', bg: 'husk', min: MIN.text, why: 'teks di tombol peringatan' },
+  // teks isi bertingkat (token jembatan 8:1 agar hierarki tidak rata)
+  { fg: 'ink-body', bg: 'surface', min: MIN.text, why: 'teks isi (terang)' },
+  { fg: 'ink-body', bg: 'surface-raised', min: MIN.text, why: 'teks isi di kartu (terang)' },
+  { fg: 'ink-body', bg: 'surface-sunken', min: MIN.text, why: 'teks isi di area terbenam' },
+  { fg: 'mist-body', bg: 'soil', min: MIN.text, why: 'teks isi (gelap)' },
+  { fg: 'mist-body', bg: 'soil-raised', min: MIN.text, why: 'teks isi di kartu (gelap)' },
+  { fg: 'mist-subtle', bg: 'soil', min: MIN.text, why: 'teks bantuan (gelap)' },
+  // ramp level pada tema gelap (lencana di atas permukaan gelap)
+  { fg: 'level-rendah-dark', bg: 'soil', min: MIN.text, why: 'lencana rendah (gelap)' },
+  { fg: 'level-waspada-dark', bg: 'soil', min: MIN.text, why: 'lencana waspada (gelap)' },
+  { fg: 'level-bahaya-dark', bg: 'soil', min: MIN.text, why: 'lencana bahaya (gelap)' },
+  { fg: 'level-ekstrem-dark', bg: 'soil', min: MIN.text, why: 'lencana ekstrem (gelap)' },
+  { fg: 'level-ekstrem-dark', bg: 'soil-raised', min: MIN.text, why: 'lencana ekstrem di kartu gelap' },
   // fokus terlihat (WCAG 2.4.11/2.4.13)
   { fg: 'leaf-deep', bg: 'surface', min: MIN.nonText, why: 'cincin fokus (terang)' },
   { fg: 'leaf-soft', bg: 'soil', min: MIN.nonText, why: 'cincin fokus (gelap)' },
@@ -154,6 +177,11 @@ export const PAIRS = [
 /** Tangkap rantai modifier (`dark:`, `hover:`, `md:` …) + utilitas teks beropasitas. */
 const TEXT_OPACITY_RE = /((?:[a-z0-9-]+:)*)text-(ink|mist)\/(\d{1,3})/g
 const SMALL_TEXT_RE = /text-\[(\d{1,2})px\]/g
+
+/** Buang komentar blok (CSS & JSX) supaya contoh anti-pola di dokumentasi tidak dihitung sebagai temuan. */
+export function stripBlockComments(text) {
+  return text.replace(/\/\*[\s\S]*?\*\//g, ' ')
+}
 
 /** Telusuri berkas sumber secara rekursif (lewati berkas uji & aset biner). */
 export function walkSource(dir = DEFAULT_SRC) {
@@ -184,7 +212,7 @@ export function scanOpacityText(files, tokens, { base = 'surface', baseDark = 's
   for (const file of files) {
     let text
     try {
-      text = fs.readFileSync(file, 'utf8')
+      text = stripBlockComments(fs.readFileSync(file, 'utf8'))
     } catch {
       continue
     }
@@ -237,7 +265,7 @@ export function countSmallText(files) {
   for (const file of files) {
     let text
     try {
-      text = fs.readFileSync(file, 'utf8')
+      text = stripBlockComments(fs.readFileSync(file, 'utf8'))
     } catch {
       continue
     }

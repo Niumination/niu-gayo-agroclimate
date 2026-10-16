@@ -39,7 +39,7 @@ export default function AboutData({ open, onClose }) {
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-ink/10 dark:border-mist/10">
           <div>
             <h2 id="about-title" className="text-sm font-semibold tracking-tight">Tentang data &amp; batasan</h2>
-            <p className="text-[13px] text-ink/55 dark:text-mist/50 mt-0.5">Niu Gayo Agro-Climate adalah informasi pendukung keputusan — bukan peringatan dini resmi.</p>
+            <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">Niu Gayo Agro-Climate adalah informasi pendukung keputusan — bukan peringatan dini resmi.</p>
           </div>
           <button type="button" onClick={onClose} className="min-h-[40px] px-3 rounded-lg border border-ink/15 dark:border-mist/15 text-[13px]">Tutup</button>
         </div>
@@ -47,7 +47,7 @@ export default function AboutData({ open, onClose }) {
         <div className="space-y-5 pt-4 text-[13px] leading-relaxed">
           <section>
             <h3 className="font-semibold">Apa arti “estimasi”?</h3>
-            <p className="text-ink/75 dark:text-mist/70 mt-1">
+            <p className="text-ink-body dark:text-mist-body mt-1">
               Hampir semua angka di aplikasi ini berasal dari <strong>model numerik atau satelit</strong>, bukan alat ukur di kampung Anda. ISPU dihitung dari model CAMS (~40 km) —
               nilai resmi hanya dari stasiun KLHK/BMKG. Kode kebakaran (FWI) memakai cuaca siang hasil reanalisis dan prakiraan. Skor longsor dan indeks DAS adalah indeks hujan,
               bukan pengukuran muka air atau pergerakan tanah. Perlakukan semuanya sebagai <em>indikasi</em>; utamakan pengamatan langsung dan arahan BPBD/BMKG.
@@ -56,14 +56,14 @@ export default function AboutData({ open, onClose }) {
 
           <section>
             <h3 className="font-semibold">Cara membaca level</h3>
-            <ul className="mt-1 space-y-1 text-ink/75 dark:text-mist/70">
+            <ul className="mt-1 space-y-1 text-ink-body dark:text-mist-body">
               <li><span className="inline-block w-2 h-2 rounded-full bg-leaf mr-2" />Rendah — kondisi normal; tidak perlu tindakan khusus.</li>
               <li><span className="inline-block w-2 h-2 rounded-full bg-husk mr-2" />Waspada — pantau; siapkan langkah pencegahan di kebun/rumah.</li>
               <li><span className="inline-block w-2 h-2 rounded-full bg-cherry mr-2" />Bahaya — kurangi paparan/aktivitas berisiko; ikuti anjuran pada kartu.</li>
               <li><span className="inline-block w-2 h-2 rounded-full bg-cherry mr-2 animate-pulse" />Ekstrem — ambang resmi terlampaui jauh; prioritaskan keselamatan dan arahan petugas.</li>
-              <li className="text-ink/55 dark:text-mist/50">“Tidak tersedia” = sumber data sedang gagal atau bahaya tidak berlaku di sentra ini (mis. indeks DAS hanya untuk hulu Peusangan).</li>
+              <li className="text-ink-muted dark:text-mist-muted">“Tidak tersedia” = sumber data sedang gagal atau bahaya tidak berlaku di sentra ini (mis. indeks DAS hanya untuk hulu Peusangan).</li>
             </ul>
-            <p className="text-ink/60 dark:text-mist/55 mt-1">Ambang lengkap dan rujukannya: <code>docs/reference/THRESHOLDS.md</code> di repositori.</p>
+            <p className="text-ink-muted dark:text-mist-muted mt-1">Ambang lengkap dan rujukannya: <code>docs/reference/THRESHOLDS.md</code> di repositori.</p>
           </section>
 
           <section>
@@ -72,8 +72,8 @@ export default function AboutData({ open, onClose }) {
               {SOURCES.map((s) => (
                 <li key={s.name} className="py-2">
                   <a href={s.url} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-2">{s.name}</a>
-                  <p className="text-[12px] text-ink/65 dark:text-mist/60">{s.use}</p>
-                  <p className="text-[11px] text-ink/45 dark:text-mist/40">Lisensi: {s.license}</p>
+                  <p className="text-[12px] text-ink-body dark:text-mist-muted">{s.use}</p>
+                  <p className="text-[11px] text-ink-muted dark:text-mist-subtle">Lisensi: {s.license}</p>
                 </li>
               ))}
             </ul>
@@ -81,7 +81,7 @@ export default function AboutData({ open, onClose }) {
 
           <section>
             <h3 className="font-semibold">Keterbatasan yang perlu diketahui</h3>
-            <ul className="list-disc pl-4 mt-1 space-y-1 text-ink/75 dark:text-mist/70">
+            <ul className="list-disc pl-4 mt-1 space-y-1 text-ink-body dark:text-mist-body">
               <li>Resolusi model 25–40 km: lembah dan punggungan di Gayo bisa berbeda jauh dari nilai sel grid.</li>
               <li>Tanpa kunci FIRMS, titik panas tidak tersedia dan level kebakaran hanya dari cuaca.</li>
               <li>Jendela “hujan 72 jam” pada kartu memakai prakiraan hari berjalan (tanpa data masa lalu) — nilai antecedent bisa terlalu rendah.</li>
@@ -92,7 +92,7 @@ export default function AboutData({ open, onClose }) {
 
           <section>
             <h3 className="font-semibold">Privasi laporan warga</h3>
-            <p className="text-ink/75 dark:text-mist/70 mt-1">
+            <p className="text-ink-body dark:text-mist-body mt-1">
               Laporan hanya menyimpan sentra, jenis kejadian, pilihan skala, dan catatan bebas (maks. 500 karakter) beserta waktu. Tidak ada nama, nomor telepon, atau lokasi GPS.
               Alamat IP dipakai sementara untuk pembatasan 5 laporan/jam dan tidak disimpan bersama laporan. Laporan diteruskan ke kanal koordinasi Telegram internal.
             </p>
@@ -100,7 +100,7 @@ export default function AboutData({ open, onClose }) {
 
           <section>
             <h3 className="font-semibold">Koreksi &amp; kontak</h3>
-            <p className="text-ink/75 dark:text-mist/70 mt-1">
+            <p className="text-ink-body dark:text-mist-body mt-1">
               Nomor kontak, riwayat kejadian, atau ambang yang keliru? Buka isu di repositori <a href="https://github.com/niumination/niu-gayo-agroclimate" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">niumination/niu-gayo-agroclimate</a> atau hubungi pengelola melalui kanal komunitas Niu Gayo.
               Darurat: <strong>112</strong> · BPBD Aceh Tengah <strong>(0643) 21113</strong> · Damkar <strong>113</strong>.
             </p>

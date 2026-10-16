@@ -32,7 +32,7 @@ export default function BottomNav({ active, onChange, tr }) {
               className={`min-h-[56px] flex flex-col items-center justify-center gap-0.5 text-[13px] font-medium transition-colors ${
                 isActive
                   ? 'text-leaf-deep dark:text-leaf-soft'
-                  : 'text-ink/55 dark:text-mist/50'
+                  : 'text-ink-muted dark:text-mist-muted'
               }`}
             >
               <Icon size={20} aria-hidden="true" />

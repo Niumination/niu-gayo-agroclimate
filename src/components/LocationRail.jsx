@@ -23,15 +23,15 @@ export default function LocationRail({ selectedLocation, onSelectLocation, tr })
                 className={`w-full text-left py-3 pr-2 flex items-baseline gap-2.5 min-h-[44px] rounded-md transition-colors ${
                   active
                     ? 'text-leaf-deep dark:text-leaf-soft'
-                    : 'text-ink/75 dark:text-mist/70 hover:text-ink dark:hover:text-mist'
+                    : 'text-ink-body dark:text-mist-body hover:text-ink dark:hover:text-mist'
                 }`}
               >
-                <span className="font-data text-[11px] w-5 shrink-0 text-ink/35 dark:text-mist/30">
+                <span className="font-data text-[11px] w-5 shrink-0 text-ink-subtle dark:text-mist-subtle">
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full shrink-0 self-center bg-leaf/70" />
                 <span className="flex-1 min-w-0 truncate text-[13px] font-medium">{loc.name}</span>
-                <span className="font-data text-[11px] shrink-0 text-ink/45 dark:text-mist/40">
+                <span className="font-data text-[11px] shrink-0 text-ink-muted dark:text-mist-subtle">
                   {loc.elevation}
                 </span>
               </button>

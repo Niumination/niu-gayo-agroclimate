@@ -151,7 +151,7 @@ export default function App() {
     >
       <div className="pb-3">
         <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">{tr('rainChart')}</h2>
-        <p className="text-[13px] text-ink/55 dark:text-mist/50 mt-0.5">{tr('rainChartSub')}</p>
+        <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">{tr('rainChartSub')}</p>
       </div>
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10">
         <RainChart data={rainSeries} labelRain={tr('rain')} />
@@ -294,7 +294,7 @@ export default function App() {
       )}
 
       {loading && !data && (
-        <p role="status" className="flex-1 grid place-items-center text-[13px] text-ink/50 dark:text-mist/50 py-16">
+        <p role="status" className="flex-1 grid place-items-center text-[13px] text-ink-muted dark:text-mist-muted py-16">
           {tr('refreshing')}
         </p>
       )}
@@ -315,7 +315,7 @@ export default function App() {
         </>
       )}
 
-      <footer className="border-t border-ink/10 dark:border-mist/10 py-4 text-center text-[11px] text-ink/45 dark:text-mist/40">
+      <footer className="border-t border-ink/10 dark:border-mist/10 py-4 text-center text-[11px] text-ink-muted dark:text-mist-subtle">
         Niu Gayo Agro-Climate &bull; {tr('footer')} &bull;{' '}
         <button type="button" onClick={() => setAboutOpen(true)} className="underline underline-offset-2 hover:text-ink dark:hover:text-mist">
           Tentang data &amp; batasan

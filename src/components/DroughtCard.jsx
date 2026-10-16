@@ -6,12 +6,12 @@ import React from 'react'
  */
 
 const TONE = {
-  ekstrem: 'text-cherry-deep dark:text-cherry-soft',
-  bahaya: 'text-cherry-deep dark:text-cherry-soft',
-  waspada: 'text-husk-deep dark:text-husk-soft',
-  rendah: 'text-leaf-deep dark:text-leaf-soft',
+  ekstrem: 'text-level-ekstrem dark:text-level-ekstrem-dark',
+  bahaya: 'text-level-bahaya dark:text-level-bahaya-dark',
+  waspada: 'text-level-waspada dark:text-level-waspada-dark',
+  rendah: 'text-level-rendah dark:text-level-rendah-dark',
 }
-const DOT = { ekstrem: 'bg-cherry', bahaya: 'bg-cherry', waspada: 'bg-husk', rendah: 'bg-leaf' }
+const DOT = { ekstrem: 'bg-level-ekstrem', bahaya: 'bg-level-bahaya', waspada: 'bg-level-waspada', rendah: 'bg-level-rendah' }
 const num = (v, digits = 0) => (v == null ? '—' : Number(v).toLocaleString('id-ID', { maximumFractionDigits: digits, minimumFractionDigits: digits }))
 const shortDate = (iso) => {
   if (!iso) return '—'
@@ -31,12 +31,12 @@ function Badge({ level, label }) {
 function Metric({ label, value, unit, sub }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] uppercase tracking-wide text-ink/50 dark:text-mist/45">{label}</p>
+      <p className="text-[11px] uppercase tracking-wide text-ink-muted dark:text-mist-muted">{label}</p>
       <p className="font-data text-[15px] font-medium text-ink dark:text-mist tabular-nums">
         {value}
-        {unit && <span className="text-[11px] font-normal text-ink/50 dark:text-mist/45 ml-1">{unit}</span>}
+        {unit && <span className="text-[11px] font-normal text-ink-muted dark:text-mist-muted ml-1">{unit}</span>}
       </p>
-      {sub && <p className="text-[11px] text-ink/50 dark:text-mist/45 leading-snug">{sub}</p>}
+      {sub && <p className="text-[11px] text-ink-muted dark:text-mist-muted leading-snug">{sub}</p>}
     </div>
   )
 }
@@ -76,7 +76,7 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
     <section aria-label={title} className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3">
         <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">{title}</h2>
-        <p className="text-[13px] text-ink/55 dark:text-mist/50 mt-0.5">{subtitle}</p>
+        <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">{subtitle}</p>
       </div>
       {children}
     </section>
@@ -84,9 +84,9 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
   const a = drought.assessment
   if (!a) {
     return shell(
-      <p className="pt-3 border-t border-ink/10 dark:border-mist/10 text-[13px] text-ink/60 dark:text-mist/55">
+      <p className="pt-3 border-t border-ink/10 dark:border-mist/10 text-[13px] text-ink-muted dark:text-mist-muted">
         {label('droughtUnavailable', 'Data arsip hujan belum tersedia saat ini.')}
-        {drought.error && <span className="block mt-1 text-[11px] text-ink/45 dark:text-mist/40">({drought.error})</span>}
+        {drought.error && <span className="block mt-1 text-[11px] text-ink-muted dark:text-mist-subtle">({drought.error})</span>}
       </p>,
     )
   }
@@ -103,15 +103,15 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
     <>
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10 flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-ink/50 dark:text-mist/45">HTH s.d. {shortDate(h.lastDataDate)}</p>
+          <p className="text-[11px] uppercase tracking-wide text-ink-muted dark:text-mist-muted">HTH s.d. {shortDate(h.lastDataDate)}</p>
           <p className="font-data text-4xl font-semibold tabular-nums leading-none mt-1 text-ink dark:text-mist">
             {num(h.days)}
-            <span className="text-base font-normal text-ink/50 dark:text-mist/45 ml-1">hari{h.truncated ? '+' : ''}</span>
+            <span className="text-base font-normal text-ink-muted dark:text-mist-muted ml-1">hari{h.truncated ? '+' : ''}</span>
           </p>
-          <p className="mt-2 text-[13px] font-medium text-ink/75 dark:text-mist/70">{h.classLabel}</p>
+          <p className="mt-2 text-[13px] font-medium text-ink-body dark:text-mist-body">{h.classLabel}</p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-[11px] uppercase tracking-wide text-ink/50 dark:text-mist/45">Status</p>
+          <p className="text-[11px] uppercase tracking-wide text-ink-muted dark:text-mist-muted">Status</p>
           <div className="mt-1">
             <Badge level={a.level} label={levelLabel} />
           </div>
@@ -119,7 +119,7 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
       </div>
 
       <RainBars series={a.series} rainDayMm={a.thresholds?.rainDayMm ?? 1} />
-      <p className="mt-1 text-[11px] text-ink/50 dark:text-mist/45">
+      <p className="mt-1 text-[11px] text-ink-muted dark:text-mist-muted">
         Hujan terakhir ≥ 1 mm: {h.lastRainDate ? `${shortDate(h.lastRainDate)} (${num(h.lastRainMm, 1)} mm)` : 'tidak ada dalam arsip'} · proyeksi: {projText}
       </p>
 
@@ -130,14 +130,14 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
       </div>
 
       <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10">
-        <h3 className="text-[13px] font-medium text-ink/70 dark:text-mist/60">Anjuran kebun</h3>
-        <ul className="mt-1.5 space-y-1 text-[13px] leading-relaxed text-ink/75 dark:text-mist/70 list-disc pl-4">
+        <h3 className="text-[13px] font-medium text-ink-body dark:text-mist-muted">Anjuran kebun</h3>
+        <ul className="mt-1.5 space-y-1 text-[13px] leading-relaxed text-ink-body dark:text-mist-body list-disc pl-4">
           {a.advice.slice(0, 3).map((t, i) => (
             <li key={i}>{t}</li>
           ))}
         </ul>
       </div>
-      <p className="mt-3 text-[11px] text-ink/45 dark:text-mist/40 leading-relaxed">
+      <p className="mt-3 text-[11px] text-ink-muted dark:text-mist-subtle leading-relaxed">
         HTH = hari berturut hujan &lt; 1 mm (definisi BMKG). Arsip model ERA5-Land ~9 km, bukan penakar hujan; tertinggal {drought.archive?.lagDays ?? '—'} hari. Rujukan:{' '}
         <a className="underline" href="https://www.bmkg.go.id/iklim" target="_blank" rel="noreferrer">BMKG Iklim (Monitoring HTH dasarian)</a>
         {drought.warnings?.length > 0 && <span className="block mt-1">Catatan: {drought.warnings.join('; ')}</span>}

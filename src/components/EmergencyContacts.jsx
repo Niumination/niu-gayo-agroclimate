@@ -16,14 +16,14 @@ export default function EmergencyContacts({ location, hazard = '*' }) {
     <section aria-label="Kontak darurat" className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3">
         <h2 className="text-sm font-semibold tracking-tight text-ink dark:text-mist">Kontak darurat</h2>
-        <p className="text-[13px] text-ink/55 dark:text-mist/50 mt-0.5">Hubungi 112 untuk semua keadaan darurat; nomor lain untuk koordinasi & informasi.</p>
+        <p className="text-[13px] text-ink-muted dark:text-mist-muted mt-0.5">Hubungi 112 untuk semua keadaan darurat; nomor lain untuk koordinasi & informasi.</p>
       </div>
       <ul className="divide-y divide-ink/10 dark:divide-mist/10">
         {unique.map((c) => (
           <li key={c.id} className="py-2.5 flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[13px] text-ink/80 dark:text-mist/75 truncate">{c.name}</p>
-              <p className="text-[11px] text-ink/45 dark:text-mist/40">{c.scope}{c.alt ? ` · alt. ${c.alt}` : ''}</p>
+              <p className="text-[13px] text-ink-body dark:text-mist-body truncate">{c.name}</p>
+              <p className="text-[11px] text-ink-muted dark:text-mist-subtle">{c.scope}{c.alt ? ` · alt. ${c.alt}` : ''}</p>
             </div>
             <a href={`tel:${String(c.phone).replace(/[^\d+]/g, '')}`} className="shrink-0 min-h-[40px] inline-flex items-center px-3 rounded-lg border border-ink/15 dark:border-mist/15 font-data text-[13px] text-ink dark:text-mist hover:border-ink/40 dark:hover:border-mist/40">
               {c.phone}
@@ -31,7 +31,7 @@ export default function EmergencyContacts({ location, hazard = '*' }) {
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[11px] text-ink/45 dark:text-mist/40">Nomor Puskesmas/posko kecamatan ditampilkan setelah diverifikasi (tugas manusia H-5). Koreksi: lihat “Tentang data &amp; batasan”.</p>
+      <p className="mt-3 text-[11px] text-ink-muted dark:text-mist-subtle">Nomor Puskesmas/posko kecamatan ditampilkan setelah diverifikasi (tugas manusia H-5). Koreksi: lihat “Tentang data &amp; batasan”.</p>
     </section>
   )
 }

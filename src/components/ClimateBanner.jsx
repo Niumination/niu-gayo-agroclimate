@@ -24,7 +24,7 @@ export default function ClimateBanner({ drought, now }) {
       </button>
       {m.local && <p className={`mt-1 text-[12px] ${m.localTone === 'rendah' ? 'text-leaf-deep dark:text-leaf-soft' : ''}`}>{m.local}</p>}
       {open && (
-        <div className="mt-2 space-y-1.5 text-[12px] text-ink/75 dark:text-mist/70">
+        <div className="mt-2 space-y-1.5 text-[12px] text-ink-body dark:text-mist-body">
           {m.detail && <p>{m.detail}</p>}
           {m.implications.length > 0 && (
             <ul className="list-disc pl-4 space-y-0.5">

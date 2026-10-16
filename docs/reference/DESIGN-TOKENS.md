@@ -1,6 +1,8 @@
 # Token Desain & Aturan Kontras (referensi)
 
-**Status:** spesifikasi target fase design/UX (16 Okt 2026). Nilai di dokumen ini adalah **usulan siap-terap**; angka kontras dihitung dengan rumus WCAG 2.2 memakai `scripts/check-contrast.mjs` yang sama dengan yang berjalan di CI, jadi tabel di sini tidak bisa "menyimpang" dari gerbang.
+**Status:** **diterapkan pada paket P1 (2026-10-16)** — token sudah ada di `src/index.css`, 417 utilitas teks beropasitas diganti, dan CI menjalankan `check:contrast -- --strict` (34/34 pasangan lulus). Angka kontras dihitung dengan rumus WCAG 2.2 memakai `scripts/check-contrast.mjs` yang sama dengan yang berjalan di CI, jadi tabel di sini tidak bisa "menyimpang" dari gerbang.
+
+Sisa dari paket P1: ikon level baru dipasang di `HazardPanel` (glyph bentuk per tingkat); pemakaian **tint** latar kartu level + garis aksen 3 px dan ikon di kartu lain menyusul di **P2** (bersamaan dengan target sentuh & semantik tab).
 **Dokumen pendamping:** rencana penerapan & audit di [`docs/dev/11-RENCANA-DESIGN-UX.md`](../dev/11-RENCANA-DESIGN-UX.md).
 
 ## 1. Aturan keras (checklist singkat kode review)
@@ -55,7 +57,8 @@ Keluarga `coffee-50…950` dipertahankan hanya untuk kompatibilitas komponen lam
 | Token | Heks | di `surface` | di `surface-raised` | di `surface-sunken` |
 |---|---|---|---|---|
 | `ink` (teks utama) | `#221C18` | 15,75:1 | 16,84:1 | 14,32:1 |
-| `ink-soft` (isi sekunder) | `#3D352E` | 11,25:1 | 12,02:1 | 10,22:1 |
+| `ink-soft` (sekunder kuat) | `#3D352E` | 11,25:1 | 12,02:1 | 10,22:1 |
+| `ink-body` (teks isi) | `#524941` | 8,23:1 | 8,79:1 | 7,48:1 |
 | `ink-muted` (metadata/label) | `#6A6058` | 5,73:1 | 6,13:1 | 5,21:1 |
 | `ink-subtle` (teks bantuan) | `#70665C` | 5,25:1 | 5,61:1 | 4,77:1 |
 
@@ -64,28 +67,23 @@ Keluarga `coffee-50…950` dipertahankan hanya untuk kompatibilitas komponen lam
 | Token | Heks | di `soil` | di `soil-raised` | di `soil-sunken` |
 |---|---|---|---|---|
 | `mist` (teks utama) | `#E8E3DA` | 14,17:1 | 12,89:1 | 15,03:1 |
-| `mist-soft` (isi sekunder) | `#D3CCC2` | 11,37:1 | 10,34:1 | 12,06:1 |
+| `mist-soft` (sekunder kuat) | `#D3CCC2` | 11,37:1 | 10,34:1 | 12,06:1 |
+| `mist-body` (teks isi) | `#B8B1A7` | 8,52:1 | 7,75:1 | 9,04:1 |
 | `mist-muted` (metadata) | `#A79F95` | 6,93:1 | 6,30:1 | 7,35:1 |
 | `mist-subtle` (teks bantuan) | `#8F877E` | 5,12:1 | 4,66:1 | 5,43:1 |
 
 Semua ≥ 4,5:1 pada **ketiga** permukaan → aman dipakai di kartu mana pun tanpa perlu menghitung ulang per konteks.
 
-*Padanan opasitas lama → token baru* (untuk skrip penggantian otomatis, paket P1):
+*Padanan opasitas lama → token baru* (aturan yang dipakai skrip penggantian pada paket P1 — 417 utilitas di 66 berkas):
 
-| Lama | Efektif | Kontras | Baru (terang) | Baru (gelap) |
-|---|---|---|---|---|
-| `text-ink/35` | `#AEAAA6` | 2,16:1 | `text-ink-subtle` | `text-mist-subtle` |
-| `text-ink/40` | `#A49F9B` | 2,45:1 | `text-ink-subtle` | `text-mist-subtle` |
-| `text-ink/45` | `#999490` | 2,81:1 | `text-ink-muted` | `text-mist-muted` |
-| `text-ink/50` | `#8E8A85` | 3,21:1 | `text-ink-muted` | `text-mist-muted` |
-| `text-ink/55` | `#837F7A` | 3,72:1 | `text-ink-muted` | `text-mist-muted` |
-| `text-ink/60` | `#78746F` | 4,34:1 | `text-ink-muted` | `text-mist-muted` |
-| `text-mist/30` | `#5F5A55` | 2,69:1 | `text-ink-subtle` | `text-mist-subtle` |
-| `text-mist/35` | `#625D58` | 2,78:1 | `text-ink-subtle` | `text-mist-subtle` |
-| `text-mist/40` | `#6C6762` | 3,24:1 | `text-ink-muted` | `text-mist-subtle` |
-| `text-mist/45` | `#77726C` | 3,80:1 | `text-ink-muted` | `text-mist-muted` |
-| `text-mist/50` | `#817C76` | 4,38:1 | `text-ink-muted` | `text-mist-muted` |
-| `text-mist/60` | `#96918A` | 5,79:1 | `text-ink-muted` | `text-mist-muted` |
+| Pita opasitas | Contoh efektif & kontras sekarang | Token terang | Token gelap |
+|---|---|---|---|
+| `/25 – /42` | `ink/35` `#AEAAA6` 2,16:1 · `mist/40` `#6C6762` 3,24:1 | `text-ink-subtle` (5,25:1) | `text-mist-subtle` (5,12:1) |
+| `/43 – /62` | `ink/45` `#999490` 2,81:1 · `ink/60` `#78746F` 4,34:1 · `mist/45` `#77726C` 3,80:1 | `text-ink-muted` (5,73:1) | `text-mist-muted` (6,93:1) |
+| `/63 – /82` | `ink/70` 6,00:1 · `ink/75` 7,11:1 · `mist/70` 7,40:1 | `text-ink-body` (8,23:1) | `text-mist-body` (8,52:1) |
+| `/83 – /100` | `ink/85` ≈ 7,10:1 (belum AA-aman di semua latar) | `text-ink-soft` (11,25:1) | `text-mist-soft` (11,37:1) |
+
+Pita dipilih supaya **urutan visual tetap terjaga** (semakin "tebal" teks, semakin tinggi kontras) sambil seluruhnya melewati ambang AA; dua token jembatan (`ink-body`/`mist-body` ≈ 8:1) ditambahkan agar teks isi tidak menyatu dengan judul. Utilitas **non-teks** (`border-ink/10`, `bg-ink/5`, `divide-mist/10`) tetap boleh memakai opasitas karena dekoratif dan tidak membawa makna.
 
 ### 3.3 Lencana level bahaya (warna + ikon + label)
 
@@ -159,7 +157,7 @@ Aturan: tidak ada animasi fungsional > 500 ms; `prefers-reduced-motion: reduce` 
 npm run check:contrast             # ringkas: pasangan token + temuan opasitas + hitungan teks kecil
 npm run check:contrast -- --all    # cetak seluruh pasangan yang diuji
 npm run check:contrast -- --json   # keluaran mesin (untuk dasbor/CI)
-npm run check:contrast -- --strict # keluar 1 bila ada temuan → pakai setelah P1–P4 selesai
+npm run check:contrast -- --strict # keluar 1 bila ada temuan → DIPAKAI CI sejak P1 (2026-10-16)
 ```
 
 Angka di dokumen ini boleh diperbarui asalkan tabel tetap dihasilkan dari sumber yang sama (jalankan skrip dengan `--css src/index.css`); bila token berubah dan kontras turun, gerbang `--strict` akan menolaknya.

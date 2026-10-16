@@ -1,5 +1,6 @@
 import React from 'react'
 
+/** Palet tema (bukan slate/rose) + teks ≥ 12 px & kontras AA — paket P1 fase design/UX. */
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
@@ -17,14 +18,15 @@ export default class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-          <div className="bg-slate-900/70 border border-rose-500/30 rounded-xl p-6 max-w-md text-center">
-            <span className="text-3xl block mb-2">⚠️</span>
+        <div className="min-h-screen bg-soil text-mist flex items-center justify-center p-6">
+          <div role="alert" className="bg-soil-raised border border-cherry-soft/40 rounded-card p-6 max-w-md text-center">
+            <span aria-hidden="true" className="text-3xl block mb-2">⚠️</span>
             <h1 className="text-base font-bold mb-2">Terjadi kesalahan aplikasi</h1>
-            <p className="text-xs text-slate-400 mb-4">{this.state.message}</p>
+            <p className="text-sm text-mist-body mb-4">{this.state.message}</p>
             <button
+              type="button"
               onClick={() => { this.setState({ hasError: false, message: null }); window.location.reload() }}
-              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm border border-slate-700"
+              className="min-h-11 px-4 rounded-lg bg-cherry text-on-accent text-sm font-semibold hover:bg-cherry-deep active:scale-[.97] transition"
             >
               Muat Ulang
             </button>
