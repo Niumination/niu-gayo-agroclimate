@@ -271,9 +271,18 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
                 <button
                   type="submit"
                   disabled={status === 'sending' || status === 'ok'}
-                  className="min-h-[44px] px-4 rounded-card bg-leaf text-white text-body font-medium disabled:opacity-50"
+                  className="min-h-[44px] px-4 inline-flex items-center gap-2 rounded-card bg-leaf text-white text-body font-medium disabled:opacity-50"
                 >
-                  {status === 'sending' ? 'Mengirim…' : 'Kirim laporan'}
+                  {status === 'sending' ? (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true" focusable="false" className="motion-safe:animate-spin">
+                        <path d="M12 3a9 9 0 1 0 9 9" />
+                      </svg>
+                      Mengirim…
+                    </>
+                  ) : (
+                    'Kirim laporan'
+                  )}
                 </button>
               </div>
             </form>

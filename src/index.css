@@ -169,6 +169,18 @@ body {
   outline-offset: 2px;
 }
 
+/* Skeleton P4 — denyut halus penanda "sedang memuat"; tinggi blok tetap agar CLS stabil */
+@keyframes nga-skeleton {
+  50% { opacity: 0.55; }
+}
+.skeleton {
+  background: var(--color-line-subtle);
+  animation: nga-skeleton 1.4s ease-in-out infinite;
+}
+.dark .skeleton {
+  background: var(--color-line-subtle-dark);
+}
+
 /* Satu momen motion: masuk halaman / pindah tab (fade + slide 200ms) */
 @keyframes nga-enter {
   from { opacity: 0; transform: translateY(6px); }
@@ -180,6 +192,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .anim-enter { animation: none; }
+  .skeleton { animation: none; opacity: 0.9; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;

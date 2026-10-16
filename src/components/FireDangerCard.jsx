@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import EmptyState from './EmptyState'
 
 /**
  * H-API (v2 Fase 1, Sprint 2 — roadmap 1.6 / FR-API-4/5) — kartu "Bahaya Kebakaran & Hotspot".
@@ -57,7 +58,9 @@ function Code({ label, value, cls, sub }) {
 
 export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
   const [showAll, setShowAll] = useState(false)
-  if (!fireDanger) return null
+  if (!fireDanger) {
+    return <EmptyState title={tr('fireDangerUnavailable')} hint={tr('emptyHint')} tone="waspada" />
+  }
   const label = (k, fallback) => {
     const v = tr(k)
     return !v || v === k ? fallback : v

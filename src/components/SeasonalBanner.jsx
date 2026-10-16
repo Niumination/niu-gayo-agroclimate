@@ -1,4 +1,5 @@
 import React from 'react'
+import EmptyState from './EmptyState'
 
 // F7 — banner kalender musiman. Fase: tinggi=cherry, sedang=husk, rendah=leaf.
 const PHASE_STYLE = {
@@ -7,8 +8,10 @@ const PHASE_STYLE = {
   rendah: 'border-leaf/30 bg-leaf/5 text-leaf-deep dark:text-leaf-soft',
 }
 
-export default function SeasonalBanner({ seasonal }) {
-  if (!seasonal) return null
+export default function SeasonalBanner({ seasonal, tr = (k) => k }) {
+  if (!seasonal) {
+    return <EmptyState title={tr('emptyData')} hint={tr('emptyHint')} />
+  }
   return (
     <div
       role="status"

@@ -1,4 +1,5 @@
 import React from 'react'
+import EmptyState from './EmptyState'
 
 /**
  * Tren per jam. Mobile: grid rapat tanpa horizontal scroll.
@@ -6,7 +7,9 @@ import React from 'react'
  * Semua nilai memakai font-data (pembacaan instrumen).
  */
 export default function HourlyForecast({ hourly, tr, variant = 'mobile' }) {
-  if (!hourly || hourly.length === 0) return null
+  if (!hourly || hourly.length === 0) {
+    return <EmptyState title={tr('emptyForecast')} hint={tr('emptyHint')} />
+  }
 
   return (
     <section aria-label={tr('hourlyTrend')} className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">

@@ -71,9 +71,10 @@ Satu animasi masuk 200 ms (sesuai rekomendasi) + `prefers-reduced-motion` sudah 
 
 ### A-8 Keadaan menunggu / kosong / gagal / basi
 `App.jsx` menampilkan teks polos `role="status"` saat memuat (tanpa kerangka/skeleton), tanpa indikator progres pada aksi tombol, tanpa panel "kosong" eksplisit, dan status basi (`dataAge`, ≥ 30 menit) hanya berupa label — tidak ada ajakan tindakan.
+**Selesai di P4 (2026-10-16):** skeleton bertata tetap (muncul > 300 ms, mati saat reduced-motion) · `EmptyState` di 10 kartu data + grafik hujan · pita data basi dengan tombol “Muat ulang sekarang” · pita offline terpusat + penanda cache · pita “koneksi kembali” yang bisa ditutup · spinner + anti kirim ganda + `role="status"` pada tombol kirim laporan · `tests/stateContract.test.js` (9 uji).
 
 ### A-9 I18n & pemuaian teks
-67 label ditandai `[?]` (tugas manusia H-4; 52 pada audit, +15 dari label interaksi P2). Label Gayo/Indonesia cenderung 20–35 % lebih panjang; beberapa kartu memakai `text-[11px]` + lebar tetap, sehingga berisiko terpotong saat terjemahan masuk.
+76 label ditandai `[?]` (tugas manusia H-4; 52 pada audit, +15 label interaksi P2, +9 label keadaan memuat/kosong/basi P4). Label Gayo/Indonesia cenderung 20–35 % lebih panjang; beberapa kartu memakai `text-[11px]` + lebar tetap, sehingga berisiko terpotong saat terjemahan masuk.
 
 ### A-10 Teks antarmuka yang belum masuk i18n (temuan baru saat P2)
 Beberapa label antarmuka ditulis keras dalam bahasa Indonesia meskipun aplikasi dwibahasa: footer panel bahaya (tombol tampilkan/sembunyikan, tautan bantuan, “Evaluasi … WIB”, catatan “bukan peringatan resmi”), seluruh label `ShareButton`, tautan bantuan di footer `App.jsx`, serta `AboutData`/`ReportButton`/`FireDangerCard` (“Tutup”, “Sembunyikan”, “Lihat N anjuran lain”), termasuk `aria-label` bagian. **Sudah diperbaiki P2:** 15 kunci (navigasi, tampilkan/sembunyikan, bantuan, berbagi, catatan footer) di bahasa id + Gayo dan dipakai lewat `tr()`; sisanya dicatat untuk P3/P4 bersama uji pemuaian.
@@ -131,7 +132,8 @@ Setiap paket memuat: tujuan · langkah · berkas sasaran · kriteria terima · u
 5. Uji pemuaian: cek 52 label Gayo/ID pada 320 px (target: tanpa pemotongan; teks boleh membungkus, bukan memotong).
 **Kriteria terima:** 0 teks < 12 px; seluruh teks isi ≥ 16 px; `dist/` memuat ≥ 1 berkas font; `npm run check:bundle` tetap ≤ 200 kB (perkiraan akhir ±165 kB); tidak ada truncation di 320 px.
 
-### P4 — Keadaan menunggu / kosong / basi / gagal (usaha **M**)
+### P4 — Keadaan menunggu / kosong / basi / gagal (usaha **M**) · ✅ **SELESAI 2026-10-16**
+**Hasil terukur:** `Skeleton.jsx` (kemunculan tertunda 300 ms, denyut mati saat reduced-motion) + `EmptyState.jsx` dipakai **10 kartu data** (sebelumnya `return null` tanpa penjelasan) + `Notice.jsx` untuk data basi (dengan tombol “Muat ulang sekarang” ≥ 44 px), offline (terpusat, penanda data cache) dan “koneksi kembali” (bisa ditutup, tidak memaksa) + spinner dalam tombol kirim laporan; `navigator.storage.persist()` diminta sekali; `tests/stateContract.test.js` (9 uji) → suite **368 uji**.
 **Langkah**
 1. Ganti status memuat teks → **skeleton** per kartu dengan tinggi tetap (stabilkan CLS), muncul > 300 ms, tanpa animasi bila `prefers-reduced-motion`.
 2. Empty state bermakna per kartu ("belum ada deteksi hotspot di Gayo — ini normal di musim hujan") + langkah berikutnya.
@@ -162,7 +164,7 @@ P1 token+kontras  →  check:contrast --strict  →  P2 a11y interaksi
         P3 tipografi+font  →  build+bundle  →  P4 state  →  P5 gerak/safe-area  →  P6 pengaman+docs
 ```
 
-Gerbang setelah tiap paket: `npm test` (359) · `npm run check:coverage` · `npm run check:contrast` · `npm run check:typography` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
+Gerbang setelah tiap paket: `npm test` (368) · `npm run check:coverage` · `npm run check:contrast` · `npm run check:typography` · `npm run build` · `npm run check:bundle` · `npm run smoke` · `npm run check:outlook` · `npm run check:i18n`.
 **Jangan** menyentuh `tailwind.config.js`/`postcss.config.js` (sudah dihapus pada v2.1.0) dan jangan menambah dependensi runtime.
 
 ## 8. Log 50 putaran (audit → riset → rencana)
@@ -236,7 +238,7 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 
 ## 9. Definisi selesai (Definition of Done)
 
-**Otomatis (CI):** `npm test` (359) · `check:coverage` · `check:contrast --strict` · `check:typography` · `build` · `check:bundle` (≤ 200 kB JS) · `smoke` · `check:outlook` · `check:i18n`.
+**Otomatis (CI):** `npm test` (368) · `check:coverage` · `check:contrast --strict` · `check:typography` · `build` · `check:bundle` (≤ 200 kB JS) · `smoke` · `check:outlook` · `check:i18n`.
 **Manual (butuh manusia/telepon nyata):**
 1. **Keyboard:** Tab dari atas → skip-link → seluruh kontrol; tidak ada jebakan fokus; tab tab berpindah dengan panah; Shift+Tab berbalik arah.
 2. **Pembaca layar** (TalkBack/VoiceOver/NVDA): 4 tab terbaca; perubahan status & hasil laporan diumumkan; peta punya ringkasan teks.
@@ -270,9 +272,11 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 | P1 token & kontras | ✅ selesai 2026-10-16 (commit `P1`) | 417 penggantian · `check:contrast --strict` hijau (34/34) · CI memakai `--strict` · `LevelGlyph` di `HazardPanel` · 340 uji · bundel 132,0 kB |
 | P2 a11y interaksi | ✅ selesai 2026-10-16 (commit `P2`) | 0/25 tombol < 44 px · tablist+tabpanel penuh · skip-link + `aria-live` · `a11yContract` 10 uji · skala teks jadi token · 15 label i18n |
 | P3 tipografi & font | ✅ selesai 2026-10-16 (commit `P3`) | 212 ukuran → token · 0 teks < 16 px isi / 0 teks < 12 px · JetBrains Mono 42 kB self-host + preload + fallback metrik · gerbang `check:typography` (9 uji) |
-| P4 keadaan aplikasi | ⬜ | skeleton · empty · basi + muat ulang · spinner tombol |
+| P4 keadaan aplikasi | ✅ selesai 2026-10-16 (commit `P4`) | `Skeleton` (300 ms, reduced-motion) · `EmptyState` di 10 kartu · pita basi/offline/kembali daring (1 pengumuman) · spinner tombol kirim · `stateContract` 9 uji → 368 uji |
 | P5 gerak & area aman | ⬜ | durasi motion · `viewport-fit=cover` · `min-w-0` |
 | P6 pengaman & docs | ⬜ | ESLint `jsx-a11y` · pa11y/axe manual · dokumen |
+
+**Catatan teknis P4 yang perlu diingat:** (a) skeleton hanya dirender setelah 300 ms (`useDelayedVisible`) — jangan menampilkannya seketika, getaran itulah yang membuat aplikasi terasa lambat; (b) pengumuman offline **hanya** dari `App` (pita `Notice`), jangan menambahkannya lagi di header agar pembaca layar tidak mengulang; (c) `EmptyState` wajib memuat petunjuk langkah berikutnya, bukan hanya “tidak ada data”; (d) pita keadaan memakai `role="status"` (sopan) bukan `alert` — kecuali galat yang menghentikan alur.
 
 **Catatan teknis P3 yang perlu diingat:** (a) @font-face harus berada **setelah** `@import "tailwindcss";` dan **tanpa** titik-koma liar — kesalahan kecil di situ menggagalkan `lightningcss minify` saat build; (b) `size-adjust: 102%` dihitung dari advanced monospace lazim (Consolas 0,550 em · Menlo/DejaVu 0,602 em) vs JetBrains Mono 0,600 em — angka ini perkiraan, bukan hasil pengukuran perangkat; (c) font hanya untuk angka (`font-data`), teks isi tetap font sistem supaya unduhan tetap 42 kB; (d) uji pemuaian label Gayo pada 320 px masih butuh mata manusia (lihat §9).
 

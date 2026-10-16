@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import EmptyState from './EmptyState'
 
 /**
  * Fase 1.9d (FR-X-8) — riwayat kejadian multi-bahaya per sentra dengan filter per bahaya (chip) dan status darurat.
@@ -11,9 +12,11 @@ const fmt = (iso) => {
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' })
 }
 
-export default function DisasterHistoryCard({ history, location }) {
+export default function DisasterHistoryCard({ history, location, tr = (k) => k }) {
   const [filter, setFilter] = useState(null)
-  if (!history?.count) return null
+  if (!history?.count) {
+    return <EmptyState title={tr('emptyHistory')} hint={tr('emptyHint')} />
+  }
   const events = (history.lastEvents ?? []).filter((e) => !filter || (e.hazard ?? e.type) === filter)
   const chips = Object.entries(history.byHazard ?? {}).sort((a, b) => b[1] - a[1])
   return (

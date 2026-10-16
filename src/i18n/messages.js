@@ -89,6 +89,16 @@ export const messages = {
     copied: 'Tersalin',
     evaluatedAt: 'Evaluasi',
     unofficialNote: 'informasi pendukung, bukan peringatan resmi',
+    // P4 — keadaan aplikasi (memuat/kosong/basi/gagal/kembali daring)
+    emptyHint: 'Coba muat ulang sebentar lagi. Bila tetap kosong, sumber data mungkin sedang tidak tersedia.',
+    emptyHistory: 'Belum ada kejadian tercatat pada periode ini.',
+    emptyForecast: 'Data prakiraan belum tersedia untuk wilayah ini.',
+    emptyWarning: 'Belum ada peringatan dini untuk wilayah ini saat ini.',
+    staleAction: 'Muat ulang sekarang',
+    onlineAgain: 'Koneksi kembali — muat ulang untuk data terbaru.',
+    offlineCacheNote: 'Menampilkan data terakhir yang tersimpan.',
+    loadingData: 'Memuat data…',
+    dismiss: 'Tutup',
   },
   gayo: {
     appName: 'Niu Gayo Agro-Climate',
@@ -172,6 +182,16 @@ export const messages = {
     copied: 'Tersalin [?]',
     evaluatedAt: 'Evaluasi [?]',
     unofficialNote: 'informasi pendukung, bukan peringatan resmi [?]',
+    // P4 — keadaan aplikasi (belum ditinjau penutur asli, H-4)
+    emptyHint: 'Coba muat ulang sekejap agi. Lam tetap kosong, sumber data mungkin sedang gere ara [?]',
+    emptyHistory: 'Gere kejadian tercatat bak periode enda [?]',
+    emptyForecast: 'Data ramalan gere ara bak mukim enda [?]',
+    emptyWarning: 'Gere peringatan dini bak mukim enda gini [?]',
+    staleAction: 'Muat ulang gini [?]',
+    onlineAgain: 'Koneksi walé — muat ulang nun data terbaru [?]',
+    offlineCacheNote: 'Nampilkan data terakhir ni tersimpan [?]',
+    loadingData: 'Pemuat data… [?]',
+    dismiss: 'Tutup [?]',
   },
 }
 

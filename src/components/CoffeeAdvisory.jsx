@@ -1,4 +1,5 @@
 import React from 'react'
+import EmptyState from './EmptyState'
 
 const defaultTr = (k, f) => f ?? k
 
@@ -7,7 +8,9 @@ const defaultTr = (k, f) => f ?? k
  * (karat daun, jendela penjemuran) dipisah garis tipis, bukan kartu kembar.
  */
 export default function CoffeeAdvisory({ coffee, tr = (k, f) => defaultTr(k, f) }) {
-  if (!coffee) return null
+  if (!coffee) {
+    return <EmptyState title={tr('emptyData')} hint={tr('emptyHint')} />
+  }
 
   return (
     <section

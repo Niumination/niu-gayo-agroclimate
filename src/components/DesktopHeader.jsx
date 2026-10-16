@@ -17,7 +17,6 @@ export default function DesktopHeader({
   onToggleTheme,
   onResetTheme,
   age,
-  offline,
   tr,
 }) {
   const ageTone = age?.stale
@@ -34,11 +33,6 @@ export default function DesktopHeader({
             <span className={`inline-flex items-center gap-1.5 text-caption font-medium px-2 py-0.5 rounded-full border ${ageTone}`}>
               <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${age.stale ? 'bg-husk' : 'bg-leaf'}`} />
               {tr('dataAge')} {age.label}
-            </span>
-          )}
-          {offline && (
-            <span role="status" className="text-caption font-medium text-husk-deep dark:text-husk-soft">
-              {tr('offlineBanner')}
             </span>
           )}
         </div>

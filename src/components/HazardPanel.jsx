@@ -4,6 +4,7 @@ import { LEVEL_LABEL } from '../domain/hazards/levels.js'
 import { InteractionsList } from './HazardFocusCards.jsx'
 import { prefs } from '../lib/prefs.js'
 import ShareButton from './ShareButton.jsx'
+import EmptyState from './EmptyState'
 
 /**
  * v2 Fase 0 (roadmap 0.4 / FR-X-2, FR-X-3, FR-X-6) — panel "Indeks Bahaya" yang dirender dari registry.
@@ -154,7 +155,9 @@ function HazardRow({ r, open, onToggle, lang }) {
 export default function HazardPanel({ hazards, location, lang = 'id', onAbout, onToggleHidden, tr = (k) => k }) {
   const [openId, setOpenId] = useState(null)
   const [showAll, setShowAll] = useState(false)
-  if (!hazards?.results?.length) return null
+  if (!hazards?.results?.length) {
+    return <EmptyState title={tr('emptyData')} hint={tr('emptyHint')} />
+  }
   const { results, worst, active, counts, interactions = [] } = hazards
   const hidden = prefs.getHiddenHazards()
   const visible = showAll ? results : results.filter((r) => r.level !== 'n/a' || active.length === 0)

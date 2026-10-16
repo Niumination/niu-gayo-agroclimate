@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import EmptyState from './EmptyState'
 
 /**
  * H-ASAP (v2 Fase 1, "rilis cepat") — kartu Kabut Asap & Kualitas Udara.
@@ -59,7 +60,9 @@ function Metric({ label, value, unit, sub }) {
 
 export default function AirQualityCard({ airQuality, tr = (k) => k }) {
   const [showCleanRoom, setShowCleanRoom] = useState(false)
-  if (!airQuality) return null
+  if (!airQuality) {
+    return <EmptyState title={tr('airQualityUnavailable')} hint={tr('emptyHint')} />
+  }
   const label = (k, fallback) => {
     const v = tr(k)
     return !v || v === k ? fallback : v

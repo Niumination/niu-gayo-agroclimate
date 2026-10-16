@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import outlook from '../data/hazards/climateOutlook.json'
 import { climateBannerModel } from '../domain/climate.js'
+import EmptyState from './EmptyState'
 
 /**
  * Fase 1.9c (FR-KER-5) — banner konteks iklim: ENSO/IOD/prospek musim BMKG (terkurasi) + verifikasi lokal dari arsip ERA5.
@@ -12,10 +13,12 @@ const STYLE = {
   rendah: 'border-leaf/30 bg-leaf/5 text-leaf-deep dark:text-leaf-soft',
 }
 
-export default function ClimateBanner({ drought, now }) {
+export default function ClimateBanner({ drought, now, tr = (k) => k }) {
   const [open, setOpen] = useState(false)
   const m = climateBannerModel(outlook, { now: now ?? new Date(), drought })
-  if (!m) return null
+  if (!m) {
+    return <EmptyState title={tr('emptyData')} hint={tr('emptyHint')} />
+  }
   return (
     <div role="status" className={`border rounded-card px-4 py-3 text-body ${STYLE[m.tone] || STYLE.sedang}`}>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="min-h-11 inline-flex items-center w-full text-left flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">

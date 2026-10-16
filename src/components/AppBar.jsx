@@ -18,7 +18,6 @@ export default function AppBar({
   onToggleTheme,
   onResetTheme,
   age,
-  offline,
   tr,
 }) {
   const ageTone = age?.stale
@@ -80,11 +79,6 @@ export default function AppBar({
           </button>
         </div>
       </div>
-      {offline && (
-        <p role="status" className="px-4 pb-2 text-body font-medium text-husk-deep dark:text-husk-soft">
-          {tr('offlineBanner')}
-        </p>
-      )}
     </header>
   )
 }

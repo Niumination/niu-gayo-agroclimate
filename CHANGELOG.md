@@ -1,6 +1,6 @@
 # Changelog
 
-## [Belum dirilis] — Fase design/frontend/UX (P1–P3 ✅ · P4–P6 menyusul)
+## [Belum dirilis] — Fase design/frontend/UX (P1–P4 ✅ · P5–P6 menyusul)
 
 ### P1 — Token semantik & kontras (2026-10-16) ✅
 - **Nol teks di bawah 4,5:1.** 417 utilitas teks beropasitas (`text-ink/45`, `dark:text-mist/40`, …) di **66 berkas** diganti token peran; pindai ulang menemukan **0** sisa. Sebelumnya 262 pemakaian gagal ambang WCAG AA di 21 berkas.
@@ -28,6 +28,15 @@
 - **Angka rata kolom:** `tabular-nums` ditambahkan pada 28 kelas `font-data` yang belum memilikinya.
 - **Gerbang baru `npm run check:typography`** (9 uji di `tests/checkTypography.test.js`, langkah CI setelah build): menolak ukuran arbitrer < 16 px, `text-xs`/`text-sm`, kelas kecil pada `select`/`input`/`textarea` (cegah zoom iOS), sisa `truncate`, serta memastikan berkas font ada di `public/fonts/` dan ikut terbangun ke `dist/fonts/`.
 - **Uji 350 → 359** · cakupan 95,70 / 84,31 / 95,91 % · bundel JS tetap **132,9 kB** gzip (font berada di luar anggaran JS; precache PWA 14 → 16 entri, 492 → 536 KiB) · `check:contrast --strict` tetap 34/34 · `smoke` lolos · 35 dokumen / 117 tautan / 0 rusak.
+
+### P4 — Keadaan memuat / kosong / basi / gagal (2026-10-16) ✅
+- **Skeleton, bukan teks “Memuat…”:** komponen baru `Skeleton.jsx` (blok + kartu bertata tetap, `aria-hidden`) yang **baru muncul setelah 300 ms** — muat cepat tidak berkedip, muat lambat dapat kerangka yang menstabilkan tata letak (CLS). Denyut skeleton berhenti saat `prefers-reduced-motion`.
+- **Keadaan kosong yang menjelaskan:** komponen baru `EmptyState.jsx` dipakai **10 kartu data** (`AirQualityCard`, `FireDangerCard`, `DroughtCard`, `DisasterWarning`, `DisasterHistoryCard`, `CoffeeAdvisory`, `ClimateBanner`, `SeasonalBanner`, `HourlyForecast`, `HazardPanel`) plus grafik hujan di `App`. Sebelumnya kartu kosong **hilang tanpa penjelasan** (`return null`); kini setiap keadaan memuat: apa yang kosong + langkah berikutnya.
+- **Data basi punya tindakan:** pita `Notice.jsx` menampilkan “Data lama (offline) · Umur data …” + tombol **“Muat ulang sekarang”** (≥ 44 px) — bukan lagi sekadar lencana pasif di header.
+- **Offline terpusat + kembali daring ditawarkan:** pita offline (beserta penanda “menampilkan data tersimpan”) kini hanya diumumkan **sekali** dari `App` (duplikat di `AppBar`/`DesktopHeader` dihapus); ketika koneksi kembali muncul pita “Koneksi kembali — muat ulang untuk data terbaru” yang bisa **ditutup tanpa memuat ulang** (tidak memaksa). `navigator.storage.persist()` diminta sekali agar cache offline tidak cepat dibuang sistem.
+- **Aksi kirim punya umpan balik:** tombol **Kirim laporan** menampilkan spinner di dalam tombol (menghormati `prefers-reduced-motion`), tetap dinonaktifkan selama mengirim (anti kirim ganda), dan konfirmasi sukses diumumkan lewat `role="status"`.
+- **Pengaman baru:** `tests/stateContract.test.js` (**9 uji**) mengunci keempat keadaan, larangan pengumuman offline ganda, dan ketersediaan label kedua bahasa.
+- Uji **359 → 368** · `check:i18n` 67 → **76** placeholder Gayo `[?]` (9 label keadaan baru menunggu tinjauan penutur asli — tugas manusia H-4) · cakupan 95,74 / 84,35 / 95,93 % · bundel tetap di bawah anggaran · `check:contrast --strict`, `check:typography`, `smoke`, dan pemeriksa tautan docs semuanya hijau.
 
 ### Tahap audit & rencana (commit `bfa8315`) — belum mengubah UI
 

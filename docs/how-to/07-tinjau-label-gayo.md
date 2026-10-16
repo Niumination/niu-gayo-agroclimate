@@ -2,7 +2,7 @@
 
 **Kuadran:** how-to (tugas) · **Audiens:** maintainer + penutur/penyuluh Gayo · **Tugas manusia: H-4**.
 
-Aplikasi ini dwibahasa (id-ID & Gayo). Setiap teks Gayo yang **belum disetujui penutur asli** ditandai literal **`[?]`**. Saat ini ada **67 placeholder pada 67 baris** — tempat terbesar di `src/i18n/messages.js` (kartu udara, kebakaran, kekeringan, dll.), sisanya label bahaya di modul `src/domain/hazards/*.js`.
+Aplikasi ini dwibahasa (id-ID & Gayo). Setiap teks Gayo yang **belum disetujui penutur asli** ditandai literal **`[?]`**. Saat ini ada **76 placeholder pada 76 baris** — tempat terbesar di `src/i18n/messages.js` (kartu udara, kebakaran, kekeringan, dll.), sisanya label bahaya di modul `src/domain/hazards/*.js`.
 
 Tujuannya: mengganti teks bertanda `[?]` dengan terjemahan yang **disetujui** penutur, sambil menjaga jejak audit.
 
@@ -13,7 +13,7 @@ npm run check:i18n              # daftar berkas:baris + ringkasan (informatif, k
 npm run check:i18n -- --dir src # membatasi pemindaian
 ```
 
-Ringkasan saat ini: `ℹ [i18n] 67 placeholder Gayo "[?]" pada 67 baris`.
+Ringkasan saat ini: `ℹ [i18n] 76 placeholder Gayo "[?]" pada 76 baris`.
 
 ## 2. Siapkan sesi tinjauan
 

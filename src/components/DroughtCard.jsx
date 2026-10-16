@@ -1,4 +1,5 @@
 import React from 'react'
+import EmptyState from './EmptyState'
 
 /**
  * H-KERING (v2 Fase 1, Sprint 2 — roadmap 1.9b / FR-KER-2/4 ringkas) — kartu "Kekeringan & Air Kebun".
@@ -65,7 +66,9 @@ function RainBars({ series, rainDayMm }) {
 }
 
 export default function DroughtCard({ drought, tr = (k) => k }) {
-  if (!drought) return null
+  if (!drought) {
+    return <EmptyState title={tr('droughtUnavailable')} hint={tr('emptyHint')} />
+  }
   const label = (k, fallback) => {
     const v = tr(k)
     return !v || v === k ? fallback : v

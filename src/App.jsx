@@ -27,6 +27,9 @@ import { t } from './i18n/messages'
 import { prefs, applyTheme, effectiveTheme } from './lib/prefs'
 import { dataAge } from './lib/dataAge'
 import { useBreakpoint } from './lib/useBreakpoint'
+import AppSkeleton, { useDelayedVisible } from './components/Skeleton'
+import EmptyState from './components/EmptyState'
+import Notice from './components/Notice'
 
 export default function App() {
   const isDesktop = useBreakpoint()
@@ -76,10 +79,20 @@ export default function App() {
     setTheme(effectiveTheme())
   }
 
-  // Status offline
+  // Status offline + keadaan "kembali daring" (P4)
   const [offline, setOffline] = useState(() => !navigator.onLine)
+  const [backOnline, setBackOnline] = useState(false)
+  // P4 — skeleton hanya muncul setelah 300 ms; muat cepat tidak berkedip (riset R-11)
+  const showSkeleton = useDelayedVisible(300)
+  // P4 — minta penyimpanan persisten supaya cache offline tidak dibuang sistem (riset R-10)
   useEffect(() => {
-    const on = () => setOffline(false)
+    navigator.storage?.persist?.().catch(() => {})
+  }, [])
+  useEffect(() => {
+    const on = () => {
+      setOffline(false)
+      setBackOnline(true)
+    }
     const off = () => setOffline(true)
     window.addEventListener('online', on)
     window.addEventListener('offline', off)
@@ -149,7 +162,6 @@ export default function App() {
     onToggleTheme: cycleTheme,
     onResetTheme: resetTheme,
     age,
-    offline,
     tr,
   }
 
@@ -163,7 +175,11 @@ export default function App() {
         <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{tr('rainChartSub')}</p>
       </div>
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10">
-        <RainChart data={rainSeries} labelRain={tr('rain')} />
+        {rainSeries.length > 0 ? (
+          <RainChart data={rainSeries} labelRain={tr('rain')} />
+        ) : (
+          <EmptyState title={tr('emptyForecast')} hint={tr('emptyHint')} />
+        )}
       </div>
     </section>
   )
@@ -175,9 +191,9 @@ export default function App() {
       {/* H-ASAP (v2 Fase 1) — kabut asap & kualitas udara, tampil di tab utama selama episode karhutla */}
       <AirQualityCard airQuality={data.airQuality} tr={tr} />
       <CoffeeAdvisory coffee={data.coffee} tr={tr} />
-      <SeasonalBanner seasonal={data.disaster?.seasonal} />
+      <SeasonalBanner seasonal={data.disaster?.seasonal} tr={tr} />
       {/* 1.9c — konteks iklim ENSO/IOD (BMKG terkurasi) + verifikasi lokal arsip ERA5 */}
-      <ClimateBanner drought={data.drought} />
+      <ClimateBanner drought={data.drought} tr={tr} />
       <div className="flex justify-center">
         <ReportButton location={selectedLocation} />
       </div>
@@ -207,7 +223,7 @@ export default function App() {
       <TemperatureCard hazards={data.hazards} />
       <ExternalReportsCard externalReports={data.externalReports} />
       {/* 1.9d — riwayat multi-bahaya + FR-X-4 kontak darurat */}
-      <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} />
+      <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} tr={tr} />
       <EmergencyContacts location={selectedLocation} hazard={data.hazards?.active?.[0]?.id ?? '*'} />
     </>
   )
@@ -255,8 +271,8 @@ export default function App() {
           {/* H-API (v2 Fase 1, Sprint 2) — bahaya kebakaran & hotspot */}
           <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
           {/* F7 — kalender musiman (rail bawah desktop) + 1.9c konteks iklim */}
-          <SeasonalBanner seasonal={data.disaster?.seasonal} />
-          <ClimateBanner drought={data.drought} />
+          <SeasonalBanner seasonal={data.disaster?.seasonal} tr={tr} />
+          <ClimateBanner drought={data.drought} tr={tr} />
           {/* F8 — tombol lapor kejadian */}
           <div className="flex justify-center">
             <ReportButton location={selectedLocation} />
@@ -278,7 +294,7 @@ export default function App() {
           <SchematicMap hazardsAll={data.hazardsAll} selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} hotspots={data.fireDanger?.hotspots?.nearest ?? []} />
         </div>
         <div className="col-span-5 min-w-0 space-y-6">
-          <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} />
+          <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} tr={tr} />
           <EmergencyContacts location={selectedLocation} hazard={data.hazards?.active?.[0]?.id ?? '*'} />
         </div>
       </div>
@@ -318,10 +334,53 @@ export default function App() {
         </div>
       )}
 
+      {/* P4 — offline: pita tetap + penanda data dari cache */}
+      {offline && (
+        <Notice
+          tone="waspada"
+          message={`${tr('offlineBanner')} — ${tr('offlineCacheNote')}`}
+          actionLabel={tr('retry')}
+          onAction={() => loadData(selectedLocation)}
+        />
+      )}
+
+      {/* P4 — data basi (>= 30 menit): label + ajakan tindakan, ≥ 44 px */}
+      {data && age?.stale && !loading && (
+        <Notice
+          tone="waspada"
+          message={`${tr('dataAgeStale')} · ${tr('dataAge')} ${age.label}`}
+          actionLabel={tr('staleAction')}
+          onAction={() => loadData(selectedLocation)}
+        />
+      )}
+
+      {/* P4 — kembali daring: tawarkan muat ulang, jangan paksa */}
+      {backOnline && !offline && (
+        <Notice
+          tone="aman"
+          message={tr('onlineAgain')}
+          actionLabel={tr('refresh')}
+          onAction={() => {
+            setBackOnline(false)
+            loadData(selectedLocation)
+          }}
+          onDismiss={() => setBackOnline(false)}
+          dismissLabel={tr('dismiss')}
+        />
+      )}
+
+      {/* P4 — menunggu: pengumuman pembaca layar + skeleton bertata tetap setelah 300 ms */}
       {loading && !data && (
-        <p role="status" className="flex-1 grid place-items-center text-body text-ink-muted dark:text-mist-muted py-16">
-          {tr('refreshing')}
-        </p>
+        <>
+          <p role="status" aria-live="polite" className="sr-only">
+            {tr('loadingData')}
+          </p>
+          {showSkeleton && (
+            <div aria-busy="true" className="flex-1 w-full max-w-shell mx-auto px-4 py-4">
+              <AppSkeleton />
+            </div>
+          )}
+        </>
       )}
 
       {isDesktop ? (
