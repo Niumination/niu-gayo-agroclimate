@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.1.0] — 2026-10-16 · Migrasi toolchain mayor (roadmap A-1 — menutup advisori `braces`)
+## [2.1.0] — 2026-10-16 · Migrasi toolchain mayor (A-1, menutup advisori `braces`) + gerbang cakupan uji (A-2)
 
 Hasil akhir butir **A-1** pada `docs/dev/10-ROADMAP-V3.md`: seluruh lompatan mayor yang ditunda saat audit 2.0.1 dikerjakan sekaligus, dan `npm audit` kini **0 kerentanan** (sebelumnya 5 high dev-only).
 
@@ -24,7 +24,13 @@ Hasil akhir butir **A-1** pada `docs/dev/10-ROADMAP-V3.md`: seluruh lompatan may
 ### Hasil ukur (sebelum → sesudah)
 - JS total gzip **133,3 → 131,6 kB**; chunk terbesar **127,4 → 65,8 kB** (anggaran 200/150 tetap lolos dengan margin besar).
 - CSS gzip 5,66 → 8,09 kB (konsekuensi wajar v4: `@property`/`color-mix`; total halaman tetap jauh di bawah anggaran 3G).
-- 306 uji hijau · smoke lolos (16 endpoint + 3 penjaga) · render klien terverifikasi (SSR-smoke 5,6 kB HTML, ikon menjadi SVG) · cakupan tetap ~96,6 % baris.
+- 321 uji hijau (306 saat migrasi A-1 + 15 uji gerbang cakupan A-2) · smoke lolos (16 endpoint + 3 penjaga) · render klien terverifikasi (SSR-smoke 5,6 kB HTML, ikon menjadi SVG) · cakupan 96,42 % baris / 83,78 % cabang / 95,96 % fungsi.
+
+### Ambang cakupan uji (roadmap A-2 — audit F-10)
+- Skrip baru `scripts/check-coverage.mjs` (`npm run check:coverage`): menjalankan suite dengan cakupan bawaan Node, lalu **menggagalkan build** bila baris < 95 %, cabang < 80 %, atau fungsi < 92 % (ambang 1,5–4 poin di bawah baseline agar refactor kecil tidak rapuh). Hanya memakai flag Node ≥ 20 sehingga tetap sesuai lantai `engines`.
+- **Baseline tren terversi** `scripts/coverage-baseline.json` (baris 96,42 % · cabang 83,78 % · fungsi 95,96 %) — setiap jalannya skrip mencetak selisih terhadap baseline; perbarui dengan `--update-baseline`.
+- Opsi `--from <berkas>` menilai laporan cakupan tersimpan (mis. artefak CI) tanpa menjalankan ulang suite; salah pakai argumen keluar 2 (bukan 1) agar tidak tertukar dengan kegagalan cakupan.
+- 15 uji baru di `tests/checkCoverage.test.js` (pengurai tabel, penilaian ambang, tren, CLI, dan pelarian env `NODE_TEST_CONTEXT` yang membuat proses anak tidak mencetak tabel). CI: langkah `Test coverage report` (informatif) → **`Test coverage gate`**.
 
 ### Catatan penting
 - **Kompatibilitas browser:** Tailwind v4 menargetkan Safari 16.4+ / Chrome 111+ / Firefox 128+ (Maret 2023+). Untuk perangkat kebun yang lebih lama, rilis **v2.0.1** tetap tersedia sebagai tag.

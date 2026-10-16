@@ -29,9 +29,10 @@ jobs:
       - name: Run unit tests
         run: npm test
 
-      # F-10: laporkan cakupan (informatif — belum menjadi gerbang ambang)
-      - name: Test coverage report
-        run: npm run test:coverage
+      # F-10/A-2: cakupan diukur lalu dinilai terhadap ambang gagal (baris ≥ 95 %, cabang ≥ 80 %,
+      # fungsi ≥ 92 %) + cetak tren vs scripts/coverage-baseline.json — regresi cakupan menggagalkan CI
+      - name: Test coverage gate
+        run: npm run check:coverage
 
       # F-01: kerentanan pada dependensi produksi = gagal; temuan dev-only dicatat di SECURITY.md
       - name: Audit dependensi produksi

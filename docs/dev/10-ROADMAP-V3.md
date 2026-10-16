@@ -31,7 +31,7 @@
 | # | Item | Alasan / sumber |
 |---|---|---|
 | A-1 | Naikkan lompatan mayor: Tailwind 4, Vite 8, `@vitejs/plugin-react` 6, lucide-react 1.x | ✅ **SELESAI v2.1.0 (2026-10-16)** — Tailwind 4.3.3 (rantai `chokidar→braces` hilang, `npm audit` **0**), Vite 8.3.4 (Rolldown; `manualChunks`→`advancedChunks`), plugin-react 6.1.2 (Oxc), lucide 1.58. Lihat CHANGELOG 2.1.0; catatan kompatibilitas browser (Safari 16.4+/Chrome 111+) ada di README |
-| A-2 | Ambang cakupan uji (`test:coverage`) + laporan tren; mulai dari modul kritis (hazards, alert, thresholds) | audit F-10 — cakupan terukur 96,6% baris / 83,8% cabang (306 uji, 2026-10-16); ambang gagal menyusul |
+| A-2 | Ambang cakupan uji (`test:coverage`) + laporan tren; mulai dari modul kritis (hazards, alert, thresholds) | ✅ **SELESAI v2.1.0 (2026-10-16)** — `scripts/check-coverage.mjs` + `npm run check:coverage`: gagal bila baris < 95 % / cabang < 80 % / fungsi < 92 %, baseline tren terversi `scripts/coverage-baseline.json` (96,42 / 83,78 / 95,96 pada 321 uji), 15 uji baru, CI memakai gerbang ini (audit F-10 ditutup) |
 | A-3 | Tag rilis bertanda tangan / attestation (`git tag -s` atau Sigstore) | audit F-06 — butuh kunci GPG/identitas penerbit (tugas manusia H-10) |
 | A-4 | ~~Pantau advisory `braces`~~ | ✅ **SELESAI v2.1.0** — rantai dependensinya sudah tidak ada (A-1) |
 | A-5 | Pisahkan `docs/` mengikuti empat kuadran Diátaxis (tutorial/how-to/reference/explanation) bila dokumentasi bertambah | audit F-15 catatan struktur |
