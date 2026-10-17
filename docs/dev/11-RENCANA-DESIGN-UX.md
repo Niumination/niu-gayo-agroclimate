@@ -277,6 +277,15 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 | P4 keadaan aplikasi | ✅ selesai 2026-10-16 (commit `P4`) | `Skeleton` (300 ms, reduced-motion) · `EmptyState` di 10 kartu · pita basi/offline/kembali daring (1 pengumuman) · spinner tombol kirim · `stateContract` 9 uji → 368 uji |
 | P5 gerak & area aman | ✅ selesai 2026-10-16 (commit `P5`) | token gerak · 26 umpan balik tekan/15 berkas · `viewport-fit=cover` + safe-area header & nav · `theme-color` dinamis · `motionContract` 9 uji → 377 uji |
 | P6 pengaman & docs | ✅ selesai 2026-10-16 (commit `P6`) | ESLint + `jsx-a11y` + react-hooks (0 temuan, langkah CI) · jalur uji browser terdokumentasi (pa11y/axe, ratchet) · dokumen gerbang disinkronkan |
+| P7.1 token dua tangga | ✅ selesai 2026-10-17 (commit `d7763d1`) | 87 token Tanah/Langit · Bricolage 76,9 kB + Instrument Sans 30,1 kB · `check:contrast --strict` 78/78 |
+| P7.2 hapus Bahasa Gayo | ✅ selesai 2026-10-17 (commit `f00e48b`) | `messages.js` satu bahasa (88 kunci) · pemilih bahasa & uji Gayo dihapus · `check:i18n` hijau |
+| P7.3 komponen inti | ✅ selesai 2026-10-17 (commit `030796a`) | `LevelBadge`/`StatusHeadline`/`AttentionCard`/`DetailPanel` · 45 uji kontrak |
+| P7.4 beranda mobile | ✅ selesai 2026-10-17 (commit `74bc088`) | Ringkas + 4 metrik + 3 kartu + bilah 12 jam · axe 0 @320/390/430 ×2 arah |
+| P7.5 papan desktop v6 | ✅ selesai 2026-10-17 (commit `1b9d6bf`) | rel 264/76 · 5 zona · inspector 380 · palet ⌘K 31 aksi · 26 uji · axe 0 @1024–1920 |
+| P7.6 PWA | ✅ selesai 2026-10-17 (commit `1adc5ff`) | manifest `id=/niu/` + 3 pintasan · ikon Niu · `offline.html` · tawaran Android/iOS · 23 uji |
+| P7.7 bahasa manusia | ✅ selesai 2026-10-17 (commit `7263d45`) | judul pertanyaan · akronim turun ke Detail · "Angka & istilah teknis" · desimal koma · 9 uji |
+| P7.8 ikonografi | ✅ selesai 2026-10-17 (commit `d66eb33`) | 11 ikon bahaya + 6 cuaca · favicon · judul dokumen Niu · 6 uji |
+| P7.9 rilis 2.2.0 | ✅ selesai 2026-10-17 | bundel 143,9 kB (≤155) · 507 uji · cakupan 96,22/84,91/96,42 · CHANGELOG + versi 2.2.0 |
 
 **P6.1 (17 Okt 2026) — perbaikan `npm ci`:** paket sync-18 lolos semua gerbang lokal tetapi **gagal di CI pada langkah “Install dependencies”** (`ERESOLVE`), karena `eslint-plugin-jsx-a11y@6.10.2` hanya mengakui peer `eslint` ≤ 9 sementara proyek memakai ESLint 10.13.0; instalasi lokal waktu itu memakai `--legacy-peer-deps`. Solusi: berkas **`.npmrc`** (`legacy-peer-deps=true`, berkomentar + syarat pencabutan) dan lockfile diregenerasi; diverifikasi pada instalasi bersih (`npm ci` ✓, lint 0 temuan). **Jangan** memundurkan ESLint ke 9 — di 9.39.5 `no-unused-vars` inti tidak mengenali tag JSX (66 temuan palsu).
 
@@ -291,3 +300,6 @@ Tiap putaran = satu siklus penuh: periksa keadaan → cari rujukan/ukuran → te
 **Catatan teknis P2 yang perlu diingat:** (a) skala teks hidup sebagai token `--text-*` di `@theme` sehingga utilitas baru tanpa token langsung ketahuan lewat uji kontrak; (b) pemindai target sentuh memeriksa tag `<button>` termasuk `className` dinamis (konstanta lokal seperti `const link = 'min-h-11 …'`); (c) tint latar kartu level masih memakai pasangan `dark:` — penyisiran bersama P3; (d) verifikasi keyboard/pembaca layar tetap manual (sandbox tanpa browser).
 
 **Catatan teknis P1 yang perlu diingat:** (a) token baru tidak menambah dependensi dan hanya menambah ±0,4 kB gzip; (b) `check-contrast.mjs` kini mengabaikan komentar blok sehingga contoh anti-pola di dokumentasi/kode tidak dihitung sebagai temuan; (c) dua token jembatan `ink-body`/`mist-body` (~8:1) ditambahkan supaya teks isi tidak menyatu dengan judul saat opasitas dinaikkan; (d) tangkapan layar terang/gelap tetap perlu dilakukan manusia (sandbox tanpa browser).
+
+
+**Catatan teknis P7 yang perlu diingat:** (a) token Tanah/Langit berada di `@theme` + `[data-theme=…]`, jangan menambah hex baru di komponen; (b) semua angka teknis punya rumah di Detail (`HazardDetail` tab Angka, `AboutData`, `<details>` di tiga kartu) — jangan menghapusnya dari sana; (c) `InstallHint` hanya tawaran, bukan penghalang: tunda 7 hari, tombol tutup selalu ada; (d) ikon bahaya/cuaca selalu dekoratif (`aria-hidden`) karena nama selalu teks; (e) `InstrumentPanel` dan `DistrictSelector` tidak lagi dipakai tetapi sengaja disimpan sampai pemilik memutuskan.

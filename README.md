@@ -1,6 +1,6 @@
-# ☕ Niu Gayo Agro-Climate
+# Niu — Cuaca & Peringatan Dini Tanah Gayo
 
-> Sistem Presisi Cuaca Pertanian Kopi Arabika Gayo & Mitigasi Bencana Hidrometeorologi Aceh Tengah
+> Cuaca kebun kopi, kualitas udara, dan peringatan dini bencana untuk Aceh Tengah — dua arah: **Tanah** (terang) dan **Langit** (gelap). PWA Android, Bahasa Indonesia.
 
 ## Latar Belakang
 Dataran Tinggi Gayo (Kabupaten Aceh Tengah) merupakan produsen kopi Arabika organik terbesar di Indonesia. Variabilitas iklim mikro dan topografi pegunungan terjal membutuhkan sistem informasi cuaca beresolusi spasial tinggi untuk:

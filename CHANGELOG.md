@@ -1,5 +1,42 @@
 # Changelog
 
+## [2.2.0] — 2026-10-17 — Rilis **Niu** (Round L, P7.1–P7.9) ✅
+
+Wajah baru penuh: identitas **Niu**, dua arah **Tanah/Langit**, bahasa manusia, PWA terpasang, tanpa Bahasa Gayo.
+
+### P7.1 — Token dua tangga & font baru ✅
+- Tangga **TANAH** (terang): kertas `#F1E7D8`, kartu `#FBF6EC`, aksen `#2F4A38`; **LANGIT** (gelap): malam `#101C28`, kartu `#16273B`, aksen `#FFD2A1`. Kontras teks terukur 4,7–14,8:1.
+- Dua keluarga huruf self-host: **Bricolage Grotesque** (76,9 kB) untuk terang, **Instrument Sans** (30,1 kB) untuk gelap, `size-adjust` 101,7 % / 98,3 %; JetBrains Mono tetap untuk angka. Total 4 berkas font, preload dua font utama.
+- Radius dua tangga (26/14 px vs 20/12 px) + fallback metrik; `check:contrast --strict` **78/78**.
+
+### P7.2 — Bahasa Gayo dihapus ✅
+- `messages.js` tinggal satu bahasa (Indonesia), pemilih bahasa, 88 kunci, dan seluruh uji/dokumen terkait dihapus; `check:i18n` memastikan tidak ada sisa placeholder/kunci.
+
+### P7.3 — Komponen inti ✅
+- `LevelBadge`+`LevelGlyph` (bentuk berbeda per tingkat, bukan warna saja), `StatusHeadline`, `AttentionCard`, `DetailPanel` (tab Ringkas·Angka·Saran dengan pola ARIA tablist), dipakai ulang oleh `HazardPanel` dan papan desktop. **45 uji kontrak**.
+
+### P7.4 — Beranda mobile Ringkas ✅
+- Beranda baru: kepala status suhu/keadaan, empat metrik, "Perlu perhatian" (maks 3 kartu + Detail), bilah 12 jam; target 44 px, tanpa gulir mendatar di 320 px; axe **0** di 320/390/430 dua arah.
+
+### P7.5 — Papan kerja desktop v6 ✅
+- Rel 264 px (terlipat 76 px), kanvas lima zona, inspector 380 px (menetap ≥1500, laci 1200–1499, dialog <1200), palet ⌘K 31 aksi, pintasan `D`/`F`/`[`/`1–5`. axe **0** di 1024–1920 dua arah; tanpa luapan; **26 uji**.
+
+### P7.6 — PWA terpasang ✅
+- Manifest `id=/niu/`, nama Niu, standalone portrait, warna `#F1E7D8`, ikon 192/512 + maskable, tiga pintasan (`/`, `/?zona=risiko`, `/?palet=1`), `offline.html` dua arah.
+- Tawaran pasang Android lewat `beforeinstallprompt`, panduan "Tambah ke Layar Utama" untuk iOS Safari, tunda 7 hari, semua tombol ≥ 44 px. **23 uji**.
+
+### P7.7 — Bahasa manusia ✅
+- Seluruh string ditulis ulang: judul kartu menjadi pertanyaan ("Aman bernapas di luar?", "Ada api di dekat kebun?", "Perlu tambah air?"), tanpa akronim di lapisan pertama; angka teknis pindah ke balik **"Angka & istilah teknis"** dan panel *Tentang data & batasan*.
+- Jam 24 memakai titik (00.00), desimal koma (19,1 °C), umur data berbunyi "baru saja"/"7 menit lalu"; emoji dihapus dari antarmuka. **9 uji bahasa**.
+
+### P7.8 — Ikonografi ✅
+- 11 ikon bahaya + 6 ikon cuaca, garis 24×24 `currentColor` (tanpa warna tetap, selalu dekoratif), dipakai di kartu perhatian dan daftar bahaya; favicon dan apple-touch-icon; judul dokumen & `theme-color` Niu. **6 uji**.
+
+### P7.9 — Kinerja & pembersihan ✅
+- Bundel **143,9 kB gzip** (batas 155) · terbesar 75,5 kB. Cakupan **96,22 / 84,91 / 96,42 %**. Total **507 uji**.
+- axe **0** pada 32 kombinasi tab × lebar (320–1600) × dua arah dengan data contoh; tanpa luapan mendatar.
+- Dua komponen lama tanpa pemakaian (`InstrumentPanel`, `DistrictSelector`) **sengaja tidak dihapus** — menunggu keputusan pemilik; tidak lagi dirujuk kode aktif.
+
 ## [Belum dirilis] — Fase design/frontend/UX (P1–P6 ✅ selesai)
 
 ### P1 — Token semantik & kontras (2026-10-16) ✅
