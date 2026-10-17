@@ -21,6 +21,7 @@ const PAGE = read('src/pages/RingkasMobile.jsx')
 const PAGE_CODE = stripComments(PAGE)
 const STRIP = stripComments(read('src/components/niu/HourStrip.jsx'))
 const ATTN = stripComments(read('src/components/niu/HazardAttention.jsx'))
+const DETAIL = stripComments(read('src/components/niu/HazardDetail.jsx'))
 const APP = stripComments(read('src/App.jsx'))
 
 test('P7.4: RingkasMobile ada dan memakai ketiga komponen baru', () => {
@@ -76,8 +77,9 @@ test('P7.4: kartu lama tidak dihapus dari tab Kini', () => {
   }
 })
 
-test('P7.4: InstrumentPanel tetap dipakai di desktop', () => {
-  assert.match(APP, /<InstrumentPanel/)
+test('P7.4: desktop juga memakai RingkasMobile (satu sumber kepala status)', () => {
+  assert.ok(APP.split('<RingkasMobile').length > 2, 'RingkasMobile tidak dipakai di desktop')
+  assert.ok(fs.existsSync(path.join(ROOT, 'src/components/InstrumentPanel.jsx')))
 })
 
 test('P7.4: HourStrip 12 jam memakai grid, bukan gulir mendatar', () => {
@@ -110,26 +112,28 @@ test('P7.4: hanya satu rincian terbuka pada satu waktu (akordeon)', () => {
 test('P7.4: rincian memakai DetailPanel bare dengan tiga tab', () => {
   assert.match(ATTN, /<DetailPanel/)
   assert.match(ATTN, /bare/)
-  assert.match(ATTN, /label: 'Ringkas'/)
-  assert.match(ATTN, /label: 'Angka'/)
-  assert.match(ATTN, /label: 'Saran'/)
+  assert.match(ATTN, /HAZARD_TABS/)
+  assert.match(ATTN, /panels=\{hazardPanels\(r\)\}/)
+  assert.match(DETAIL, /label: 'Ringkas'/)
+  assert.match(DETAIL, /label: 'Angka'/)
+  assert.match(DETAIL, /label: 'Saran'/)
 })
 
 test('P7.4: tiap tab berisi hal berbeda (bukan isi sama)', () => {
-  assert.match(ATTN, /ringkas: \(/)
-  assert.match(ATTN, /angka: \(/)
-  assert.match(ATTN, /saran: \(/)
-  assert.match(ATTN, /panels=\{\{/)
+  assert.match(DETAIL, /ringkas: \(/)
+  assert.match(DETAIL, /angka: \(/)
+  assert.match(DETAIL, /saran: \(/)
+  assert.match(DETAIL, /return \{/)
 })
 
 test('P7.4: angka memakai definisi istilah (dl/dt/dd), bukan div tanpa makna', () => {
-  assert.match(ATTN, /<dl/)
-  assert.match(ATTN, /<dt/)
-  assert.match(ATTN, /<dd/)
+  assert.match(DETAIL, /<dl/)
+  assert.match(DETAIL, /<dt/)
+  assert.match(DETAIL, /<dd/)
 })
 
 test('P7.4: sumber data disebut di tab Angka', () => {
-  assert.match(ATTN, /Sumber: \{r\.sources/)
+  assert.match(DETAIL, /Sumber: \{r\.sources/)
 })
 
 test('P7.4: keadaan tanpa bahaya aktif punya kalimat menenangkan', () => {

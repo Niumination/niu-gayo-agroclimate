@@ -5,7 +5,7 @@ import { whatsappText, smsText, waShareUrl, smsShareUrl } from '../domain/share.
  * FR-X-7 — bagikan ringkasan bahaya sentra: Web Share API bila ada, lalu WhatsApp (wa.me) / SMS / salin.
  * Teks disusun oleh src/domain/share.js (murni, teruji).
  */
-export default function ShareButton({ hazards, location, compact = true, tr = (k) => k }) {
+export default function ShareButton({ hazards, location, compact = true, buttonClassName, tr = (k) => k }) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   if (!hazards?.results?.length) return null
@@ -35,7 +35,7 @@ export default function ShareButton({ hazards, location, compact = true, tr = (k
   const link = 'min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist transition duration-100 ease-out active:scale-[.97]'
   return (
     <span className="relative inline-flex items-center gap-2">
-      <button type="button" onClick={share} className={link} aria-expanded={open}>
+      <button type="button" onClick={share} className={`min-h-11 ${buttonClassName || link}`} aria-expanded={open}>
         {tr('share')}
       </button>
       {open && (

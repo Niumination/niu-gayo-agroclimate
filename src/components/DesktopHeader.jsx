@@ -24,7 +24,6 @@ export default function DesktopHeader({
       <div className="max-w-shell mx-auto px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-baseline gap-3 min-w-0">
           <h1 className="font-semibold tracking-tight text-ink dark:text-mist">Niu Gayo Agro-Climate</h1>
-          <span className="font-data text-caption text-ink-muted dark:text-mist-subtle tabular-nums">ecmwf_ifs025</span>
           {age && (
             <span className={`inline-flex items-center gap-1.5 text-caption font-medium px-2 py-0.5 rounded-full border ${ageTone}`}>
               <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${age.stale ? 'bg-husk' : 'bg-leaf'}`} />

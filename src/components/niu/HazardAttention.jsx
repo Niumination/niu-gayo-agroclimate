@@ -1,51 +1,19 @@
 import { useState } from 'react'
 import AttentionCard from './AttentionCard.jsx'
 import DetailPanel from './DetailPanel.jsx'
+import { hazardPanels, HAZARD_TABS } from './HazardDetail.jsx'
 import { LEVEL_ORDER } from '../../domain/hazards/levels.js'
 
 /**
- * P7.4 — daftar "Perlu perhatian" untuk beranda mobile.
+ * P7.4/P7.5 — daftar "Perlu perhatian".
  *
- * Mengambil bahaya aktif (waspada ke atas) yang sudah diurutkan registry,
- * lalu menampilkan maksimal `limit` kartu. Satu kartu terbuka pada satu waktu
- * (akordeon) agar halaman tidak melompat saat beberapa rincian dibuka.
+ * Mobile: maksimal `limit` kartu, akordeon satu terbuka.
+ * Desktop: dipakai dengan `limit={0}`? Tidak — desktop memakai inspector;
+ * daftar ini tetap muncul di zona Ringkas sebagai pintasan tiga teratas.
  *
- * Rincian memakai `DetailPanel` mode `bare`: tab Ringkas · Angka · Saran,
- * tanpa judul ganda karena judul sudah ada di kepala kartu.
+ * Rincian memakai `DetailPanel` mode `bare` (judul sudah ada di kepala kartu)
+ * dan isi dari `hazardPanels()` supaya identik dengan inspector desktop.
  */
-
-const ADVICE_LABEL = [
-  ['umum', 'Umum'],
-  ['rentan', 'Kelompok rentan'],
-  ['kebun', 'Kebun & panen'],
-  ['sekolah', 'Sekolah'],
-]
-
-const txt = (a) => (typeof a === 'string' ? a : a?.id ?? '')
-
-function Advice({ advice }) {
-  const groups = ADVICE_LABEL.filter(([k]) => Array.isArray(advice?.[k]) && advice[k].length > 0)
-  if (!groups.length) return null
-  return (
-    <div className="space-y-2">
-      {groups.map(([k, label]) => (
-        <div key={k}>
-          <p className="text-caption uppercase tracking-wide text-tanah-tinta-redup dark:text-langit-tinta-redup">
-            {label}
-          </p>
-          <ul className="mt-0.5 list-disc space-y-0.5 pl-4 text-body-sm leading-relaxed text-tanah-tinta-isi dark:text-langit-tinta-isi">
-            {advice[k].slice(0, 4).map((a, i) => (
-              <li key={i} className="break-words">
-                {txt(a)}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 export default function HazardAttention({
   hazards,
   limit = 3,
@@ -54,6 +22,7 @@ export default function HazardAttention({
   emptyText = 'Tidak ada bahaya aktif. Tetap pantau pembaruan berikutnya.',
   onSeeAll,
   seeAllLabel,
+  onSelect,
 }) {
   const [openId, setOpenId] = useState(null)
   const active = (hazards?.active ?? []).filter((r) => LEVEL_ORDER[r.level] >= LEVEL_ORDER.waspada)
@@ -92,7 +61,6 @@ export default function HazardAttention({
         {shown.map((r) => {
           const name = r.label?.id || r.id
           const open = openId === r.id
-          const detailId = `attn-${r.id}-detail`
           const score = r.score == null ? null : Math.round(r.score)
           return (
             <li key={r.id}>
@@ -104,8 +72,11 @@ export default function HazardAttention({
                 level={r.level}
                 levelLabel={r.levelLabel}
                 expanded={open}
-                detailId={detailId}
-                onToggle={() => setOpenId(open ? null : r.id)}
+                detailId={`attn-${r.id}-detail`}
+                onToggle={() => {
+                  if (onSelect) onSelect(r.id)
+                  setOpenId(open ? null : r.id)
+                }}
                 actionLabel="Detail"
                 closeLabel="Tutup rincian"
               >
@@ -115,74 +86,8 @@ export default function HazardAttention({
                   bare
                   level={r.level}
                   levelLabel={r.levelLabel}
-                  tabs={[
-                    { id: 'ringkas', label: 'Ringkas' },
-                    { id: 'angka', label: 'Angka' },
-                    { id: 'saran', label: 'Saran' },
-                  ]}
-                  panels={{
-                    ringkas: (
-                      <>
-                        <p className="text-body-sm leading-relaxed break-words text-tanah-tinta-isi dark:text-langit-tinta-isi">
-                          {r.detail || r.headline}
-                        </p>
-                        {r.advice?.umum?.length > 0 && (
-                          <div className="mt-3">
-                            <Advice advice={{ umum: r.advice.umum }} />
-                          </div>
-                        )}
-                        <p className="mt-3 text-caption leading-relaxed break-words text-tanah-tinta-halus dark:text-langit-tinta-halus">
-                          Pilih tab Angka untuk nilai model, atau Saran untuk tindakan per kelompok.
-                        </p>
-                      </>
-                    ),
-                    angka: (
-                      <>
-                        {r.metrics?.length > 0 ? (
-                          <dl className="divide-y divide-tanah-garis dark:divide-langit-garis">
-                            {r.metrics.slice(0, 6).map((m) => (
-                              <div key={m.key} className="flex flex-wrap items-baseline justify-between gap-x-3 py-1.5">
-                                <dt className="min-w-0 text-body-sm break-words text-tanah-tinta-redup dark:text-langit-tinta-redup">
-                                  {m.label || m.key}
-                                </dt>
-                                <dd className="font-data text-body-sm font-semibold tabular-nums text-tanah-tinta dark:text-langit-tinta">
-                                  {m.value == null ? '—' : String(m.value)}
-                                  {m.unit ? ` ${m.unit}` : ''}
-                                </dd>
-                              </div>
-                            ))}
-                            {score != null && (
-                              <div className="flex flex-wrap items-baseline justify-between gap-x-3 py-1.5">
-                                <dt className="text-body-sm text-tanah-tinta-redup dark:text-langit-tinta-redup">Skor model</dt>
-                                <dd className="font-data text-body-sm font-semibold tabular-nums text-tanah-tinta dark:text-langit-tinta">
-                                  {score}/100
-                                </dd>
-                              </div>
-                            )}
-                          </dl>
-                        ) : (
-                          <p className="text-body-sm text-tanah-tinta-isi dark:text-langit-tinta-isi">
-                            Belum ada angka model untuk bahaya ini.
-                          </p>
-                        )}
-                        {r.sources?.length > 0 && (
-                          <p className="mt-3 text-caption leading-relaxed break-words text-tanah-tinta-halus dark:text-langit-tinta-halus">
-                            Sumber: {r.sources.map((s) => s.name).join(' · ')}
-                          </p>
-                        )}
-                      </>
-                    ),
-                    saran: (
-                      <>
-                        <Advice advice={r.advice} />
-                        {!r.advice?.umum?.length && !r.advice?.kebun?.length && !r.advice?.rentan?.length && !r.advice?.sekolah?.length && (
-                          <p className="text-body-sm text-tanah-tinta-isi dark:text-langit-tinta-isi">
-                            Belum ada saran khusus; ikuti panduan umum di tab Ringkas.
-                          </p>
-                        )}
-                      </>
-                    ),
-                  }}
+                  tabs={HAZARD_TABS}
+                  panels={hazardPanels(r)}
                 />
               </AttentionCard>
             </li>

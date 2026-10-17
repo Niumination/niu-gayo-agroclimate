@@ -327,3 +327,147 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   P7.5 — papan kerja desktop (rel + kanvas + inspector)
+   Nilai mengikuti prototipe v6 yang disetujui: rel 264 px (lipat 76),
+   inspector 380 px menetap ≥ 1500 px, laci di bawahnya.
+   Tidak memakai warna heks langsung — semua lewat token dua tangga.
+--------------------------------------------------------------------------- */
+@keyframes nga-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.desk-canvas {
+  animation: nga-fade 200ms var(--ease-enter) both;
+}
+.desk {
+  --desk-rail: 76px;
+}
+.desk[data-rail='buka'] {
+  --desk-rail: 264px;
+}
+.desk {
+  grid-template-columns: var(--desk-rail) minmax(0, 1fr);
+}
+
+.desk[data-focus='on'] .desk-rail {
+  display: none;
+}
+.desk[data-focus='on'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.desk-zone {
+  scroll-margin-top: 132px;
+}
+.desk-zone-title {
+  margin: 0 0 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-tanah-tinta-halus);
+}
+html.dark .desk-zone-title {
+  color: var(--color-langit-tinta-halus);
+}
+.desk-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+.desk[data-dens='padat'] .desk-flow {
+  gap: 20px;
+}
+.desk[data-dens='padat'] .desk-zone-title {
+  margin-bottom: 6px;
+}
+
+.desk-insp {
+  min-width: 0;
+}
+.desk-insp-inner {
+  position: sticky;
+  top: 68px;
+  max-height: calc(100vh - 84px);
+  overflow: auto;
+  padding-bottom: 24px;
+}
+
+@media (min-width: 1500px) {
+  .desk[data-insp='buka'] {
+    grid-template-columns: var(--desk-rail) minmax(0, 1fr) 380px;
+    gap: 24px;
+  }
+  .desk[data-insp='buka'] .desk-insp {
+    display: block;
+  }
+}
+
+@media (max-width: 1499px) {
+  .desk[data-insp='buka'] .desk-insp {
+    position: fixed;
+    top: 112px;
+    right: 0;
+    bottom: 0;
+    z-index: 45;
+    width: min(400px, 92vw);
+    overflow: auto;
+    padding: 14px;
+    background: var(--color-tanah-permukaan);
+    border-left: 1px solid var(--color-tanah-garis);
+    box-shadow: -18px 0 40px rgb(28 22 14 / 0.16);
+  }
+  html.dark .desk[data-insp='buka'] .desk-insp {
+    background: var(--color-langit-malam);
+    border-color: var(--color-langit-garis);
+    box-shadow: -18px 0 40px rgb(0 0 0 / 0.45);
+  }
+  .desk-insp-inner {
+    position: static;
+    max-height: none;
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 1199px) {
+  .desk[data-insp='buka'] .desk-insp {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    bottom: auto;
+    max-height: calc(100vh - 24px);
+    width: auto;
+    padding: 16px;
+    border: 1px solid var(--color-tanah-garis-kuat);
+    border-radius: var(--radius-tanah-kartu);
+    box-shadow: 0 30px 80px rgb(20 16 10 / 0.35);
+  }
+  html.dark .desk[data-insp='buka'] .desk-insp {
+    border-color: var(--color-langit-garis-kuat);
+    border-radius: var(--radius-langit-kartu);
+  }
+}
+
+.desk-insp--big {
+  position: fixed !important;
+  inset: 16px !important;
+  z-index: 70;
+  width: auto !important;
+  max-height: none !important;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--color-tanah-garis-kuat);
+  border-radius: var(--radius-tanah-kartu);
+  background: var(--color-tanah-kartu);
+  box-shadow: 0 40px 100px rgb(20 16 10 / 0.4);
+}
+html.dark .desk-insp--big {
+  background: var(--color-langit-kartu);
+  border-color: var(--color-langit-garis-kuat);
+}
+.desk-insp--big .desk-insp-inner {
+  position: static;
+  max-height: none;
+}

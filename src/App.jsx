@@ -4,8 +4,8 @@ import DesktopHeader from './components/DesktopHeader'
 import BottomNav from './components/BottomNav'
 import MobileTabShell from './components/MobileTabShell'
 import LocationRail from './components/LocationRail'
-import InstrumentPanel from './components/InstrumentPanel'
 import RingkasMobile from './pages/RingkasMobile.jsx'
+import DesktopBoard from './pages/DesktopBoard.jsx'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
 import DisasterWarning from './components/DisasterWarning'
 import AirQualityCard from './components/AirQualityCard'
@@ -103,6 +103,7 @@ export default function App() {
 
   // Tab mobile (state, bukan anchor)
   const [tab, setTab] = useState('now')
+  const [selHaz, setSelHaz] = useState(null)
 
   // Badge umur data
   const age = useMemo(
@@ -242,68 +243,100 @@ export default function App() {
   )
 
   /* ---------- Layout desktop ---------- */
-  const desktopLayout = data && (
-    <div className="max-w-shell mx-auto px-8 py-6 anim-enter">
-      {/* Grid editorial asimetris 12 kolom */}
-      <div className="grid grid-cols-12 gap-8">
-        {/* Rail kiri: indeks 15 sentra */}
-        <aside className="col-span-3 min-w-0">
-          <LocationRail selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} tr={tr} />
-        </aside>
+  /* ---------- Desktop P7.5 — lima zona di dalam papan kerja ---------- */
+  const goZone = (id) => {
+    document.getElementById(`zona-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
-        {/* Kolom tengah: instrumen besar + panduan kopi + kekeringan/air kebun */}
-        <div className="col-span-6 min-w-0 space-y-6">
-          <InstrumentPanel current={data.current} daily={data.daily} location={selectedLocation} tr={tr} />
-          <CoffeeAdvisory coffee={data.coffee} tr={tr} />
-          {/* H-KERING (v2 Fase 1, Sprint 2) — HTH kelas BMKG + neraca air 30 hari */}
-          <DroughtCard drought={data.drought} tr={tr} />
-          {/* Fase 2–3 — kartu fokus (tampil hanya bila ada data) */}
-          <StormCard hazards={data.hazards} />
-          <FloodCard hazards={data.hazards} flood={data.flood} />
-          <TemperatureCard hazards={data.hazards} />
-          <QuakeCard hazards={data.hazards} />
-          <VolcanoCard hazards={data.hazards} volcano={data.volcano} />
-          <ExternalReportsCard externalReports={data.externalReports} />
-        </div>
-
-        {/* Kolom kanan: peringatan + keyakinan ensemble */}
-        <div className="col-span-3 min-w-0 space-y-4">
-          {/* v2 Fase 0 (ADR-12, FR-X-3) — indeks bahaya majemuk dari registry */}
-          <HazardPanel hazards={data.hazards} location={selectedLocation} tr={tr} onAbout={() => setAboutOpen(true)} />
-          {/* H-ASAP (v2 Fase 1) — kabut asap & kualitas udara */}
-          <AirQualityCard airQuality={data.airQuality} tr={tr} />
-          <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
-          {/* H-API (v2 Fase 1, Sprint 2) — bahaya kebakaran & hotspot */}
-          <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
-          {/* F7 — kalender musiman (rail bawah desktop) + 1.9c konteks iklim */}
-          <SeasonalBanner seasonal={data.disaster?.seasonal} tr={tr} />
-          <ClimateBanner drought={data.drought} tr={tr} />
-          {/* F8 — tombol lapor kejadian */}
-          <div className="flex justify-center">
-            <ReportButton location={selectedLocation} />
-          </div>
-        </div>
-      </div>
-
-      {/* Baris bawah lebar penuh, dipisah hairline */}
-      <div className="mt-8 pt-6 border-t border-ink/10 dark:border-mist/10 grid grid-cols-12 gap-8">
-        <div className="col-span-7 min-w-0">{rainPanel}</div>
-        <div className="col-span-5 min-w-0">
-          <HourlyForecast hourly={data.hourly} tr={tr} variant="desktop" />
-        </div>
-      </div>
-
-      {/* 1.6b peta skematik + 1.9d riwayat multi-bahaya + FR-X-4 kontak darurat */}
-      <div className="mt-8 pt-6 border-t border-ink/10 dark:border-mist/10 grid grid-cols-12 gap-8">
-        <div className="col-span-7 min-w-0">
-          <SchematicMap hazardsAll={data.hazardsAll} selectedLocation={selectedLocation} onSelectLocation={onSelectLocation} hotspots={data.fireDanger?.hotspots?.nearest ?? []} />
-        </div>
-        <div className="col-span-5 min-w-0 space-y-6">
-          <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} tr={tr} />
-          <EmergencyContacts location={selectedLocation} hazard={data.hazards?.active?.[0]?.id ?? '*'} />
-        </div>
-      </div>
+  const dRingkas = data && (
+    <div className="space-y-4">
+      <RingkasMobile
+        current={data.current}
+        daily={data.daily}
+        location={selectedLocation}
+        hazards={data.hazards}
+        hourly={data.hourly}
+        tr={tr}
+        onOpenRisk={() => goZone('risiko')}
+      />
+      <CoffeeAdvisory coffee={data.coffee} tr={tr} />
+      <AirQualityCard airQuality={data.airQuality} tr={tr} />
+      <SeasonalBanner seasonal={data.disaster?.seasonal} tr={tr} />
+      <ClimateBanner drought={data.drought} tr={tr} />
     </div>
+  )
+
+  const dRamalan = data && (
+    <div className="space-y-4">
+      {rainPanel}
+      <HourlyForecast hourly={data.hourly} tr={tr} variant="desktop" />
+      <DroughtCard drought={data.drought} tr={tr} />
+    </div>
+  )
+
+  const dRisiko = data && (
+    <div className="space-y-4">
+      <HazardPanel
+        hazards={data.hazards}
+        location={selectedLocation}
+        tr={tr}
+        onAbout={() => setAboutOpen(true)}
+        onSelect={(id) => setSelHaz(id)}
+        selectedId={selHaz ?? data.hazards?.worst}
+      />
+      <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
+      <StormCard hazards={data.hazards} />
+      <FloodCard hazards={data.hazards} flood={data.flood} />
+      <TemperatureCard hazards={data.hazards} />
+      <QuakeCard hazards={data.hazards} />
+      <VolcanoCard hazards={data.hazards} volcano={data.volcano} />
+      <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
+      <ExternalReportsCard externalReports={data.externalReports} />
+    </div>
+  )
+
+  const dSentra = data && (
+    <div className="space-y-4">
+      <SchematicMap
+        hazardsAll={data.hazardsAll}
+        selectedLocation={selectedLocation}
+        onSelectLocation={onSelectLocation}
+        hotspots={data.fireDanger?.hotspots?.nearest ?? []}
+      />
+      <EmergencyContacts location={selectedLocation} hazard={data.hazards?.active?.[0]?.id ?? '*'} />
+    </div>
+  )
+
+  const dArsip = data && (
+    <div className="space-y-4">
+      <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} tr={tr} />
+      <section className="rounded-tanah-kartu border border-tanah-garis bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu">
+        <h2 className="text-body font-semibold text-tanah-tinta dark:text-langit-tinta">Tentang data &amp; batasan</h2>
+        <p className="mt-1 text-body-sm leading-relaxed text-tanah-tinta-isi dark:text-langit-tinta-isi">
+          Ambang, sumber, dan catatan keterbatasan tiap bahaya dijelaskan di panel ini. Niu adalah
+          informasi pendukung keputusan, bukan peringatan dini resmi.
+        </p>
+        <button
+          type="button"
+          onClick={() => setAboutOpen(true)}
+          className="mt-3 inline-flex min-h-11 items-center rounded-pil border border-tanah-garis-kuat px-4 text-body-sm font-semibold text-tanah-aksen hover:bg-tanah-terbenam dark:border-langit-garis-kuat dark:text-langit-aksen dark:hover:bg-langit-terbenam"
+        >
+          Buka tentang data &amp; batasan
+        </button>
+      </section>
+    </div>
+  )
+
+  const desktopLayout = data && (
+    <DesktopBoard
+      hazards={data.hazards}
+      location={selectedLocation}
+      onSelectLocation={onSelectLocation}
+      tr={tr}
+      selectedHazardId={selHaz}
+      onSelectHazard={setSelHaz}
+      sections={{ ringkas: dRingkas, ramalan: dRamalan, risiko: dRisiko, sentra: dSentra, arsip: dArsip }}
+    />
   )
 
   return (
@@ -389,7 +422,7 @@ export default function App() {
       )}
 
       {isDesktop ? (
-        <main id="main" className="flex-1 w-full anim-enter">{desktopLayout}</main>
+        <main id="main" className="flex-1 w-full min-w-0">{desktopLayout}</main>
       ) : (
         <>
           <main id="main" className="flex-1 w-full">
