@@ -32,7 +32,7 @@ export const HAZE_LABEL = {
 const hourOf = (iso) => Number(String(iso).slice(11, 13))
 const dateOf = (iso) => String(iso).slice(0, 10)
 const maxLevel = (a, b) => (LEVEL_RANK[b] > LEVEL_RANK[a] ? b : a)
-const txt = (node, lang = 'id') => (node ? (lang === 'gayo' && node.gay) || node.id || null : null)
+const txt = (node) => (node ? node.id ?? null : null)
 
 /** Indeks jam `nowIso` dalam deret; bila tidak persis, ambil jam terakhir ≤ now. -1 jika tidak ada. */
 export function indexAt(times, nowIso) {
@@ -158,7 +158,7 @@ export function computeOutlook(hourly, nowIso) {
 }
 
 /** Anjuran 4 kelompok dari src/data/hazards/healthAdvice.json untuk kunci kategori ISPU. */
-export function adviceFor(categoryKey, lang = 'id') {
+export function adviceFor(categoryKey, ) {
   const cats = healthAdvice.categories
   const cat = cats.find((c) => c.key === categoryKey) ?? cats[0]
   const rank = cats.findIndex((c) => c.key === cat.key)
@@ -166,15 +166,15 @@ export function adviceFor(categoryKey, lang = 'id') {
   const showCross = rank >= minCross
   return {
     key: cat.key,
-    label: txt(cat.label, lang),
-    policy: txt(cat.policy, lang),
-    whoNote: txt(cat.whoNote, lang),
-    groups: Object.fromEntries(Object.entries(cat.advice).map(([g, node]) => [g, txt(node, lang)])),
+    label: txt(cat.label),
+    policy: txt(cat.policy),
+    whoNote: txt(cat.whoNote),
+    groups: Object.fromEntries(Object.entries(cat.advice).map(([g, node]) => [g, txt(node)])),
     groupLabels: healthAdvice._meta.groups,
-    crossCutting: showCross ? healthAdvice.crossCutting.items.map((n) => txt(n, lang)) : [],
+    crossCutting: showCross ? healthAdvice.crossCutting.items.map((n) => txt(n)) : [],
     cleanRoom: showCross,
-    cleanRoomTitle: txt(healthAdvice.cleanRoomChecklist.title, lang),
-    cleanRoomItems: showCross ? healthAdvice.cleanRoomChecklist.items.map((n) => txt(n, lang)) : [],
+    cleanRoomTitle: txt(healthAdvice.cleanRoomChecklist.title),
+    cleanRoomItems: showCross ? healthAdvice.cleanRoomChecklist.items.map((n) => txt(n)) : [],
   }
 }
 
@@ -200,7 +200,7 @@ function dniDayMax(visibility, nowIso) {
 }
 
 /** Penilaian lengkap. Mengembalikan null bila tidak ada data sama sekali. */
-export function assessAirQuality({ current, hourly, visibility, nowIso, lang = 'id' } = {}) {
+export function assessAirQuality({ current, hourly, visibility, nowIso,  } = {}) {
   if (!current && !hourly?.time?.length) return null
   const now = nowIso ?? current?.time ?? hourly.time[hourly.time.length - 1]
   const ispu24 = compute24hIspu(hourly, now)
@@ -218,7 +218,7 @@ export function assessAirQuality({ current, hourly, visibility, nowIso, lang = '
   const haze = assessHaze({ visibility, pm25: pm25ForHaze, aod, nowIso: now })
   const level = maxLevel(headline.category.level, hazeLevel(haze))
   const outlook = computeOutlook(hourly, now)
-  const advice = adviceFor(headline.category.key, lang)
+  const advice = adviceFor(headline.category.key)
   const coffee = coffeeHazeRule({ ispuIndex: headline.index, aod, dniDayMax: dniDayMax(visibility, now) })
   const pm25Daily = headline.means?.pm25 ?? pm25Now
 
@@ -297,7 +297,7 @@ export function adviceGroups(adv) {
 export default {
   id: 'asap',
   group: 'atmosfer',
-  label: { id: 'Kabut Asap & Udara', gayo: 'Asap urum Udara [?]' },
+  label: { id: 'Kabut Asap & Udara' },
   requires: ['airQuality'],
   evaluate(ctx) {
     const p = ctx.airQuality

@@ -21,28 +21,23 @@
       "min": 0,
       "max": 50,
       "label": {
-        "id": "Baik",
-        "gay": null
+        "id": "Baik"
       },
       "color": "#2E7D32",
       "level": "rendah",
       "policy": null,
       "advice": {
         "umum": {
-          "id": "Aktivitas normal.",
-          "gay": null
+          "id": "Aktivitas normal."
         },
         "rentan": {
-          "id": "Aktivitas normal.",
-          "gay": null
+          "id": "Aktivitas normal."
         },
         "kebun": {
-          "id": "Aktivitas normal.",
-          "gay": null
+          "id": "Aktivitas normal."
         },
         "sekolah": {
-          "id": "Aktivitas normal.",
-          "gay": null
+          "id": "Aktivitas normal."
         }
       }
     },
@@ -51,32 +46,26 @@
       "min": 51,
       "max": 100,
       "label": {
-        "id": "Sedang",
-        "gay": null
+        "id": "Sedang"
       },
       "color": "#1565C0",
       "level": "rendah",
       "policy": null,
       "whoNote": {
-        "id": "Catatan WHO: PM2,5 sudah di atas pedoman 24 jam (15 µg/m³).",
-        "gay": null
+        "id": "Catatan WHO: PM2,5 sudah di atas pedoman 24 jam (15 µg/m³)."
       },
       "advice": {
         "umum": {
-          "id": "Normal; yang peka asap kurangi aktivitas berat yang lama.",
-          "gay": null
+          "id": "Normal; yang peka asap kurangi aktivitas berat yang lama."
         },
         "rentan": {
-          "id": "Kurangi aktivitas berat yang lama di luar; siapkan masker.",
-          "gay": null
+          "id": "Kurangi aktivitas berat yang lama di luar; siapkan masker."
         },
         "kebun": {
-          "id": "Normal; istirahat cukup, minum cukup.",
-          "gay": null
+          "id": "Normal; istirahat cukup, minum cukup."
         },
         "sekolah": {
-          "id": "Normal; pantau ISPU setiap pagi.",
-          "gay": null
+          "id": "Normal; pantau ISPU setiap pagi."
         }
       }
     },
@@ -85,31 +74,25 @@
       "min": 101,
       "max": 200,
       "label": {
-        "id": "Tidak Sehat",
-        "gay": null
+        "id": "Tidak Sehat"
       },
       "color": "#F9A825",
       "level": "waspada",
       "policy": {
-        "id": "Tiadakan olahraga, upacara, dan kegiatan luar ruang sekolah; tutup jemuran kopi terbuka.",
-        "gay": null
+        "id": "Tiadakan olahraga, upacara, dan kegiatan luar ruang sekolah; tutup jemuran kopi terbuka."
       },
       "advice": {
         "umum": {
-          "id": "Kurangi aktivitas luar ruang yang lama; pakai masker (N95/KN95 dianjurkan) saat keluar; tutup pintu dan jendela.",
-          "gay": null
+          "id": "Kurangi aktivitas luar ruang yang lama; pakai masker (N95/KN95 dianjurkan) saat keluar; tutup pintu dan jendela."
         },
         "rentan": {
-          "id": "Hindari aktivitas luar ruang; pakai masker N95; perhatikan gejala batuk/sesak, segera ke Puskesmas bila memburuk.",
-          "gay": null
+          "id": "Hindari aktivitas luar ruang; pakai masker N95; perhatikan gejala batuk/sesak, segera ke Puskesmas bila memburuk."
         },
         "kebun": {
-          "id": "Batasi kerja berat maksimal 4 jam, pakai masker N95, jeda di ruang tertutup; tutup jemuran atau pakai pengering tertutup.",
-          "gay": null
+          "id": "Batasi kerja berat maksimal 4 jam, pakai masker N95, jeda di ruang tertutup; tutup jemuran atau pakai pengering tertutup."
         },
         "sekolah": {
-          "id": "Tiadakan olahraga, upacara, dan kegiatan luar ruang; siapkan ruang kelas tertutup.",
-          "gay": null
+          "id": "Tiadakan olahraga, upacara, dan kegiatan luar ruang; siapkan ruang kelas tertutup."
         }
       }
     },
@@ -118,31 +101,25 @@
       "min": 201,
       "max": 300,
       "label": {
-        "id": "Sangat Tidak Sehat",
-        "gay": null
+        "id": "Sangat Tidak Sehat"
       },
       "color": "#C62828",
       "level": "bahaya",
       "policy": {
-        "id": "Pertimbangkan PJJ/libur sekolah (keputusan pemda; preseden Kota Jambi & Maluku Tengah 2026); buka ruang bersih kampung; tunda kerja kebun yang tidak mendesak.",
-        "gay": null
+        "id": "Pertimbangkan PJJ/libur sekolah (keputusan pemda; preseden Kota Jambi & Maluku Tengah 2026); buka ruang bersih kampung; tunda kerja kebun yang tidak mendesak."
       },
       "advice": {
         "umum": {
-          "id": "Hindari aktivitas luar ruang; gunakan AC mode resirkulasi/pembersih udara bila ada; cek ISPU sebelum keluar.",
-          "gay": null
+          "id": "Hindari aktivitas luar ruang; gunakan AC mode resirkulasi/pembersih udara bila ada; cek ISPU sebelum keluar."
         },
         "rentan": {
-          "id": "Tetap di dalam ruangan/ruang bersih; segera ke fasilitas kesehatan bila sesak.",
-          "gay": null
+          "id": "Tetap di dalam ruangan/ruang bersih; segera ke fasilitas kesehatan bila sesak."
         },
         "kebun": {
-          "id": "Tunda kerja kebun yang tidak mendesak dan penjemuran terbuka; bila terpaksa, pakai N95 dan kurang dari 2 jam.",
-          "gay": null
+          "id": "Tunda kerja kebun yang tidak mendesak dan penjemuran terbuka; bila terpaksa, pakai N95 dan kurang dari 2 jam."
         },
         "sekolah": {
-          "id": "Pertimbangkan pembelajaran jarak jauh/libur; buka ruang bersih kampung.",
-          "gay": null
+          "id": "Pertimbangkan pembelajaran jarak jauh/libur; buka ruang bersih kampung."
         }
       }
     },
@@ -151,31 +128,25 @@
       "min": 301,
       "max": null,
       "label": {
-        "id": "Berbahaya",
-        "gay": null
+        "id": "Berbahaya"
       },
       "color": "#212121",
       "level": "ekstrem",
       "policy": {
-        "id": "Tetap di dalam ruangan; libur/PJJ; posko kesehatan dan distribusi masker; hentikan kerja luar ruang.",
-        "gay": null
+        "id": "Tetap di dalam ruangan; libur/PJJ; posko kesehatan dan distribusi masker; hentikan kerja luar ruang."
       },
       "advice": {
         "umum": {
-          "id": "Tetap di dalam ruangan/ruang bersih; jangan membakar apa pun di dalam rumah.",
-          "gay": null
+          "id": "Tetap di dalam ruangan/ruang bersih; jangan membakar apa pun di dalam rumah."
         },
         "rentan": {
-          "id": "Prioritas pindah ke ruang berudara bersih atau fasilitas kesehatan bila bergejala.",
-          "gay": null
+          "id": "Prioritas pindah ke ruang berudara bersih atau fasilitas kesehatan bila bergejala."
         },
         "kebun": {
-          "id": "Hentikan kerja luar ruang.",
-          "gay": null
+          "id": "Hentikan kerja luar ruang."
         },
         "sekolah": {
-          "id": "Libur/PJJ; posko kesehatan; distribusi masker.",
-          "gay": null
+          "id": "Libur/PJJ; posko kesehatan; distribusi masker."
         }
       }
     }
@@ -184,60 +155,48 @@
     "minCategory": "tidak_sehat",
     "items": [
       {
-        "id": "Pantau ISPU pagi dan sore.",
-        "gay": null
+        "id": "Pantau ISPU pagi dan sore."
       },
       {
-        "id": "Minum air yang cukup.",
-        "gay": null
+        "id": "Minum air yang cukup."
       },
       {
-        "id": "Segera ke Puskesmas/RSUD bila sesak napas, nyeri dada, atau batuk memburuk.",
-        "gay": null
+        "id": "Segera ke Puskesmas/RSUD bila sesak napas, nyeri dada, atau batuk memburuk."
       },
       {
-        "id": "Jangan menambah asap: tidak membakar sampah atau lahan.",
-        "gay": null
+        "id": "Jangan menambah asap: tidak membakar sampah atau lahan."
       }
     ]
   },
   "cleanRoomChecklist": {
     "title": {
-      "id": "Ruang bersih (saat ISPU ≥ 101)",
-      "gay": null
+      "id": "Ruang bersih (saat ISPU ≥ 101)"
     },
     "items": [
       {
-        "id": "Pilih satu ruangan dengan sedikit jendela; tutup celah pintu/jendela dengan kain basah atau lakban.",
-        "gay": null
+        "id": "Pilih satu ruangan dengan sedikit jendela; tutup celah pintu/jendela dengan kain basah atau lakban."
       },
       {
-        "id": "Jangan merokok, membakar obat nyamuk/dupa, atau memasak dengan kayu di dalam ruangan.",
-        "gay": null
+        "id": "Jangan merokok, membakar obat nyamuk/dupa, atau memasak dengan kayu di dalam ruangan."
       },
       {
-        "id": "Gunakan pembersih udara HEPA bila ada; alternatif: kipas + filter HEPA/furnace (DIY) atau AC mode resirkulasi.",
-        "gay": null
+        "id": "Gunakan pembersih udara HEPA bila ada; alternatif: kipas + filter HEPA/furnace (DIY) atau AC mode resirkulasi."
       },
       {
-        "id": "Pel lantai dengan lap basah, hindari menyapu kering.",
-        "gay": null
+        "id": "Pel lantai dengan lap basah, hindari menyapu kering."
       },
       {
-        "id": "Buka ventilasi hanya saat ISPU turun (pagi setelah hujan atau saat angin bersih).",
-        "gay": null
+        "id": "Buka ventilasi hanya saat ISPU turun (pagi setelah hujan atau saat angin bersih)."
       },
       {
-        "id": "Prioritaskan bayi, lansia, ibu hamil, dan penderita asma/PPOK di ruang ini.",
-        "gay": null
+        "id": "Prioritaskan bayi, lansia, ibu hamil, dan penderita asma/PPOK di ruang ini."
       }
     ]
   },
   "coffeeDrying": {
     "rule": "Tunda (asap) bila ISPU >= 101 ATAU (AOD >= 1.0 DAN DNI siang < 300 W/m2); tunda kerja kebun non-mendesak bila ISPU >= 201",
     "reason": {
-      "id": "Radiasi langsung turun sehingga pengeringan lambat; partikel dan bau asap dapat menempel pada gabah terbuka. Bukti dampak asap pada mutu kopi masih terbatas — prinsip kehati-hatian.",
-      "gay": null
+      "id": "Radiasi langsung turun sehingga pengeringan lambat; partikel dan bau asap dapat menempel pada gabah terbuka. Bukti dampak asap pada mutu kopi masih terbatas — prinsip kehati-hatian."
     }
   }
 }

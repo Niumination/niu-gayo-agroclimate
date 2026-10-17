@@ -15,7 +15,7 @@ const ADVICE = {
 export default {
   id: 'angin',
   group: 'hidromet',
-  label: { id: 'Angin Kencang', gayo: 'Kuyu Keras [?]' },
+  label: { id: 'Angin Kencang' },
   requires: ['weather'],
   evaluate(ctx) {
     const w = ctx.weather

@@ -1,6 +1,5 @@
-// Preferensi UI persisten: bahasa, tema, wilayah terpilih (localStorage).
+// Preferensi UI persisten: tema, wilayah terpilih (localStorage).
 const KEYS = {
-  lang: 'nga.lang',
   theme: 'nga.theme', // 'light' | 'dark' | null = ikut sistem
   location: 'nga.location',
   hiddenHazards: 'nga.hiddenHazards', // daftar id bahaya yang disembunyikan pengguna (koma), FR-X-3
@@ -23,12 +22,6 @@ function safeSet(key, value) {
 }
 
 export const prefs = {
-  getLang() {
-    return safeGet(KEYS.lang)
-  },
-  setLang(v) {
-    safeSet(KEYS.lang, v)
-  },
   getTheme() {
     return safeGet(KEYS.theme) // null → ikut prefers-color-scheme
   },

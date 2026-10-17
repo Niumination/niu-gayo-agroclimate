@@ -85,7 +85,7 @@ function mergeAdvice(a, b) {
 export default {
   id: 'suhu',
   group: 'agro',
-  label: { id: 'Suhu Ekstrem Kopi', gayo: 'Suhu Ekstrem Kopi [?]' },
+  label: { id: 'Suhu Ekstrem Kopi' },
   requires: ['weather'],
   evaluate(ctx) {
     const th = ctx.weather?.thermal

@@ -94,6 +94,5 @@ test('P4 · label keadaan tersedia di kedua bahasa', () => {
   const keys = ['emptyHint', 'emptyHistory', 'emptyForecast', 'emptyWarning', 'staleAction', 'onlineAgain', 'offlineCacheNote', 'loadingData', 'dismiss', 'emptyData', 'retry']
   for (const key of keys) {
     assert.ok(messages.id[key], `kunci id hilang: ${key}`)
-    assert.ok(messages.gayo[key], `kunci gayo hilang: ${key}`)
   }
 })

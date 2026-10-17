@@ -1,5 +1,4 @@
 import { RefreshCw } from 'lucide-react'
-import { LANGS } from '../i18n/messages'
 
 /**
  * Header desktop: identitas aplikasi + kontrol (bahasa, tema, refresh)
@@ -9,8 +8,6 @@ export default function DesktopHeader({
   lastUpdated,
   onRefresh,
   loading,
-  lang,
-  onLangChange,
   theme,
   isAuto,
   onToggleTheme,
@@ -41,16 +38,6 @@ export default function DesktopHeader({
               {tr('updated')} {lastUpdated}
             </span>
           )}
-          <select
-            aria-label={tr('language')}
-            value={lang}
-            onChange={(e) => onLangChange(e.target.value)}
-            className="h-11 bg-transparent text-body text-ink-body dark:text-mist-body rounded-lg px-2"
-          >
-            {LANGS.map((l) => (
-              <option key={l.id} value={l.id}>{l.label}</option>
-            ))}
-          </select>
           <button
             type="button"
             onClick={onToggleTheme}

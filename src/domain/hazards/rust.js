@@ -8,7 +8,7 @@ import { normalizeLevel } from './levels.js'
 export default {
   id: 'karat',
   group: 'agro',
-  label: { id: 'Karat Daun Kopi', gayo: 'Karat Ulung Kupi [?]' },
+  label: { id: 'Karat Daun Kopi' },
   requires: ['weather'],
   evaluate(ctx) {
     const w = ctx.weather

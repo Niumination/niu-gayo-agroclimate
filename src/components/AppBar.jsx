@@ -1,16 +1,13 @@
 import { RefreshCw } from 'lucide-react'
-import { LANGS } from '../i18n/messages'
 
 /**
  * Header ringkas mobile: nama sentra + elevasi + badge umur data,
- * tombol tema, bahasa, dan refresh (target sentuh >= 44px).
+ * tombol tema dan refresh (target sentuh >= 44px).
  */
 export default function AppBar({
   selectedLocation,
   onRefresh,
   loading,
-  lang,
-  onLangChange,
   theme,
   isAuto,
   onToggleTheme,
@@ -47,16 +44,6 @@ export default function AppBar({
           Niu Gayo Agro-Climate · ecmwf_ifs025
         </span>
         <div className="flex items-center">
-          <select
-            aria-label={tr('language')}
-            value={lang}
-            onChange={(e) => onLangChange(e.target.value)}
-            className="h-11 max-w-[9.5rem] bg-transparent text-body text-ink-body dark:text-mist-body rounded-lg px-2"
-          >
-            {LANGS.map((l) => (
-              <option key={l.id} value={l.id}>{l.id === 'id' ? 'ID' : 'Gayo'}</option>
-            ))}
-          </select>
           <button
             type="button"
             onClick={onToggleTheme}

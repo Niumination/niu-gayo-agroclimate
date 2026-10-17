@@ -75,7 +75,7 @@ const ADVICE = {
 export default {
   id: 'vulkanik',
   group: 'geologi',
-  label: { id: 'Gunung Api Burni Telong', gayo: 'Bur ni Telong' },
+  label: { id: 'Gunung Api Burni Telong' },
   requires: ['volcano'],
   evaluate(ctx) {
     const doc = ctx.volcano

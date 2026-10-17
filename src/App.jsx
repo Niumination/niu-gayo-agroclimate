@@ -47,10 +47,8 @@ export default function App() {
   const [liveMsg, setLiveMsg] = useState('')
 
   // i18n
-  const [lang, setLang] = useState(() => prefs.getLang() || 'id')
   const [aboutOpen, setAboutOpen] = useState(false) // FR-X-9 modal "Tentang data & batasan"
-  const tr = useMemo(() => (key) => t(lang, key), [lang])
-  useEffect(() => prefs.setLang(lang), [lang])
+  const tr = useMemo(() => (key) => t('id', key), [])
 
   // Tema: light/dark/auto (prefers-color-scheme)
   const [theme, setTheme] = useState(() => effectiveTheme())
@@ -155,8 +153,6 @@ export default function App() {
     lastUpdated: data?.timestamp,
     onRefresh: () => loadData(selectedLocation),
     loading,
-    lang,
-    onLangChange: setLang,
     theme,
     isAuto,
     onToggleTheme: cycleTheme,
@@ -210,7 +206,7 @@ export default function App() {
   const mobileRisk = data && (
     <>
       {/* v2 Fase 0 (ADR-12, FR-X-3) — indeks bahaya majemuk dari registry, urut level tertinggi dulu */}
-      <HazardPanel hazards={data.hazards} location={selectedLocation} lang={lang} tr={tr} onAbout={() => setAboutOpen(true)} />
+      <HazardPanel hazards={data.hazards} location={selectedLocation} tr={tr} onAbout={() => setAboutOpen(true)} />
       <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
       {/* H-API (v2 Fase 1, Sprint 2) — bahaya kebakaran: FWI + hotspot + HTH; H-KERING — kekeringan ringkas */}
       <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
@@ -264,7 +260,7 @@ export default function App() {
         {/* Kolom kanan: peringatan + keyakinan ensemble */}
         <div className="col-span-3 min-w-0 space-y-4">
           {/* v2 Fase 0 (ADR-12, FR-X-3) — indeks bahaya majemuk dari registry */}
-          <HazardPanel hazards={data.hazards} location={selectedLocation} lang={lang} tr={tr} onAbout={() => setAboutOpen(true)} />
+          <HazardPanel hazards={data.hazards} location={selectedLocation} tr={tr} onAbout={() => setAboutOpen(true)} />
           {/* H-ASAP (v2 Fase 1) — kabut asap & kualitas udara */}
           <AirQualityCard airQuality={data.airQuality} tr={tr} />
           <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />

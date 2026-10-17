@@ -2,26 +2,27 @@ import test from 'node:test'
 import assert from 'node:assert'
 import { t, messages, LANGS } from '../src/i18n/messages.js'
 
-test('i18n: kunci utama tersedia di kedua bahasa', () => {
+test('i18n: hanya Bahasa Indonesia (Round L)', () => {
+  assert.deepStrictEqual(Object.keys(messages), ['id'])
+  assert.deepStrictEqual(LANGS.map((l) => l.id), ['id'])
+})
+
+test('i18n: kunci utama tersedia', () => {
   const keys = Object.keys(messages.id)
   assert.ok(keys.length > 20)
-  for (const key of keys) {
-    assert.ok(messages.gayo[key], `kunci ${key} hilang di gayo`)
+  for (const key of keys) assert.equal(typeof messages.id[key], 'string', `kunci ${key} bukan string`)
+})
+
+test('i18n: tak ada sisa istilah Gayo / penanda [?]', () => {
+  const all = JSON.stringify(messages)
+  assert.equal(/\[\?\]/.test(all), false, 'masih ada placeholder [?]')
+  for (const kata of ['Ren', 'Beh', 'Mukim', 'Sinebar']) {
+    assert.equal(all.includes(`"${kata}"`), false, `sisa istilah Gayo: ${kata}`)
   }
 })
 
-test('i18n: istilah kunci Gayo sesuai glosarium', () => {
-  assert.strictEqual(messages.gayo.rain, 'Ren')
-  assert.strictEqual(messages.gayo.high, 'Beh')
-  assert.strictEqual(messages.gayo.safe, 'Aman')
-})
-
 test('i18n: fallback ke id-ID lalu ke kunci', () => {
-  assert.strictEqual(t('gayo', 'rain'), 'Ren')
-  assert.strictEqual(t('gayo', 'kunci_aneh'), 'kunci_aneh')
+  assert.strictEqual(t('id', 'rain'), 'Hujan')
   assert.strictEqual(t('xx', 'airTemp'), 'Suhu Udara')
-})
-
-test('i18n: daftar bahasa berisi id dan gayo', () => {
-  assert.deepStrictEqual(LANGS.map((l) => l.id).sort(), ['gayo', 'id'])
+  assert.strictEqual(t('id', 'kunci_aneh'), 'kunci_aneh')
 })

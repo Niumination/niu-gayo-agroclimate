@@ -1,10 +1,7 @@
-// i18n ringan (tanpa dependensi): id-ID default + Bahasa Gayo.
-// Format: t(lang, key) → string; fallback ke id-ID jika kunci/terjemahan tidak ada.
-// Catatan: terjemahan Gayo ditandai [?] bila perlu diverifikasi penutur asli.
-export const LANGS = [
-  { id: 'id', label: 'Bahasa Indonesia' },
-  { id: 'gayo', label: 'Bahasa Gayo' },
-]
+// i18n ringan (tanpa dependensi): Bahasa Indonesia saja (keputusan Round L).
+// Format: t(lang, key) → string; fallback ke id-ID bila kunci tidak ada.
+// Bahasa daerah dihapus dari produk; hanya Bahasa Indonesia yang disajikan.
+export const LANGS = [{ id: 'id', label: 'Bahasa Indonesia' }]
 
 export const messages = {
   id: {
@@ -99,100 +96,8 @@ export const messages = {
     offlineCacheNote: 'Menampilkan data terakhir yang tersimpan.',
     loadingData: 'Memuat data…',
     dismiss: 'Tutup',
-  },
-  gayo: {
-    appName: 'Niu Gayo Agro-Climate',
-    appTagline: 'Cuaca Kopi Gayo & Penyarining Bece [?]',
-    pickRegion: 'Pilih Mukim / Kebun Kopi [?]',
-    regionChar: 'Ciri Mukim [?]',
-    elevation: 'Ketinggian',
-    mdpl: 'm dpl [?]',
-    refresh: 'Mulai Ulang [?]',
-    refreshing: 'Pemuat...',
-    updated: 'Sinebar [?]',
-    airTemp: 'Suhu',
-    humidity: 'Rebus Sine [?]',
-    humiditySub: 'Rebus udara [?]',
-    rainNow: 'Ren Saat Ini',
-    rainProb: 'Peluang Ren [?]',
-    windSpeed: 'Angin',
-    windSub: 'Angin 10 meter [?]',
-    hourlyTrend: 'Tren Per Jam (12 Jam)',
-    hourlySub: 'Prakira suhu, ren, sine matahari [?]',
-    rainChart: 'Grafik Ren 24 Jam',
-    rainChartSub: 'Ren per jam 24 jam terakhir & 24 jam berikut [?]',
-    rain: 'Ren',
-    sun: 'Sine Matahari [?]',
-    min: 'Min',
-    max: 'Max',
-    skipToContent: 'Lewati ke konten utama [?]',
-    retry: 'Coba lagi [?]',
-    emptyData: 'Data belum tersedia untuk wilayah ini [?]',
-    highestLevel: 'Level paling tinggi [?]',
-    dataAge: 'Umur data [?]',
-    dataAgeFresh: 'Data baru',
-    dataAgeStale: 'Data lame (ko sok daring) [?]',
-    offlineBanner: 'Kité ko daring — niu data terakhir [?]',
-    coffeeAdvisory: 'Nasihat Kopi [?]',
-    disasterWarning: 'Penyarining Bece [?]',
-    rustRisk: 'Baya Karat Daon [?]',
-    drying: 'Penjemuran [?]',
-    landslide: 'Lonsor [?]',
-    dasIndex: 'Indeks Ren DAS [?]',
-    wind: 'Angin',
-    low: 'Rendah [?]',
-    medium: 'Sedang [?]',
-    high: 'Beh',
-    normal: 'Normal',
-    alert: 'Waspada [?]',
-    danger: 'Beh',
-    safe: 'Aman',
-    themeLight: 'Mode Sine [?]',
-    themeDark: 'Mode Kelam [?]',
-    language: 'Bahasa',
-    errorLoad: 'Ko lam data [?]',
-    footer: 'Niumination Ecosystem • Aceh Tengah',
-    disclaimer: 'Penyarining niu prakira — periksa kene kebun [?]',
-    tabNow: 'Kini',
-    tabForecast: 'Ramalan',
-    tabRisk: 'Risiko',
-    tabLocations: 'Sentra',
-    // H-ASAP (v2 Fase 1) — terjemahan Gayo belum ditinjau penutur asli (H-4)
-    airQuality: 'Asap & Udara [?]',
-    airQualitySub: 'ISPU kira-kira model CAMS (~40 km) — bukan ISPU resmi [?]',
-    airQualityUnavailable: 'Data udara gere ara [?]',
-    fireDanger: 'Bahaya Rara & Hotspot [?]',
-    fireDangerSub: 'FWI (FDRS Indonesia) ari ERA5/ECMWF + hotspot NASA FIRMS [?]',
-    fireDangerUnavailable: 'Kode bahaya rara gere ara [?]',
-    drought: 'Kemarau & Wih Empus [?]',
-    droughtSub: 'Lo gere uren (HTH) kelas BMKG ari arsip ERA5-Land + proyeksi ECMWF [?]',
-    droughtUnavailable: 'Data arsip uren gere ara [?]',
-    haze: 'Asap [?]',
-    outlook24h: 'Prospek 24 jam [?]',
-    advice: 'Nasihat [?]',
-    // P2 — label interaksi, bantuan konsisten, & berbagi (belum ditinjau penutur asli, H-4)
-    tabsLabel: 'Navigasi utama [?]',
-    showAll: 'Tampilkan semua [?]',
-    hideNoData: 'Sembunyikan yang tanpa data [?]',
-    showHidden: 'Tampilkan bahaya yang disembunyikan [?]',
-    aboutData: 'Tentang data & batasan [?]',
-    share: 'Bagikan [?]',
-    shareHow: 'Cara membagikan [?]',
-    copy: 'Salin [?]',
-    copied: 'Tersalin [?]',
-    evaluatedAt: 'Evaluasi [?]',
-    unofficialNote: 'informasi pendukung, bukan peringatan resmi [?]',
-    // P4 — keadaan aplikasi (belum ditinjau penutur asli, H-4)
-    emptyHint: 'Coba muat ulang sekejap agi. Lam tetap kosong, sumber data mungkin sedang gere ara [?]',
-    emptyHistory: 'Gere kejadian tercatat bak periode enda [?]',
-    emptyForecast: 'Data ramalan gere ara bak mukim enda [?]',
-    emptyWarning: 'Gere peringatan dini bak mukim enda gini [?]',
-    staleAction: 'Muat ulang gini [?]',
-    onlineAgain: 'Koneksi walé — muat ulang nun data terbaru [?]',
-    offlineCacheNote: 'Nampilkan data terakhir ni tersimpan [?]',
-    loadingData: 'Pemuat data… [?]',
-    dismiss: 'Tutup [?]',
-  },
+  }
+
 }
 
 export function t(lang, key) {

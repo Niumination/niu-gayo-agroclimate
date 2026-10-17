@@ -93,7 +93,7 @@ const fmtHour = (t) => (t ? `${String(t).slice(11, 16)} WIB` : '–')
 export default {
   id: 'badai',
   group: 'hidromet',
-  label: { id: 'Petir & Badai', gayo: 'Petir & Badai [?]' },
+  label: { id: 'Petir & Badai' },
   requires: ['convective'],
   evaluate(ctx) {
     const doc = ctx.convective

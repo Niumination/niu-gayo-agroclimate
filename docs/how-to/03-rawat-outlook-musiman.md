@@ -65,6 +65,6 @@ Implikasi dibaca warga di ponsel, jadi tulis **sebagai tindakan**, bukan angka:
 - Baik: “Saat hujan pertama deras setelah kemarau panjang: waspada longsor & luapan (tanah retak, serasah kering).”
 - Kurang: “Niño-3.4 +2,1 °C.” (angka ini sudah ada di bagian lain; bukan tindakan)
 
-Terjemahan Gayo (`implications.gay`) masih `null` — menunggu peninjauan penutur asli (**H-4**), lihat [07-tinjau-label-gayo.md](07-tinjau-label-gayo.md).
+Sejak Round L, kunci terjemahan bahasa daerah (`implications.gay`) sudah dihapus dari data; cukup isi teks Bahasa Indonesia.
 
 Lihat juga: [../reference/KONFIGURASI-ENV.md](../reference/KONFIGURASI-ENV.md) · [../reference/SKRIP-NPM.md](../reference/SKRIP-NPM.md) · `docs/dev/10-ROADMAP-V3.md`

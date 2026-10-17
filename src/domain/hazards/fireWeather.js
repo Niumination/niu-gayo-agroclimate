@@ -275,7 +275,7 @@ function capital(s) {
 export default {
   id: 'kebakaran',
   group: 'atmosfer',
-  label: { id: 'Bahaya Kebakaran', gayo: 'Bahaya Rara [?]' },
+  label: { id: 'Bahaya Kebakaran' },
   requires: ['fireDanger'],
   evaluate(ctx) {
     const p = ctx.fireDanger

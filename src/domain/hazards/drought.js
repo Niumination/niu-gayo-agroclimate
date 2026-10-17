@@ -211,7 +211,7 @@ export function assessDrought(daily, { today, hourly = null } = {}) {
 export default {
   id: 'kekeringan',
   group: 'agro',
-  label: { id: 'Kekeringan & Air Kebun', gayo: 'Kemarau urum Wih Empus [?]' },
+  label: { id: 'Kekeringan & Air Kebun' },
   requires: ['drought'],
   evaluate(ctx) {
     const p = ctx.drought

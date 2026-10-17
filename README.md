@@ -15,7 +15,7 @@ Dataran Tinggi Gayo (Kabupaten Aceh Tengah) merupakan produsen kopi Arabika orga
 - **Test:** Native Node.js Test Runner
 
 ## Fitur (PRD F1–F8)
-- Konsensus multi-model (F1), antecedent rainfall index (F2), PWA offline + i18n id-ID/Gayo + mode terang-gelap (F3), riwayat bencana per sentra (F4), nowcast resmi BMKG (F5), diseminasi Telegram (F6), kalender risiko musiman (F7), lapor warga dengan relay Telegram (F8).
+- Konsensus multi-model (F1), antecedent rainfall index (F2), PWA offline + antarmuka Bahasa Indonesia + mode terang-gelap (F3), riwayat bencana per sentra (F4), nowcast resmi BMKG (F5), diseminasi Telegram (F6), kalender risiko musiman (F7), lapor warga dengan relay Telegram (F8).
 - **v2.0.0 — multi-bahaya (Sprint 1–4, Okt 2026):** **Panel Indeks Bahaya** dari hazard registry **11 bahaya** dengan skala level seragam (`rendah < waspada < bahaya < ekstrem`), anjuran 4 kelompok (umum/rentan/kebun/sekolah), interaksi lintas-bahaya, tombol **Bagikan** (WhatsApp/SMS/salin) dan **Tentang data & batasan**:
   - *Hidrometeorologi:* tanah longsor (ARI + kelembapan tanah + lereng, dinaikkan setelah gempa M ≥ 5), **luapan DAS Peusangan v2** (indeks hujan hulu × anomali debit **GloFAS**), angin kencang, **petir & badai konvektif** (CAPE/LI ECMWF × GFS, hujan es, puting beliung).
   - *Atmosfer & kebakaran:* **kabut asap & kualitas udara** (ISPU estimasi CAMS, proksi jarak pandang), **bahaya kebakaran** (FWI System operasional × hotspot NASA FIRMS × HTH), **kekeringan** (HTH kelas BMKG, neraca air, **SPI-1/3** baseline 1991–2020, VPD).
@@ -48,7 +48,7 @@ Dataran Tinggi Gayo (Kabupaten Aceh Tengah) merupakan produsen kopi Arabika orga
 **Cron peringatan (Fase 1.8 / 2.1):** `node scripts/alerts-cron.mjs --dry-run` untuk uji; produksi: salin `server/agroclimate-alerts.{service,timer}` (tiap 30 menit, semua bahaya) dan `server/agroclimate-alerts-fast.{service,timer}` (tiap 5 menit, `--only gempa,vulkanik`) ke `~/.config/systemd/user/`, isi `TELEGRAM_BOT_TOKEN`, `TELEGRAM_HOME_CHANNEL`, `ALERTS_CRON_TOKEN` di EnvironmentFile server, lalu `systemctl --user enable --now agroclimate-alerts.timer agroclimate-alerts-fast.timer`. Aturan anti-kebisingan: [`docs/reference/THRESHOLDS.md`](docs/reference/THRESHOLDS.md) §13–14.
 - Detail status & desain: repo `niu-gayo-agroclimate-docs` (DISASTER-DATA-RESEARCH.md, PLAN.md).
 
-**Verifikasi rilis & keamanan:** `npm test` (321 uji), `npm run check:coverage` (gerbang ambang cakupan: baris ≥ 95 %, cabang ≥ 80 %, fungsi ≥ 92 % + tren vs baseline), `npm run check:bundle`, `npm run check:outlook` (gagal bila `climateOutlook.json` kedaluwarsa — perbarui dari rilis BMKG/NOAA CPC), `npm run check:i18n` (inventaris label Gayo yang menunggu tinjauan penutur asli), `npm run smoke`. CI menjalankan langkah-langkah itu plus `npm audit --omit=dev --audit-level=high`. Semua respons API memakai header keamanan dasar (`nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`); token cron dibandingkan constant-time. Kebijakan pelaporan: [`SECURITY.md`](SECURITY.md).
+**Verifikasi rilis & keamanan:** `npm test` (321 uji), `npm run check:coverage` (gerbang ambang cakupan: baris ≥ 95 %, cabang ≥ 80 %, fungsi ≥ 92 % + tren vs baseline), `npm run check:bundle`, `npm run check:outlook` (gagal bila `climateOutlook.json` kedaluwarsa — perbarui dari rilis BMKG/NOAA CPC), `npm run check:i18n` (gerbang: tidak ada sisa Bahasa Gayo / placeholder terjemahan), `npm run smoke`. CI menjalankan langkah-langkah itu plus `npm audit --omit=dev --audit-level=high`. Semua respons API memakai header keamanan dasar (`nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`); token cron dibandingkan constant-time. Kebijakan pelaporan: [`SECURITY.md`](SECURITY.md).
 
 ## 🌐 Live Site
 
@@ -97,10 +97,10 @@ Peta lengkap mengikuti empat kuadran Diátaxis ada di **[`docs/README.md`](docs/
 | Kebutuhan | Buka |
 |---|---|
 | mulai dari nol (10 menit) | [`docs/tutorials/01-jalankan-lokal.md`](docs/tutorials/01-jalankan-lokal.md) |
-| mengerjakan sebuah tugas (deploy, Telegram, outlook, ambang, sumber data, validasi, label Gayo) | [`docs/how-to/`](docs/how-to/) |
+| mengerjakan sebuah tugas (deploy, Telegram, outlook, ambang, sumber data, validasi) | [`docs/how-to/`](docs/how-to/) |
 | mencari angka/parameter (endpoint, `.env`, perintah npm, ambang) | [`docs/reference/`](docs/reference/) |
 | memahami alasan desain & batasan | [`docs/explanation/`](docs/explanation/) |
 | arsip riset 10 iterasi & roadmap | [`docs/dev/README.md`](docs/dev/README.md) |
 
 ## Rencana pengembangan multi-bahaya
-Dokumen perencanaan perluasan ke semua jenis mitigasi bencana (kabut asap karhutla, kebakaran, gempa, vulkanik, kekeringan, suhu ekstrem, banjir, konvektif, kesehatan) ada di [`docs/dev/README.md`](docs/dev/README.md) — PRD, roadmap (status per butir), sumber data, arsitektur/ADR (+ realisasi §5), ambang, risk register, tata kelola, dan arah v3 (`10-ROADMAP-V3.md`). Butir yang masih menunggu manusia: token Telegram + aktivasi timer (`docs/how-to/02`), VAPID (Web Push, v3), tag **`v2.1.0`**, terjemahan Gayo (`docs/how-to/07`), verifikasi nomor kecamatan, data kejadian BPBD (`docs/templates/surat-pengantar-BPBD.md`). **Hotspot NASA FIRMS sudah aktif** (kunci H-1 terpasang & terverifikasi 16 Okt 2026 — `docs/how-to/08`).
+Dokumen perencanaan perluasan ke semua jenis mitigasi bencana (kabut asap karhutla, kebakaran, gempa, vulkanik, kekeringan, suhu ekstrem, banjir, konvektif, kesehatan) ada di [`docs/dev/README.md`](docs/dev/README.md) — PRD, roadmap (status per butir), sumber data, arsitektur/ADR (+ realisasi §5), ambang, risk register, tata kelola, dan arah v3 (`10-ROADMAP-V3.md`). Butir yang masih menunggu manusia: token Telegram + aktivasi timer (`docs/how-to/02`), VAPID (Web Push, v3), tag **`v2.1.0`**, verifikasi nomor kecamatan, data kejadian BPBD (`docs/templates/surat-pengantar-BPBD.md`). **Hotspot NASA FIRMS sudah aktif** (kunci H-1 terpasang & terverifikasi 16 Okt 2026 — `docs/how-to/08`).

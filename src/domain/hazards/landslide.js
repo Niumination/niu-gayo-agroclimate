@@ -20,7 +20,7 @@ const ADVICE = {
 export default {
   id: 'longsor',
   group: 'hidromet',
-  label: { id: 'Tanah Longsor', gayo: 'Tanah Longsor [?]' },
+  label: { id: 'Tanah Longsor' },
   requires: ['weather'],
   evaluate(ctx) {
     const w = ctx.weather

@@ -102,8 +102,8 @@ function AdviceList({ advice }) {
   )
 }
 
-function HazardRow({ r, open, onToggle, lang }) {
-  const label = (lang === 'gayo' && r.label?.gayo) || r.label?.id || r.id
+function HazardRow({ r, open, onToggle }) {
+  const label = r.label?.id || r.id
   const metrics = (r.metrics || []).filter((m) => m.value != null).slice(0, 4)
   return (
     <li className="py-3 first:pt-0 last:pb-0">
@@ -152,7 +152,7 @@ function HazardRow({ r, open, onToggle, lang }) {
   )
 }
 
-export default function HazardPanel({ hazards, location, lang = 'id', onAbout, onToggleHidden, tr = (k) => k }) {
+export default function HazardPanel({ hazards, location, onAbout, onToggleHidden, tr = (k) => k }) {
   const [openId, setOpenId] = useState(null)
   const [showAll, setShowAll] = useState(false)
   if (!hazards?.results?.length) {
@@ -187,7 +187,7 @@ export default function HazardPanel({ hazards, location, lang = 'id', onAbout, o
         <p className={`text-body font-medium ${active.length ? TONE[worst] : 'text-ink-body dark:text-mist-muted'}`}>{headline}</p>
         {active.length > 0 && (
           <p className="text-caption text-ink-muted dark:text-mist-muted mt-0.5">
-            {active.map((r) => ((lang === 'gayo' && r.label?.gayo) || r.label?.id || r.id)).join(', ')}
+            {active.map((r) => r.label?.id || r.id).join(', ')}
           </p>
         )}
         {counts.degraded > 0 && counts.degraded < counts.total && (
@@ -199,7 +199,7 @@ export default function HazardPanel({ hazards, location, lang = 'id', onAbout, o
 
       <ul className="divide-y divide-ink/10 dark:divide-mist/10 pt-3">
         {visible.map((r) => (
-          <HazardRow key={r.id} r={r} lang={lang} open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)} />
+          <HazardRow key={r.id} r={r} open={openId === r.id} onToggle={() => setOpenId(openId === r.id ? null : r.id)} />
         ))}
       </ul>
 

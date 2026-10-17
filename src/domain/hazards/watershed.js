@@ -21,7 +21,7 @@ const r1 = (v) => (v == null ? null : Math.round(v * 10) / 10)
 export default {
   id: 'banjir',
   group: 'hidromet',
-  label: { id: 'Luapan DAS Peusangan', gayo: 'Luapan DAS Peusangan [?]' },
+  label: { id: 'Luapan DAS Peusangan' },
   requires: ['weather'],
   evaluate(ctx) {
     const id = ctx.location?.id

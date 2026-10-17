@@ -83,7 +83,7 @@ function fmtTimeWib(iso) {
 export default {
   id: 'gempa',
   group: 'geologi',
-  label: { id: 'Gempa Bumi', gayo: 'Lindu [?]' },
+  label: { id: 'Gempa Bumi' },
   requires: ['quakes'],
   evaluate(ctx) {
     const doc = ctx.quakes

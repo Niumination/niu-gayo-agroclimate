@@ -200,7 +200,6 @@ test('adviceFor: 4 kelompok per kategori; Gayo jatuh ke Indonesia selagi kosong;
   assert.deepEqual(Object.keys(a.groups), ['umum', 'rentan', 'kebun', 'sekolah'])
   assert.match(a.groups.kebun, /N95/)
   assert.equal(a.cleanRoom, true)
-  assert.equal(adviceFor('tidak_sehat', 'gayo').groups.umum, a.groups.umum)
   assert.equal(adviceFor('sedang').whoNote?.includes('WHO'), true)
   assert.equal(adviceFor('xyz').key, 'baik')
   assert.equal(adviceFor('baik').cleanRoomItems.length, 0)

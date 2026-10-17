@@ -27,7 +27,6 @@ Dua direktori di luar empat kuadran itu adalah **arsip & aset**, bukan bacaan:
 | mengubah ambang/level bahaya | [how-to/04-ubah-ambang-bahaya.md](how-to/04-ubah-ambang-bahaya.md) |
 | menambah sumber data atau endpoint baru | [how-to/05-tambah-sumber-data.md](how-to/05-tambah-sumber-data.md) |
 | menyiapkan data untuk validasi musiman (POD/FAR) | [how-to/06-kumpulkan-data-validasi.md](how-to/06-kumpulkan-data-validasi.md) |
-| meninjau label bahasa Gayo `[?]` bersama penutur asli | [how-to/07-tinjau-label-gayo.md](how-to/07-tinjau-label-gayo.md) |
 | mengaktifkan & memverifikasi hotspot NASA FIRMS (kunci H-1) | [how-to/08-aktifkan-hotspot-firms.md](how-to/08-aktifkan-hotspot-firms.md) |
 | menguji aksesibilitas di browser sungguhan (pa11y/axe, manual) | [how-to/09-uji-browser-a11y.md](how-to/09-uji-browser-a11y.md) |
 | mencari daftar endpoint API | [reference/ENDPOINT-API.md](reference/ENDPOINT-API.md) |

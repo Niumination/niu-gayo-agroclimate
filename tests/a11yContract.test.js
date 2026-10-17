@@ -209,6 +209,5 @@ test('P2 · label interaksi & bantuan tersedia di kedua bahasa', () => {
   ]
   for (const key of keys) {
     assert.ok(messages.id[key], `kunci id hilang: ${key}`)
-    assert.ok(messages.gayo[key], `kunci gayo hilang: ${key}`)
   }
 })
