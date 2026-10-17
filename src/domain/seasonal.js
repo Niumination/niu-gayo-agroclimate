@@ -123,10 +123,10 @@ export function seasonalInfoExtended(month = new Date().getMonth() + 1, { outloo
   }
   const dryNote =
     dry === 'tinggi'
-      ? 'Puncak musim kering — bahan bakar permukaan kering: dilarang bakar lahan; pantau HTH, FWI & hotspot; hemat air kebun.'
+      ? 'Puncak musim kering — bahan bakar permukaan kering: dilarang bakar lahan; pantau hari tanpa hujan & hotspot; hemat air kebun.'
       : dry === 'sedang'
-        ? 'Musim kering — HTH mulai memanjang; siapkan mulsa, embung & sekat bakar.'
-        : 'Di luar musim kering — risiko karhutla rendah kecuali HTH memanjang.'
+        ? 'Musim kering — hari tanpa hujan mulai memanjang; siapkan mulsa, embung & sekat bakar.'
+        : 'Di luar musim kering — risiko karhutla rendah kecuali hari tanpa hujan memanjang.'
   return {
     ...base,
     phase: wet,
