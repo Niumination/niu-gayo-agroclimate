@@ -1,4 +1,4 @@
-import { RefreshCw } from 'lucide-react'
+import { Moon, RefreshCw, Sun } from 'lucide-react'
 
 /**
  * Header desktop: identitas aplikasi + kontrol (bahasa, tema, refresh)
@@ -23,7 +23,7 @@ export default function DesktopHeader({
     <header className="sticky top-0 z-40 bg-surface/90 dark:bg-soil/90 backdrop-blur-md border-b border-ink/10 dark:border-mist/10 pt-[env(safe-area-inset-top)]">
       <div className="max-w-shell mx-auto px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-baseline gap-3 min-w-0">
-          <h1 className="font-semibold tracking-tight text-ink dark:text-mist">Niu Gayo Agro-Climate</h1>
+          <h1 className="font-semibold tracking-tight text-ink dark:text-mist">Niu · Tanah Gayo</h1>
           {age && (
             <span className={`inline-flex items-center gap-1.5 text-caption font-medium px-2 py-0.5 rounded-full border ${ageTone}`}>
               <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${age.stale ? 'bg-husk' : 'bg-leaf'}`} />
@@ -44,7 +44,11 @@ export default function DesktopHeader({
             aria-label={theme === 'dark' ? tr('themeLight') : tr('themeDark')}
             className="h-11 w-11 grid place-items-center rounded-lg text-lg text-ink-body dark:text-mist-body hover:bg-ink/5 dark:hover:bg-mist/5 transition duration-100 ease-out active:scale-[.97]"
           >
-            <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
+            {theme === 'dark' ? (
+              <Sun aria-hidden="true" className="h-5 w-5" strokeWidth={1.7} />
+            ) : (
+              <Moon aria-hidden="true" className="h-5 w-5" strokeWidth={1.7} />
+            )}
           </button>
           <button
             type="button"

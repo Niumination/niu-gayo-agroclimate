@@ -113,6 +113,10 @@ test('judul bagian lama sudah memakai pertanyaan manusia', () => {
   const bar = read('src/components/AppBar.jsx')
   assert.match(bar, /Niu · Tanah Gayo/)
   assert.equal(/[☀🌙]/u.test(bar), false, 'emoji tema masih dipakai')
+  const head = read('src/components/DesktopHeader.jsx')
+  assert.match(head, /Niu · Tanah Gayo/)
+  assert.equal(/[☀🌙]/u.test(head), false, 'emoji tema masih dipakai di header desktop')
+  assert.match(head, /from 'lucide-react'/)
 })
 
 test('angka teknis di kartu lama berada di balik "Angka & istilah teknis"', () => {

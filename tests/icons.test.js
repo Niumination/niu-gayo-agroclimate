@@ -55,6 +55,7 @@ test('judul & tema dokumen sudah Niu (bukan nama lama)', () => {
   assert.match(html, /<title>Niu — Cuaca &amp; Peringatan Dini Tanah Gayo<\/title>/)
   assert.match(html, /name="theme-color" content="#F1E7D8"/)
   assert.equal(html.includes('ecmwf_ifs025'), false)
+  assert.equal(/Niu Gayo Agro-Climate/.test(read('src/components/DesktopHeader.jsx')), false)
   assert.match(html, /fonts\/bricolage-latin\.woff2/)
   assert.match(html, /fonts\/instrument-sans-latin\.woff2/)
 })
