@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tanda Niu (maskable)">
+  <rect width="512" height="512" fill="#2F4A38"/>
+  <g transform="translate(51.2 51.2) scale(0.8)">
+    <path d="M256 96c-44 58-78 104-78 148a78 78 0 0 0 156 0c0-44-34-90-78-148Z" fill="#F1E7D8"/>
+    <path d="M196 286c14-20 34-34 60-40M214 320c12-16 28-27 48-31M236 348c10-12 22-20 36-24" fill="none" stroke="#2F4A38" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="332" cy="176" r="26" fill="#FFD2A1"/>
+  </g>
+</svg>

@@ -6,6 +6,7 @@ import MobileTabShell from './components/MobileTabShell'
 import LocationRail from './components/LocationRail'
 import RingkasMobile from './pages/RingkasMobile.jsx'
 import DesktopBoard from './pages/DesktopBoard.jsx'
+import InstallHint from './pwa/InstallHint.jsx'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
 import DisasterWarning from './components/DisasterWarning'
 import AirQualityCard from './components/AirQualityCard'
@@ -104,6 +105,11 @@ export default function App() {
   // Tab mobile (state, bukan anchor)
   const [tab, setTab] = useState('now')
   const [selHaz, setSelHaz] = useState(null)
+
+  useEffect(() => {
+    const zona = new URLSearchParams(window.location.search).get('zona')
+    if (zona === 'risiko') setTab('risk')
+  }, [])
 
   // Badge umur data
   const age = useMemo(
@@ -355,6 +361,8 @@ export default function App() {
       ) : (
         <AppBar selectedLocation={selectedLocation} {...headerProps} />
       )}
+
+      <InstallHint />
 
       {error && (
         <div

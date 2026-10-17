@@ -40,8 +40,8 @@ export default function AppBar({
         )}
       </div>
       <div className="px-2 pb-2 flex items-center justify-between gap-1">
-        <span className="pl-2 text-caption font-data text-ink-subtle dark:text-mist-subtle break-words tabular-nums">
-          Niu Gayo Agro-Climate · ecmwf_ifs025
+        <span className="pl-2 text-caption text-ink-subtle dark:text-mist-subtle break-words">
+          Niu Gayo Agro-Climate
         </span>
         <div className="flex items-center">
           <button

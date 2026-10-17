@@ -88,6 +88,16 @@ export default function DesktopBoard({
   }, [rail, dens, focus, insp])
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('palet') === '1') setPal(true)
+    const zona = params.get('zona')
+    if (zona && ['ringkas', 'ramalan', 'risiko', 'sentra', 'arsip'].includes(zona)) {
+      const t = setTimeout(() => goZone(zona), 350)
+      return () => clearTimeout(t)
+    }
+  }, [])
+
+  useEffect(() => {
     const onKey = (e) => {
       const inField = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')
       if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
