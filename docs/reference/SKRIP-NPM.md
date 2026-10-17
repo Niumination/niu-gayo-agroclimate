@@ -9,7 +9,7 @@
 | `npm run dev` | Vite dev server (:5188) | UI + proxy `/api` ke `127.0.0.1:7455` |
 | `npm run build` | Vite 8 / Rolldown → `dist/` | bundle produksi, ± 0,5 detik |
 | `npm run preview` | Vite preview | menyajikan `dist/` (uji PWA/offline) |
-| **`npm run lint`** | `eslint .` | **gerbang lint (P6)**: `eslint.config.js` (flat) + `eslint-plugin-jsx-a11y` + `eslint-plugin-react-hooks`; 0 temuan. devDependency saja — **0 dampak bundel** |
+| **`npm run lint`** | `eslint .` | **gerbang lint (P6)**: `eslint.config.js` (flat) + `eslint-plugin-jsx-a11y` + `eslint-plugin-react-hooks`; 0 temuan. devDependency saja — **0 dampak bundel**. Instalasi memakai **`.npmrc`** (`legacy-peer-deps=true`) karena `jsx-a11y@6.10.2` belum mengakui ESLint 10 — lihat P6.1 |
 | `npm test` | `node --test tests/*.test.js` | **377 uji**, semua panggilan jaringan di-mock (termasuk 10 uji kontrak a11y, 9 uji gerbang tipografi, 9 uji kontrak keadaan, 9 uji kontrak gerak) |
 | `npm run test:coverage` | sama + `--experimental-test-coverage` | laporan cakupan mentah (tanpa ambang) |
 | **`npm run check:coverage`** | `scripts/check-coverage.mjs` | **gerbang cakupan**: baris ≥ 95 %, cabang ≥ 80 %, fungsi ≥ 92 % + tren vs baseline |
@@ -50,6 +50,8 @@ npm ci → npm test → npm run check:coverage → npm audit --omit=dev --audit-
 
 Angka acuan saat rilis v2.1.0 (semua hijau): 327 uji · cakupan 96,46/83,86/96,00 · bundle 65,8 kB gzip (utama) & 131,6 kB (total) · CSS 8,09 kB gzip · outlook berlaku sampai 2026-11-12 · `npm audit` **0**.
 Angka setelah **P6 (pengaman & tata kelola, 16 Okt 2026)**: **377 uji** · `npm run lint` **0 temuan** · cakupan 95,75/84,41/95,97 % · bundel JS 134,6 kB gzip · seluruh gerbang hijau (+ `.pa11yci.json` & `docs/how-to/09-uji-browser-a11y.md` untuk uji browser manual).
+
+Angka setelah **P6.1 (perbaikan `npm ci`, 17 Okt 2026)**: **377 uji** · lint **0 temuan** · cakupan **95,81/84,41/96,03 %** · bundel JS **134,3 kB** gzip · `npm ci` polos **lolos** pada instalasi bersih (berkat `.npmrc`) — CI kembali hijau.
 
 Angka setelah **P5 (gerak & area aman, 16 Okt 2026)**: **377 uji** · cakupan 95,75/84,41/95,97 % · bundel JS 134,6 kB gzip · seluruh gerbang hijau.
 

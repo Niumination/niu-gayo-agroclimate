@@ -42,7 +42,7 @@ Peta dokumentasi ada di **`docs/README.md`**. Aturan penempatan: **tutorial** (`
 - Build: `npm run build` (Vite 8/Rolldown; bundle production di `dist/`; ~0,4 dtk)
 - Toolchain v2.1.0: Vite 8 + `@vitejs/plugin-react` 6 (Oxc) + **Tailwind 4 CSS-first** — konfigurasi tema/varian ada di `src/index.css` (`@theme`, `@custom-variant dark`), BUKAN lagi di `tailwind.config.js` (dihapus). Node ≥ 20.19 (lihat `engines`).
 - Pemisahan chunk vendor memakai `build.rollupOptions.output.advancedChunks` (Rolldown); bentuk objek `manualChunks` v3 tidak didukung lagi.
-- Pemasangan: `npm ci` normal. Bila menaikkan dependensi dari lockfile lama dan npm 10.x gagal `edgesOut`, jalankan sekali `npm install --legacy-peer-deps`, lalu lanjut normal.
+- Pemasangan: `npm ci` normal — **jangan** menambahkan flag. Berkas **`.npmrc`** di akar repo menetapkan `legacy-peer-deps=true` karena `eslint-plugin-jsx-a11y@6.10.2` belum mengakui peer `eslint` 10 (paket ini memakai ESLint 10.13.0). **Jangan memundurkan ESLint ke 9**: `no-unused-vars` inti versi 9 tidak menghitung pemakaian tag JSX (66 temuan palsu). Cabut baris `.npmrc` hanya setelah `npm view eslint-plugin-jsx-a11y peerDependencies` mengizinkan `^10`. Untuk kenaikan dependensi lain yang gagal `edgesOut`, jalankan sekali `npm install` (tanpa flag) lalu commit lockfile-nya.
 - Dev Server: `npm run dev` (berjalan di port 5188)
 - Production: `npm run build` → `dist/` di-serve `scripts/serve.py` (:7444); API `server/index.js` (:7455)
 - Akses publik: `https://cuaca.abstract.biz.id` (Cloudflare Tunnel) — `/api/*` + `/healthz` forward ke :7455

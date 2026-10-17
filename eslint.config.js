@@ -1,6 +1,8 @@
 // ESLint flat config (P6) — pengaman agar temuan aksesibilitas/JS tidak kembali.
 // Fokus: aturan jsx-a11y inti dari docs/dev/11-RENCANA-DESIGN-UX.md §P6.
 // Jalankan: npm run lint
+// Catatan pemasangan: .npmrc menetapkan legacy-peer-deps=true karena
+// eslint-plugin-jsx-a11y@6.10.2 belum mengakui peer eslint 10 (lihat CHANGELOG P6.1).
 import js from '@eslint/js'
 import globals from 'globals'
 import jsxA11y from 'eslint-plugin-jsx-a11y'

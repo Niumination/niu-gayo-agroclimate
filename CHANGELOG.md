@@ -57,6 +57,13 @@
 - **Dokumen gerbang disinkronkan**: `SKRIP-NPM.md` (baris `lint` + angka i18n 76), `AGENTS.md` (aturan lint), `docs/README.md` (how-to 09), `docs/dev/10-ROADMAP-V3.md` (D-6 ✅), dan `docs/dev/11` (semua metrik §1 kini ✅).
 - Uji tetap **377** · cakupan 95,75 / 84,41 / 95,97 % · bundel JS 134,6 kB gzip · seluruh gerbang + **lint** hijau.
 
+### P6.1 — Perbaikan `npm ci` setelah paket sync-18 (2026-10-17) ✅
+- **CI merah di langkah “Install dependencies”, bukan di kode.** Commit `6fae482` yang sudah diterapkan ke upstream membuat `npm ci` gagal `ERESOLVE`: `eslint-plugin-jsx-a11y@6.10.2` (rilis terakhir Okt 2024) hanya mengakui peer `eslint` `^3 … ^9`, sedangkan yang terpasang **ESLint 10.13.0**. Instalasi lokal lolos karena waktu itu dipasang dengan `--legacy-peer-deps`; CI memakai `npm ci` polos.
+- **Perbaikan:** berkas baru **`.npmrc`** berisi `legacy-peer-deps=true` + alasan tertulis dan syarat pencabutannya; lockfile diregenerasi dari `package.json` dengan berkas itu aktif. Diverifikasi pada **instalasi bersih**: `npm ci` ✓ (446 paket), `npm run lint` **0 temuan**, sisanya seluruh gerbang hijau.
+- **Mengapa bukan ESLint 9:** diuji langsung — `no-unused-vars` inti pada ESLint 9.39.5 **tidak menghitung pemakaian tag JSX** (66 temuan palsu “defined but never used” di `src/`), sedangkan ESLint 10 menghitungnya. Memundurkan ESLint berarti memasang `eslint-plugin-react` hanya demi `react/jsx-uses-vars` **dan** memakai versi ESLint yang sudah EOL (npm menandainya deprecated). `.npmrc` + ESLint 10 dinilai kompromi paling kecil: satu baris, terdokumentasi, dan dapat dicabut.
+- **Pemicu pencabutan:** hapus `legacy-peer-deps=true` begitu `eslint-plugin-jsx-a11y` merilis versi yang mengakui peer ESLint 10 (pantau `npm view eslint-plugin-jsx-a11y peerDependencies`).
+- Angka tidak berubah: **377 uji** · lint 0 temuan · cakupan 95,81 / 84,41 / 96,03 % · bundel JS **134,3 kB** gzip · precache 546,14 KiB · `check:outlook` sisa 26 hari.
+
 ### Tahap audit & rencana (commit `bfa8315`) — belum mengubah UI
 
 Pembukaan fase penyempurnaan tampilan setelah v2.1.0 sinkron di upstream (`main` = `f9f8058`): audit, rencana, dan pengaman agar perbaikan berikutnya terukur. Komponen React belum disentuh pada tahap ini.
