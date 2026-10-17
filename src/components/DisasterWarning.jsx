@@ -62,22 +62,22 @@ export default function DisasterWarning({ disaster, dailyRainSum, tr = (k) => k 
 
   return (
     <section
-      aria-label="Sistem Peringatan Dini Bencana Hidrometeorologi"
+      aria-label="Peringatan dini cuaca dan bencana"
       className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
     >
       <div className="pb-3">
         <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">
-          Sistem Peringatan Dini Bencana Hidrometeorologi
+          Ada longsor di lereng kopi?
         </h2>
         <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">
-          Mitigasi risiko longsor lereng kopi &amp; indeks hujan DAS Peusangan
+          Hujan berlebih, guncangan gempa, dan tanah yang sudah jenuh.
         </p>
       </div>
 
       {/* F1 — badge konsensus multi-model (ADR-8) */}
       {consensus && (
         <div className="mb-3 py-3 border-y border-ink/10 dark:border-mist/10 flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <span className="text-body font-medium text-ink-body dark:text-mist-muted">Konsensus model</span>
+          <span className="text-body font-medium text-ink-body dark:text-mist-muted">Kesepakatan antar-model</span>
           <span className={`inline-flex items-center gap-1.5 text-body font-semibold ${CONSENSUS_TONE[consensus.level] || TONE.safe}`}>
             <span
               aria-hidden="true"
@@ -86,8 +86,8 @@ export default function DisasterWarning({ disaster, dailyRainSum, tr = (k) => k 
             {String(consensus.level).charAt(0).toUpperCase() + String(consensus.level).slice(1)}
           </span>
           <span className="font-data text-caption text-ink-muted dark:text-mist-subtle tabular-nums">
-            {consensus.votes}/{consensus.sources} model setuju hujan &gt; 25 mm/24j
-            {consensus.degraded ? ' (degraded)' : ''}
+            {consensus.votes} dari {consensus.sources} model sepakat hujan deras lebih dari 25 mm sehari
+            {consensus.degraded ? ' (sebagian data tertunda)' : ''}
           </span>
         </div>
       )}

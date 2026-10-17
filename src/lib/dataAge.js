@@ -4,9 +4,9 @@ export function dataAge(ms) {
   const minutes = Math.floor(ms / 60_000)
   let label
   if (minutes < 1) label = 'baru saja'
-  else if (minutes < 60) label = `${minutes} menit`
-  else if (minutes < 24 * 60) label = `${Math.floor(minutes / 60)} jam ${minutes % 60} mnt`
-  else label = `${Math.floor(minutes / 1440)} hari`
+  else if (minutes < 60) label = `${minutes} menit lalu`
+  else if (minutes < 24 * 60) label = `${Math.floor(minutes / 60)} jam lalu`
+  else label = `${Math.floor(minutes / 1440)} hari lalu`
   // Dianggap basi bila > 30 menit (di luar TTL cache proxy)
   return { label, stale: minutes >= 30, minutes }
 }

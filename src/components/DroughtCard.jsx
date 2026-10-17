@@ -105,7 +105,7 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
     <>
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10 flex items-start justify-between gap-3">
         <div>
-          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">HTH s.d. {shortDate(h.lastDataDate)}</p>
+          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">Tanpa hujan sampai {shortDate(h.lastDataDate)}</p>
           <p className="font-data text-4xl font-semibold tabular-nums leading-none mt-1 text-ink dark:text-mist">
             {num(h.days)}
             <span className="text-base font-normal text-ink-muted dark:text-mist-muted ml-1">hari{h.truncated ? '+' : ''}</span>
@@ -113,7 +113,7 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
           <p className="mt-2 text-body font-medium text-ink-body dark:text-mist-body">{h.classLabel}</p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">Status</p>
+          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">Keadaan</p>
           <div className="mt-1">
             <Badge level={a.level} label={levelLabel} />
           </div>
@@ -125,7 +125,12 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
         Hujan terakhir ≥ 1 mm: {h.lastRainDate ? `${shortDate(h.lastRainDate)} (${num(h.lastRainMm, 1)} mm)` : 'tidak ada dalam arsip'} · proyeksi: {projText}
       </p>
 
-      <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10 grid grid-cols-3 gap-3">
+      <details className="group mt-4 border-t border-ink/10 pt-1 dark:border-mist/10">
+        <summary className="mt-4 min-h-11 inline-flex cursor-pointer list-none items-center gap-2 rounded-lg border border-ink/15 px-3 text-body font-semibold text-leaf-deep dark:border-mist/15 dark:text-leaf-soft">
+          Angka &amp; istilah teknis
+        </summary>
+
+      <div className="mt-2 grid grid-cols-3 gap-3">
         <Metric label="Hujan 30 hari" value={num(b.rain)} unit="mm" />
         <Metric label="ET0 30 hari" value={num(b.et0)} unit="mm" sub="evapotranspirasi acuan" />
         <Metric label="Neraca P − ET0" value={`${b.balance > 0 ? '+' : ''}${num(b.balance)}`} unit="mm" sub={b.level === 'rendah' ? 'surplus/normal' : b.level === 'waspada' ? 'defisit — waspada' : 'defisit — bahaya'} />
@@ -139,6 +144,7 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
           ))}
         </ul>
       </div>
+      </details>
       <p className="mt-3 text-caption text-ink-muted dark:text-mist-subtle leading-relaxed">
         HTH = hari berturut hujan &lt; 1 mm (definisi BMKG). Arsip model ERA5-Land ~9 km, bukan penakar hujan; tertinggal {drought.archive?.lagDays ?? '—'} hari. Rujukan:{' '}
         <a className="min-h-11 inline-flex items-center underline" href="https://www.bmkg.go.id/iklim" target="_blank" rel="noreferrer">BMKG Iklim (Monitoring HTH dasarian)</a>

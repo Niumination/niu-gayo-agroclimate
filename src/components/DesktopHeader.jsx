@@ -27,7 +27,7 @@ export default function DesktopHeader({
           {age && (
             <span className={`inline-flex items-center gap-1.5 text-caption font-medium px-2 py-0.5 rounded-full border ${ageTone}`}>
               <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${age.stale ? 'bg-husk' : 'bg-leaf'}`} />
-              {tr('dataAge')} {age.label}
+              {age.label}
             </span>
           )}
         </div>

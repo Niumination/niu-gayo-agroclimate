@@ -5,6 +5,9 @@ import EmptyState from './EmptyState'
  * Desktop: satu baris 12 kolom (kepadatan lebih tinggi).
  * Semua nilai memakai font-data (pembacaan instrumen).
  */
+const fmt1 = (v) => Number(v).toLocaleString('id-ID', { maximumFractionDigits: 1 })
+const jam = (t) => String(t ?? '').replace(':', '.')
+
 export default function HourlyForecast({ hourly, tr, variant = 'mobile' }) {
   if (!hourly || hourly.length === 0) {
     return <EmptyState title={tr('emptyForecast')} hint={tr('emptyHint')} />
@@ -29,15 +32,15 @@ export default function HourlyForecast({ hourly, tr, variant = 'mobile' }) {
             key={idx}
             className="min-w-0 py-2 px-1 text-center border-b border-ink/5 dark:border-mist/10 last:border-b-0"
           >
-            <span className="font-data text-caption text-ink-muted dark:text-mist-subtle block tabular-nums">{item.time}</span>
+            <span className="font-data text-caption text-ink-muted dark:text-mist-subtle block tabular-nums">{jam(item.time)}</span>
             <span className="font-data text-body font-semibold text-ink dark:text-mist block mt-0.5 tabular-nums">
-              {item.temp}°C
+              {fmt1(item.temp)}°C
             </span>
             <div className="mt-1.5 pt-1.5 border-t border-ink/5 dark:border-mist/10 space-y-0.5">
               <div className="flex items-center justify-between gap-1 text-caption">
                 <span className="text-ink-muted dark:text-mist-subtle">{tr('rain')}</span>
                 <span className={`font-data ${item.rain > 0 ? 'text-rain-deep dark:text-rain-soft font-semibold' : 'text-ink-subtle dark:text-mist-subtle'}`}>
-                  {item.rain}
+                  {fmt1(item.rain)}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-1 text-caption">

@@ -18,7 +18,7 @@ const DOT = { ekstrem: 'bg-level-ekstrem', bahaya: 'bg-level-bahaya', waspada: '
 // Kategori ISPU resmi: Baik hijau, Sedang biru, Tidak Sehat kuning, Sangat Tidak Sehat merah, Berbahaya hitam.
 const CATEGORY_TONE = {
   baik: TONE.rendah,
-  sedang: 'text-rain dark:text-rain',
+  sedang: 'text-rain-deep dark:text-rain-soft',
   tidak_sehat: TONE.waspada,
   sangat_tidak_sehat: TONE.bahaya,
   berbahaya: 'text-ink dark:text-mist',
@@ -107,7 +107,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10 flex items-start justify-between gap-3">
         <div>
           <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">
-            ISPU {a.ispu.basis === '24h' ? 'rata-rata 24 jam' : 'sesaat'} · {a.ispu.paramLabel}
+            Angka udara {a.ispu.basis === '24h' ? 'rata-rata sehari' : 'saat ini'} · {a.ispu.paramLabel}
           </p>
           <p className="font-data text-4xl font-semibold tabular-nums leading-none mt-1 text-ink dark:text-mist">{a.ispu.index}</p>
           <div className="mt-2">
@@ -118,7 +118,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
           )}
         </div>
         <div className="text-right shrink-0">
-          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">Status</p>
+          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">Keadaan</p>
           <div className="mt-1">
             <Badge level={a.level} label={levelLabel} />
           </div>
@@ -151,12 +151,19 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
         )}
       </div>
 
-      {/* Pengukuran model */}
-      <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10 grid grid-cols-3 gap-3">
+      {/* Pengukuran model — di balik Detail */}
+      <details className="group mt-4 border-t border-ink/10 pt-1 dark:border-mist/10">
+        <summary className="mt-4 min-h-11 inline-flex cursor-pointer list-none items-center gap-2 rounded-lg border border-ink/15 px-3 text-body font-semibold text-leaf-deep dark:border-mist/15 dark:text-leaf-soft">
+          Angka &amp; istilah teknis
+        </summary>
+
+      <div className="mt-2 grid grid-cols-3 gap-3">
         <Metric label="PM2,5" value={num(a.measurements.pm25)} unit="µg/m³" sub={a.who.exceeded ? `> WHO ${a.who.pm25Daily}` : `WHO 24 jam ${a.who.pm25Daily}`} />
         <Metric label="PM10" value={num(a.measurements.pm10)} unit="µg/m³" />
         <Metric label="AOD" value={num(a.measurements.aod, 2)} sub={a.measurements.aod != null && a.measurements.aod >= 1 ? 'asap tebal di atmosfer' : null} />
       </div>
+
+      </details>
 
       {/* Prospek */}
       {a.outlook && (

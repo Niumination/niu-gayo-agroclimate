@@ -7,7 +7,7 @@ import {  useEffect, useRef  } from 'react'
 const SOURCES = [
   { name: 'Open-Meteo Forecast (ECMWF IFS 0,25°)', use: 'cuaca jam-an, hembusan angin, kelembapan tanah, basah daun → longsor, DAS, angin, karat daun', license: 'CC BY 4.0', url: 'https://open-meteo.com/' },
   { name: 'Open-Meteo Air Quality (CAMS global, Copernicus)', use: 'PM2,5/PM10/CO/AOD → ISPU estimasi & proksi kabut asap', license: 'CC BY 4.0 · data CAMS (lisensi Copernicus)', url: 'https://open-meteo.com/en/docs/air-quality-api' },
-  { name: 'Open-Meteo Historical (ERA5/ERA5-Land)', use: 'arsip 90 hari → Hari Tanpa Hujan, neraca air, spin-up FWI', license: 'CC BY 4.0', url: 'https://open-meteo.com/en/docs/historical-weather-api' },
+  { name: 'Open-Meteo Historical (ERA5/ERA5-Land)', use: 'arsip 90 hari → Hari Tanpa Hujan (HTH), neraca air, spin-up FWI', license: 'CC BY 4.0', url: 'https://open-meteo.com/en/docs/historical-weather-api' },
   { name: 'NASA FIRMS (VIIRS S-NPP/NOAA-20/NOAA-21, MODIS)', use: 'titik panas ≤ 10/25/50 km dari sentra (butuh kunci MAP_KEY di server)', license: 'bebas dengan atribusi NASA', url: 'https://firms.modaps.eosdis.nasa.gov/' },
   { name: 'BMKG — peringatan dini / nowcast (CAP RSS)', use: 'peringatan resmi cuaca ekstrem (ditampilkan apa adanya)', license: 'publik, atribusi BMKG', url: 'https://www.bmkg.go.id/' },
   { name: 'Canadian FWI System (Van Wagner 1987) · kelas BMKG DC', use: 'kode FFMC/DMC/DC/ISI/BUI/FWI dari cuaca siang; kelas Drought Code mengikuti BMKG', license: 'metode publik; implementasi diuji terhadap dataset cffdrs', url: 'https://www.bmkg.go.id/cuaca/karhutla/dc' },

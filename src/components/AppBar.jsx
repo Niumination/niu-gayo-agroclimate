@@ -1,4 +1,4 @@
-import { RefreshCw } from 'lucide-react'
+import { Moon, RefreshCw, Sun } from 'lucide-react'
 
 /**
  * Header ringkas mobile: nama sentra + elevasi + badge umur data,
@@ -35,13 +35,13 @@ export default function AppBar({
             className={`shrink-0 mt-0.5 inline-flex items-center gap-1.5 text-caption font-medium px-2.5 py-1 rounded-full border ${ageTone}`}
           >
             <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${age.stale ? 'bg-husk' : 'bg-leaf'}`} />
-            {tr('dataAge')} {age.label}
+            {age.label}
           </span>
         )}
       </div>
       <div className="px-2 pb-2 flex items-center justify-between gap-1">
         <span className="pl-2 text-caption text-ink-subtle dark:text-mist-subtle break-words">
-          Niu Gayo Agro-Climate
+          Niu · Tanah Gayo
         </span>
         <div className="flex items-center">
           <button
@@ -51,7 +51,11 @@ export default function AppBar({
             aria-label={theme === 'dark' ? tr('themeLight') : tr('themeDark')}
             className="h-11 w-11 grid place-items-center rounded-lg text-lg text-ink-body dark:text-mist-body transition duration-100 ease-out active:scale-[.97]"
           >
-            <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
+            {theme === 'dark' ? (
+              <Sun aria-hidden="true" className="h-5 w-5" strokeWidth={1.7} />
+            ) : (
+              <Moon aria-hidden="true" className="h-5 w-5" strokeWidth={1.7} />
+            )}
           </button>
           <button
             type="button"

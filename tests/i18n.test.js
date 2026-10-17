@@ -23,6 +23,6 @@ test('i18n: tak ada sisa istilah Gayo / penanda [?]', () => {
 
 test('i18n: fallback ke id-ID lalu ke kunci', () => {
   assert.strictEqual(t('id', 'rain'), 'Hujan')
-  assert.strictEqual(t('xx', 'airTemp'), 'Suhu Udara')
+  assert.strictEqual(t('xx', 'airTemp'), 'Suhu udara')
   assert.strictEqual(t('id', 'kunci_aneh'), 'kunci_aneh')
 })

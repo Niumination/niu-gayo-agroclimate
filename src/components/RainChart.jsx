@@ -20,7 +20,7 @@ export default function RainChart({ data = [], labelRain = 'Hujan' }) {
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label={`Grafik ${labelRain} 24 jam, maksimum ${maxRain.toFixed(1)} mm/jam`}
+        aria-label={`Grafik ${labelRain} 24 jam, maksimum ${maxRain.toLocaleString('id-ID', { maximumFractionDigits: 1 })} mm/jam`}
         className="w-full"
       >
         {/* gridlines 25/50/75/100% */}
@@ -36,7 +36,7 @@ export default function RainChart({ data = [], labelRain = 'Hujan' }) {
               strokeDasharray="3 4"
             />
             <text x={padL - 6} y={y(maxRain * f) + 3} textAnchor="end" fontSize="9" fill="currentColor" opacity="0.5">
-              {(maxRain * f).toFixed(0)}
+              {(maxRain * f).toLocaleString('id-ID', { maximumFractionDigits: 1 })}
             </text>
           </g>
         ))}
@@ -54,7 +54,7 @@ export default function RainChart({ data = [], labelRain = 'Hujan' }) {
               rx="1.5"
               className={v >= 5 ? 'fill-rain' : v > 0 ? 'fill-rain/70' : 'fill-ink/20'}
             >
-              <title>{`${d.time} — ${v} mm`}</title>
+              <title>{`${String(d.time).replace(':', '.')} — ${Number(v).toLocaleString('id-ID', { maximumFractionDigits: 1 })} mm`}</title>
             </rect>
           )
         })}

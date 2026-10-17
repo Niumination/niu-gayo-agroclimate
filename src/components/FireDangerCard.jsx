@@ -110,7 +110,7 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">
-            FWI {latest.isToday ? 'hari ini' : shortDate(latest.date)} · pengamatan {String(fireDanger.fwi.obsHourWib).padStart(2, '0')}.00 WIB
+            Angka risiko api · {latest.isToday ? 'hari ini' : shortDate(latest.date)} pukul {String(fireDanger.fwi.obsHourWib).padStart(2, '0')}.00 WIB
           </p>
           <p className="font-data text-4xl font-semibold tabular-nums leading-none mt-1 text-ink dark:text-mist">{num(c.fwi, 1)}</p>
           <div className="mt-2">
@@ -118,12 +118,12 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
           </div>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">Status</p>
+          <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">Keadaan</p>
           <div className="mt-1">
             <Badge level={a.level} label={levelLabel} />
           </div>
           {a.siagaLokal && (
-            <p className="mt-1 text-caption font-semibold text-cherry-deep dark:text-cherry-soft">Siaga Kebakaran Lokal</p>
+            <p className="mt-1 text-caption font-semibold text-cherry-deep dark:text-cherry-soft">Siaga kebakaran setempat</p>
           )}
         </div>
       </div>
@@ -139,6 +139,11 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
         </p>
       )}
 
+      <details className="group mt-4 border-t border-ink/10 pt-1 dark:border-mist/10">
+        <summary className="mt-4 min-h-11 inline-flex cursor-pointer list-none items-center gap-2 rounded-lg border border-ink/15 px-3 text-body font-semibold text-leaf-deep dark:border-mist/15 dark:text-leaf-soft">
+          Angka &amp; istilah teknis
+        </summary>
+
       {/* Kode komponen */}
       <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10 grid grid-cols-3 gap-3">
         <Code label="FFMC" value={num(c.ffmc, 0)} cls={k.ffmc} sub="penyalaan serasah" />
@@ -153,12 +158,12 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
       {/* Hotspot */}
       <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-body font-medium text-ink-body dark:text-mist-muted">Hotspot satelit (24 jam / 48 jam)</h3>
+          <h3 className="text-body font-medium text-ink-body dark:text-mist-muted">Titik panas di sekitar</h3>
           {sum && !hs.degraded && <Badge level={sum.level} label={sum.level === 'bahaya' ? '≤ 10 km' : sum.level === 'waspada' ? '≤ 25 km' : 'tidak ada ≤ 25 km'} />}
         </div>
         {hs?.degraded ? (
           <p className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
-            Data hotspot belum aktif{hs.reason ? ` — ${hs.reason}` : ''}.
+            Data titik panas belum aktif{hs.reason ? ` — ${hs.reason}` : ''}.
           </p>
         ) : (
           <>
@@ -172,7 +177,7 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
                 ? `Terdekat ${num(sum.nearestKm, 1)} km (${clock(sum.nearestAt)} WIB)${sum.frpMax24h != null ? ` · FRP maks ${num(sum.frpMax24h, 1)} MW` : ''}${sum.intense24h ? ` · ${sum.intense24h} intens (≥ 20 MW)` : ''}`
                 : 'Tidak ada deteksi ≤ 50 km dalam 48 jam.'}
             </p>
-            <p className="mt-1 text-caption text-ink-muted dark:text-mist-subtle">Hotspot = anomali panas satelit (VIIRS 375 m / MODIS 1 km), belum tentu kebakaran.</p>
+            <p className="mt-1 text-caption text-ink-muted dark:text-mist-subtle">Titik panas berasal dari satelit dan belum tentu kebakaran.</p>
           </>
         )}
       </div>
@@ -184,6 +189,8 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
           <Code key={f.date} label={`FWI ${shortDate(f.date)}`} value={num(f.codes.fwi, 1)} cls={f.classes.fwi} />
         ))}
       </div>
+
+      </details>
 
       {/* Anjuran */}
       <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10">
