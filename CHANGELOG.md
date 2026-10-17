@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.2.1] — 2026-10-18 — Penerapan ulang bahasa manusia (2 commit)
+
+Penerapan paket zip v2.2.0 ke live site menghasilkan 57 akronim teknis tampil di lapisan 1 desktop (target prototipe = 10). Root cause: spesifikasi P7.7 hanya menguji `messages.js` + 3 kartu lama; `headline` modul bahaya dan `subtitle`/`footer` `HazardFocusCards.jsx` tidak terjangkau uji.
+
+**Perbaikan (commit `fca5d75`):**
+- `headline` 6 modul bahaya: kalimat manusia, akronim teknis pindah ke `detail` (lapisan Detail)
+- `HazardFocusCards.jsx`: subtitle/footer tanpa ECMWF/GFS/GloFAS/PVMBG/MAGMA; label metrik storm pakai bahasa manusia
+- `FireDangerCard.jsx`: subtitle tanpa FWI/FDRS/ERA5/ECMWF
+- `temperature.js`: label "VPD siang" → "Tekanan uap siang"
+- `volcano.js`: headline tanpa Level/ROMAN
+- `quake.js`: headline tanpa MMI/BMKG
+- Gerbang uji baru: `tests/copyLanguage.test.js` cek `headline` + `subtitle`/`footer` tidak boleh ada akronim teknis
+- 5 test lama diupdate untuk kontrak baru
+
+**Perbaikan lanjutan (commit `63f9995`):**
+- `seasonal.js`: HTH → "hari tanpa hujan" di advice musiman
+- `healthAdvice.json`: "pantau ISPU setiap pagi" → "pantau udara setiap pagi"
+
+**Hasil ukur (browser DOM scan):**
+| | Sebelum | Sesudah |
+|---|---|---|
+| Akronim visible desktop | 57 | 13 |
+| Akronim visible mobile | 14 | 3 |
+
+Sisa = nama lembaga (BMKG/PVMBG/MAGMA) + label metrik (PM2,5/AOD/FWI) + footer Detail + teks arsip (MMI VII) — sesuai prototipe.
+
+**Gates:** 509/509 test pass · lint 0 · build 144.0 kB · bundle hash `CKKltsPD`
+
 ## [2.2.0] — 2026-10-17 — Rilis **Niu** (Round L, P7.1–P7.9) ✅
 
 Wajah baru penuh: identitas **Niu**, dua arah **Tanah/Langit**, bahasa manusia, PWA terpasang, tanpa Bahasa Gayo.

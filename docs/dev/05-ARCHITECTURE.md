@@ -43,7 +43,7 @@ export default {
     return {
       level: 'rendah' | 'waspada' | 'bahaya' | 'ekstrem' | 'n/a',  // skala seragam 4 tingkat
       score: 0..100 | null,
-      headline: 'ISPU 118 — Tidak Sehat',
+      headline: 'Udara tidak sehat · PM2,5',
       detail: '…',
       metrics: [{ key:'pm25_24h', value: 61.2, unit:'µg/m³' }, …],
       advice: { umum:[…], rentan:[…], kebun:[…], sekolah:[…] },
@@ -54,7 +54,7 @@ export default {
   },
 }
 ```
-Skala level seragam memetakan skala domain (ISPU 5 kelas, FDRS 4 kelas, MMI, dll.) → 4 tingkat UI + warna token (`leaf`/`husk`/`cherry`/`ink`). Label domain asli tetap ditampilkan di `headline`.
+Skala level seragam memetakan skala domain (ISPU 5 kelas, FDRS 4 kelas, MMI, dll.) → 4 tingkat UI + warna token (`leaf`/`husk`/`cherry`/`ink`). `headline` memakai kalimat manusia (tanpa akronim teknis); label domain asli & istilah teknis ditampilkan di `detail` (lapisan Detail). Gerbang uji: `tests/copyLanguage.test.js` (cek `headline` + `subtitle`/`footer` tidak boleh ada akronim teknis).
 
 ### 2.2 Konteks (`ctx`) dibangun di dua tempat
 - **Klien** (`hazardService.js`): memanggil `/api/*` secara `allSettled`, merakit ctx, menjalankan `evaluate` untuk 1 lokasi → UI tetap bekerja offline dengan cache SW.
