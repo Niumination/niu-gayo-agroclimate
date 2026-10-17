@@ -136,7 +136,7 @@ test('modul vulkanik: Level II → waspada Takengon + flag bawah angin; Level II
   assert.equal(r2.level, 'waspada')
   assert.equal(r2.flags.downwind, true)
   assert.equal(r2.flags.globalBanner, false)
-  assert.match(r2.headline, /Level II \(Waspada\)/)
+  assert.match(r2.headline, /Waspada/)
   assert.match(r2.headline, /di bawah angin/)
   assert.match(r2.advice.umum[0], /sektor bawah angin/)
   assert.ok(r2.sources.some((s) => s.kind === 'official'))

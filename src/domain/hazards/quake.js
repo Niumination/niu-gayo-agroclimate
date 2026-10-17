@@ -72,14 +72,6 @@ const ADVICE_BASE = {
   sekolah: ['Latihan evakuasi; periksa retakan struktur, atap & tandon air sebelum kelas dipakai kembali.'],
 }
 
-function fmtTimeWib(iso) {
-  try {
-    return new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)) + ' WIB'
-  } catch {
-    return iso
-  }
-}
-
 export default {
   id: 'gempa',
   group: 'geologi',
@@ -129,7 +121,7 @@ export default {
       : []
     const hist = doc.history
     const headline = top
-      ? `${level === 'rendah' && top.ageH > QUAKE.windowH.decay ? 'Terakhir: ' : ''}M${top.mag} ${fmtTimeWib(top.time)} · ${top.distKm} km · ${top.region || 'BMKG'} · MMI indikatif ${top.impact.roman}${top.official ? ` (BMKG ${top.official.mmi} ${top.official.place})` : ''}`
+      ? `Terakhir M${top.mag}, ${top.distKm} km. ${top.impact.label}`
       : `Tidak ada gempa relevan (≤ ${doc.radiusKm ?? 300} km) dalam umpan BMKG terkini`
     const detail = [
       top ? `${top.impact.label}. Estimasi dari relasi atenuasi sederhana — rujuk shakemap/BMKG untuk intensitas resmi.` : 'Umpan BMKG memuat 15 gempa dirasakan + 15 gempa M ≥ 5 terakhir se-Indonesia; hanya yang relevan untuk Gayo ditampilkan.',

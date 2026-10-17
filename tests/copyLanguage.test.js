@@ -127,3 +127,52 @@ test('angka teknis di kartu lama berada di balik "Angka & istilah teknis"', () =
     assert.match(src, /<summary/, `${f} summary hilang`)
   }
 })
+
+// Akronim yang dilarang di lapisan Ringkas (P7/03-BAHASA.md §3).
+// Nama lembaga (BMKG, PVMBG, MAGMA, USGS) dan kata bahasa Indonesia (DAS, SIAGA) dikecualikan —
+// bukan akronim teknis, melainkan nama proper yang wajib disebut.
+const BANNED_ACRONYMS = [
+  'HTH', 'ISPU', 'VPD', 'CAPE', 'FWI', 'MMI', 'ERA5', 'GloFAS', 'ECMWF',
+  'PM2,5', 'PM10', 'SPI', 'AOD', 'FFMC', 'GFS', 'IFS', 'FDRS', 'ARI', 'ET0',
+  'CAMS', 'FIRMS', 'NASA', 'WMO', 'NOAA',
+]
+
+test('headline modul bahaya: lapis 1 tanpa akronim teknis', () => {
+  const files = [
+    'airQuality.js', 'convective.js', 'drought.js', 'fireWeather.js',
+    'quake.js', 'temperature.js', 'volcano.js', 'wind.js', 'landslide.js', 'rust.js',
+  ]
+  for (const f of files) {
+    const lines = read(`src/domain/hazards/${f}`).split('\n')
+    for (let i = 0; i < lines.length; i++) {
+      if (!/headline\s*[:=]/.test(lines[i])) continue
+      // Kumpulkan baris headline sampai ketemu `detail:` atau akhir assignment
+      const blockLines = [lines[i]]
+      for (let j = i + 1; j < Math.min(i + 6, lines.length); j++) {
+        if (/detail\s*[:=]/.test(lines[j])) break
+        blockLines.push(lines[j])
+        if (/[,}]\s*$/.test(lines[j])) break
+      }
+      const staticParts = blockLines.join(' ').replace(/\$\{[^}]*\}/g, ' ')
+      for (const acr of BANNED_ACRONYMS) {
+        const re = new RegExp(`\\b${acr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
+        assert.equal(re.test(staticParts), false, `${f}:${i + 1}: akronim "${acr}" muncul di headline lapis 1`)
+      }
+    }
+  }
+})
+
+test('HazardFocusCards: subtitle & footer tanpa akronim teknis', () => {
+  const src = read('src/components/HazardFocusCards.jsx')
+  // Ekstrak string literal subtitle="..." dan footer="..." (single/double/backtick)
+  const patterns = ['subtitle', 'footer'].flatMap((key) =>
+    [...src.matchAll(new RegExp(`${key}=\\s*"([^"]{4,})"`, 'g'))].map((m) => m[1])
+  )
+  assert.ok(patterns.length >= 8, `hanya ${patterns.length} subtitle/footer ditemukan`)
+  for (const val of patterns) {
+    for (const acr of BANNED_ACRONYMS) {
+      const re = new RegExp(`\\b${acr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
+      assert.equal(re.test(val), false, `subtitle/footer mengandung "${acr}": "${val.slice(0, 80)}"`)
+    }
+  }
+})

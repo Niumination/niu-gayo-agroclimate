@@ -110,13 +110,13 @@ export default {
     const modelTxt = r.signals.gfs === 'n/a' ? 'ECMWF saja (GFS tidak tersedia)' : r.agreement ? 'ECMWF & GFS sepakat' : `model tidak sepakat (ECMWF ${r.signals.ecmwf}, GFS ${r.signals.gfs}) → ikut sinyal terkuat`
     const headline =
       level === 'rendah'
-        ? `Atmosfer relatif stabil 12 jam ke depan (CAPE maks ${r.maxCape ?? '–'} J/kg${r.minLi != null ? `, LI min ${r.minLi}` : ''})`
-        : `${r.tsCode ? 'Badai petir dalam prakiraan' : 'Potensi badai petir'} · puncak ${fmtHour(r.peakTime)} · CAPE ${r.maxCape ?? '–'} J/kg${r.minLi != null ? ` · LI ${r.minLi}` : ''}${r.hail ? ' · potensi hujan es' : ''}${r.tornado ? ' · potensi puting beliung' : ''}`
+        ? 'Atmosfer relatif stabil 12 jam ke depan'
+        : `${r.tsCode ? 'Badai petir dalam prakiraan' : 'Potensi badai petir'} · puncak ${fmtHour(r.peakTime)}${r.hail ? ' · potensi hujan es' : ''}${r.tornado ? ' · potensi puting beliung' : ''}`
     return {
       level,
       score: Math.min(100, Math.round(((r.maxCape ?? 0) / 3000) * 100)),
       headline,
-      detail: `${modelTxt}. Hembusan maks ${Math.round(r.maxGust)} km/jam, hujan maks ${r.maxRain} mm/jam dalam horizon${bmkgActive ? '; peringatan dini cuaca BMKG aktif untuk Aceh' : ''}. Hujan es hanya indikasi kualitatif (kode cuaca 96/99 atau CAPE ≥ ${CONVECTIVE.hail.cape} & LI ≤ ${CONVECTIVE.hail.li}).`,
+      detail: `${modelTxt}. Energi potensial konvektif (CAPE) maksimum ${r.maxCape ?? '–'} J/kg${r.minLi != null ? `, Lifted Index (LI) minimum ${r.minLi}` : ''}. Hembusan maks ${Math.round(r.maxGust)} km/jam, hujan maks ${r.maxRain} mm/jam dalam horizon${bmkgActive ? '; peringatan dini cuaca BMKG aktif untuk Aceh' : ''}. Hujan es hanya indikasi kualitatif (kode cuaca 96/99 atau CAPE ≥ ${CONVECTIVE.hail.cape} & LI ≤ ${CONVECTIVE.hail.li}).`,
       metrics: [
         { key: 'capeEcmwf', label: 'CAPE maks ECMWF', value: r.maxCape, unit: 'J/kg' },
         { key: 'capeGfs', label: 'CAPE maks GFS', value: r.maxCapeGfs, unit: 'J/kg' },

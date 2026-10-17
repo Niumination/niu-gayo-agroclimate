@@ -141,7 +141,7 @@ test('assessFireDanger: gerbang FFMC ekstrem, hotspot menaikkan level, ekstrem &
   assert.equal(a.level, 'waspada')
   assert.equal(a.drivers.ffmcExtremeGated, true)
   assert.equal(a.siagaLokal, false)
-  assert.match(a.headline, /FWI 9\.0 — Tinggi · FFMC 88 \(Ekstrem\)/)
+  assert.match(a.headline, /Api Tinggi/)
   // HTH ≥ 21 membuka gerbang → bahaya
   const b = assessFireDanger({ fwi: dry, hthDays: 25 })
   assert.equal(b.displayClass, 'ekstrem')
@@ -164,7 +164,7 @@ test('assessFireDanger: gerbang FFMC ekstrem, hotspot menaikkan level, ekstrem &
   const f = assessFireDanger({ fwi: null, hotspots: { within10km24h: 2, within25km24h: 2 } })
   assert.equal(f.level, 'bahaya')
   assert.equal(f.displayClass, null)
-  assert.equal(f.headline, 'Kode FWI belum tersedia')
+  assert.equal(f.headline, 'Kode bahaya api belum tersedia')
   // basah → rendah
   const wet = assessFireDanger({ fwi: { ffmc: 40, dmc: 1, dc: 10, isi: 0.1, bui: 1, fwi: 0 } })
   assert.equal(wet.level, 'rendah')

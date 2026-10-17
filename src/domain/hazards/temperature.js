@@ -128,7 +128,7 @@ export default {
       metrics: [
         { key: 'tmin', label: `Tmin ${fmtD(worstCold.date)}`, value: worstCold.tmin, unit: '°C' },
         { key: 'tmax', label: `Tmax ${fmtD(worstHeat.date)}`, value: worstHeat.tmax, unit: '°C' },
-        { key: 'vpd', label: 'VPD siang rata-rata', value: worstHeat.vpd, unit: 'kPa' },
+        { key: 'vpd', label: 'Tekanan uap siang', value: worstHeat.vpd, unit: 'kPa' },
         { key: 'dew', label: 'Titik embun malam terdingin', value: th.days[0]?.night?.dewAtColdest ?? null, unit: '°C' },
         { key: 'elevation', label: 'Elevasi sentra', value: elevation, unit: 'm' },
       ],

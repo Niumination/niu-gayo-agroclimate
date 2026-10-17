@@ -310,8 +310,8 @@ export default {
     return {
       level,
       score: a.ispu?.index ?? null,
-      headline: `ISPU ${a.ispu.index} — ${a.ispu.category.label} (${a.ispu.paramLabel})${hazeTxt}`,
-      detail: `${a.ispu.basis === 'sesaat' ? 'Nilai sesaat' : `Rata-rata ${a.ispu.hours} jam`}; PM2,5 ${a.measurements?.pm25 ?? '–'} µg/m³, AOD ${a.measurements?.aod ?? '–'}. ${a.outlook?.peakIndex != null ? `Prospek puncak ISPU ${a.outlook.peakIndex} (${a.outlook.trend}).` : ''}${esc.escalate ? ` Dinaikkan 1 tingkat: ${esc.count} laporan warga jarak pandang < 1 km dalam 6 jam.` : ''}`.trim(),
+      headline: `Udara ${a.ispu.category.label.toLowerCase()} · ${a.ispu.paramLabel}${hazeTxt}`,
+      detail: `Indeks Standar Pencemar Udara (ISPU) ${a.ispu.index} — ${a.ispu.category.label}. ${a.ispu.basis === 'sesaat' ? 'Nilai sesaat' : `Rata-rata ${a.ispu.hours} jam`}; PM2,5 ${a.measurements?.pm25 ?? '–'} µg/m³, AOD ${a.measurements?.aod ?? '–'}. ${a.outlook?.peakIndex != null ? `Prospek puncak ISPU ${a.outlook.peakIndex} (${a.outlook.trend}).` : ''}${esc.escalate ? ` Dinaikkan 1 tingkat: ${esc.count} laporan warga jarak pandang < 1 km dalam 6 jam.` : ''}`.trim(),
       metrics: [
         { key: 'ispu', label: 'ISPU', value: a.ispu.index, unit: '' },
         { key: 'pm25', label: 'PM2,5', value: a.measurements?.pm25 ?? null, unit: 'µg/m³' },

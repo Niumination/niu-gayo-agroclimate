@@ -234,8 +234,8 @@ export default {
     return {
       level,
       score: h.days != null ? Math.min(100, Math.round((h.days / 60) * 100)) : null,
-      headline: `HTH ${h.days} hari — ${h.classLabel}${proj}${LEVEL_RANK[spiLevel] > LEVEL_RANK[a.level] ? ` · SPI ${Math.min(spi.spi1?.value ?? 0, spi.spi3?.value ?? 0)}` : ''}`,
-      detail: `Hujan terakhir ${h.lastRainDate ?? '–'}${h.lastRainMm != null ? ` (${h.lastRainMm} mm)` : ''}; neraca air 30 hari ${b?.balance ?? '–'} mm (hujan ${b?.rain ?? '–'} / ET0 ${b?.et0 ?? '–'} mm).${spiTxt}${vpdTxt}${p.archive?.lagDays != null ? ` Arsip tertinggal ${p.archive.lagDays} hari.` : ''}`,
+      headline: `${h.days} hari tanpa hujan — ${h.classLabel}${proj}`,
+      detail: `Hari Tanpa Hujan (HTH) ${h.days} hari. Hujan terakhir ${h.lastRainDate ?? '–'}${h.lastRainMm != null ? ` (${h.lastRainMm} mm)` : ''}; neraca air 30 hari ${b?.balance ?? '–'} mm (hujan ${b?.rain ?? '–'} / ET0 ${b?.et0 ?? '–'} mm).${spiTxt}${vpdTxt}${p.archive?.lagDays != null ? ` Arsip tertinggal ${p.archive.lagDays} hari.` : ''}`,
       metrics: [
         { key: 'hthDays', label: 'Hari tanpa hujan', value: h.days, unit: 'hari' },
         { key: 'hthProjected', label: 'Proyeksi HTH', value: h.projected?.days ?? null, unit: 'hari' },

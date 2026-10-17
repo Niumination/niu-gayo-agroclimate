@@ -16,6 +16,7 @@ const FILL = { ekstrem: 'var(--color-level-ekstrem)', bahaya: 'var(--color-level
 const num = (v, d = 0) => (v == null || Number.isNaN(Number(v)) ? '—' : Number(v).toLocaleString('id-ID', { maximumFractionDigits: d, minimumFractionDigits: d }))
 const hhmm = (t) => (t ? `${String(t).slice(11, 16)}` : '—')
 const ddmm = (d) => (d ? `${d.slice(8, 10)}/${d.slice(5, 7)}` : '—')
+const STORM_METRIC_LABEL = { capeEcmwf: 'Energi badai maks', li: 'Instabilitas maks', gust: 'Hembusan maks' }
 
 function Shell({ title, subtitle, level, children, footer, ariaLabel }) {
   return (
@@ -75,13 +76,13 @@ export function StormCard({ hazards }) {
   const f = r.flags ?? {}
   const hours = f.hours ?? []
   return (
-    <Shell title="Petir & Badai" subtitle="Indeks konvektif 12 jam — ECMWF (CAPE, kode cuaca) × GFS (Lifted Index)" level={r.level} ariaLabel="Petir dan badai konvektif" footer={`${(r.sources ?? []).map((s) => s.name).join(' · ')} · estimasi model, bukan peringatan resmi`}>
+    <Shell title="Petir & Badai" subtitle="Indeks konvektif 12 jam — dua model cuaca global" level={r.level} ariaLabel="Petir dan badai konvektif" footer="Estimasi model, bukan peringatan resmi">
       <p className={`text-body font-medium ${TONE[r.level]}`}>{r.headline}</p>
       {hours.length > 0 && (
         <div>
           <div className="flex gap-[2px] h-6" role="img" aria-label="Level konvektif per jam 12 jam ke depan">
             {hours.map((h) => (
-              <span key={h.time} title={`${hhmm(h.time)} WIB: ${LEVEL_LABEL[h.level]} · CAPE ${num(h.capeEcmwf)} J/kg${h.li != null ? ` · LI ${h.li}` : ''}${h.gust ? ` · hembusan ${num(h.gust)} km/jam` : ''}`} className="flex-1 rounded-xs" style={{ backgroundColor: FILL[h.level], opacity: h.level === 'rendah' ? 0.35 : 0.9 }} />
+              <span key={h.time} title={`${hhmm(h.time)} WIB: ${LEVEL_LABEL[h.level]}${h.gust ? ` · hembusan ${num(h.gust)} km/jam` : ''}`} className="flex-1 rounded-xs" style={{ backgroundColor: FILL[h.level], opacity: h.level === 'rendah' ? 0.35 : 0.9 }} />
             ))}
           </div>
           <div className="flex justify-between text-caption text-ink-muted dark:text-mist-subtle mt-1">
@@ -93,7 +94,7 @@ export function StormCard({ hazards }) {
       )}
       <div className="grid grid-cols-3 gap-3">
         {r.metrics.filter((m) => ['capeEcmwf', 'li', 'gust'].includes(m.key)).map((m) => (
-          <Metric key={m.key} label={m.label} value={num(m.value, m.key === 'li' ? 1 : 0)} unit={m.unit} />
+          <Metric key={m.key} label={STORM_METRIC_LABEL[m.key] ?? m.label} value={num(m.value, m.key === 'li' ? 1 : 0)} unit={m.unit} />
         ))}
       </div>
       <div className="flex flex-wrap gap-2 text-caption">
@@ -146,7 +147,7 @@ export function FloodCard({ hazards, flood }) {
   if (!r || r.level === 'n/a' || !flood?.cells?.length) return null
   const cell = flood.cells.find((c) => c.id === r.flags?.cell) ?? flood.cells[0]
   return (
-    <Shell title="Debit Sungai & Luapan DAS Peusangan" subtitle={`GloFAS v4 (Copernicus) sel ${cell.name} · klimatologi ${flood.climatology?.period?.split(' ')[0] ?? '1997'}–2025`} level={r.level} ariaLabel="Debit sungai dan luapan DAS Peusangan" footer={`${flood.label ?? 'Model hidrologi global — bukan muka air terukur.'}${cell.stale ? ' · nilai terakhir (API gagal)' : ''}`}>
+    <Shell title="Debit Sungai & Luapan DAS Peusangan" subtitle={`Model hidrologi global sel ${cell.name} · klimatologi ${flood.climatology?.period?.split(' ')[0] ?? '1997'}–2025`} level={r.level} ariaLabel="Debit sungai dan luapan DAS Peusangan" footer={`${flood.label ?? 'Model hidrologi global — bukan muka air terukur.'}${cell.stale ? ' · nilai terakhir (API gagal)' : ''}`}>
       <p className={`text-body font-medium ${TONE[r.level]}`}>{r.headline}</p>
       <DischargeChart cell={cell} />
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-ink-muted dark:text-mist-muted">
@@ -181,14 +182,14 @@ export function TemperatureCard({ hazards }) {
   if (!r || r.level === 'n/a') return null
   const days = r.flags?.days ?? []
   return (
-    <Shell title="Suhu & Kopi" subtitle="Stres dingin / embun upas & panas / aborsi bunga — 3 hari ke depan" level={r.level} ariaLabel="Suhu ekstrem untuk kopi" footer="Suhu udara 2 m model ECMWF; permukaan daun/rumput bisa lebih dingin 2–4 °C pada malam cerah & tenang.">
+    <Shell title="Suhu & Kopi" subtitle="Stres dingin / embun upas & panas / aborsi bunga — 3 hari ke depan" level={r.level} ariaLabel="Suhu ekstrem untuk kopi" footer="Suhu udara 2 m dari model cuaca global; permukaan daun/rumput bisa lebih dingin 2–4 °C pada malam cerah & tenang.">
       <p className={`text-body font-medium ${TONE[r.level]}`}>{r.headline}</p>
       <div className="grid grid-cols-3 gap-2">
         {days.map((d) => (
           <div key={d.date} className="rounded-lg border border-ink/10 dark:border-mist/10 p-2">
             <p className="text-caption text-ink-muted dark:text-mist-muted">{ddmm(d.date)}</p>
             <p className="font-data text-body tabular-nums text-ink dark:text-mist"><span className={TONE[d.cold] || ''}>{num(d.tmin, 1)}</span> <span className="text-ink-subtle dark:text-mist-subtle">/</span> <span className={TONE[d.heat] || ''}>{num(d.tmax, 1)}</span> <span className="text-caption text-ink-muted dark:text-mist-muted">°C</span></p>
-            {d.vpd != null && <p className="text-caption text-ink-muted dark:text-mist-subtle">VPD {num(d.vpd, 2)} kPa</p>}
+            {d.vpd != null && <p className="text-caption text-ink-muted dark:text-mist-subtle">Tekanan uap {num(d.vpd, 2)} kPa</p>}
           </div>
         ))}
       </div>
@@ -208,7 +209,7 @@ export function QuakeCard({ hazards }) {
   if (!r || r.level === 'n/a') return null
   const recent = r.flags?.recent ?? []
   return (
-    <Shell title="Gempa Bumi" subtitle="BMKG (gempa dirasakan, M ≥ 5, terkini) + riwayat USGS 10 tahun" level={r.level} ariaLabel="Gempa bumi" footer="MMI per sentra = estimasi atenuasi (indikatif); info resmi: bmkg.go.id / aplikasi InfoBMKG">
+    <Shell title="Gempa Bumi" subtitle="Gempa dirasakan & M ≥ 5 terkini + riwayat 10 tahun" level={r.level} ariaLabel="Gempa bumi" footer="Intensitas per sentra = estimasi (indikatif); info resmi: bmkg.go.id / aplikasi InfoBMKG">
       <p className={`text-body font-medium ${TONE[r.level]}`}>{r.headline}</p>
       {recent.length > 0 && (
         <ul className="divide-y divide-ink/10 dark:divide-mist/10 text-caption">
@@ -231,7 +232,7 @@ export function VolcanoCard({ hazards, volcano }) {
   if (!r || r.level === 'n/a') return null
   const v = volcano?.volcano
   return (
-    <Shell title="Gunung Burni Telong" subtitle={v ? `Tingkat aktivitas Level ${v.roman ?? v.level ?? ''} ${v.label ?? ''} (PVMBG/MAGMA)` : 'Tingkat aktivitas PVMBG (MAGMA Indonesia)'} level={r.level} ariaLabel="Aktivitas Gunung Burni Telong" footer="Sumber: MAGMA Indonesia (PVMBG, Badan Geologi) · sektor bawah angin dari angin 10 m model">
+    <Shell title="Gunung Burni Telong" subtitle={v ? `Tingkat aktivitas Level ${v.roman ?? v.level ?? ''} ${v.label ?? ''}` : 'Tingkat aktivitas gunung api'} level={r.level} ariaLabel="Aktivitas Gunung Burni Telong" footer="Sumber: MAGMA Indonesia (Badan Geologi) · sektor bawah angin dari angin 10 m model">
       <p className={`text-body font-medium ${TONE[r.level]}`}>{r.headline}</p>
       <div className="grid grid-cols-3 gap-3">
         {r.metrics.slice(0, 3).map((m) => (

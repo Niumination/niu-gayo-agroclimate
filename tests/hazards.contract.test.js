@@ -176,7 +176,7 @@ test('asap: adaptor payload /api/air-quality + eskalasi laporan warga', () => {
   const payload = { location: LOC, retrievedAt: '2026-10-15T10:00:00Z', source: { name: 'CAMS' }, degraded: false, assessment }
   const base = evaluateAll({ location: LOC, now: '2026-10-15T10:00:00Z', airQuality: payload }, { enabled: ['asap'] }).results[0]
   assert.equal(base.level, assessment.level)
-  assert.match(base.headline, /^ISPU \d+/)
+  assert.match(base.headline, /^Udara /)
   assert.equal(base.metrics.find((m) => m.key === 'ispu').value, assessment.ispu.index)
   assert.equal(base.flags.estimate, true)
   assert.ok(Array.isArray(base.advice.umum) && typeof base.advice.umum[0] === 'string', 'advice.umum dari healthAdvice.groups')
@@ -207,8 +207,8 @@ test('kebakaran: adaptor payload /api/fire-danger (kode + hotspot + siaga lokal)
   assert.equal(r.level, assessment.level)
   assert.equal(r.level, 'ekstrem')
   assert.equal(r.flags.siagaLokal, true)
-  assert.match(r.headline, /FWI 15\.0/)
-  assert.match(r.headline, /SIAGA/)
+  assert.match(r.headline, /Api /)
+  assert.match(r.headline, /siaga kebakaran setempat/)
   assert.equal(r.metrics.find((m) => m.key === 'hotspots25km24h').value, 1)
   assert.equal(r.sources.length, 2)
   assert.ok(r.advice.umum.length > 0)
@@ -227,7 +227,7 @@ test('kekeringan: adaptor payload /api/drought (HTH + neraca air)', () => {
   const payload = { location: LOC, retrievedAt: '2026-10-15T10:00:00Z', source: { name: 'ERA5' }, degraded: false, archive: { lagDays: 5 }, assessment }
   const r = evaluateAll({ location: LOC, now: 'x', drought: payload }, { enabled: ['kekeringan'] }).results[0]
   assert.equal(r.level, assessment.level)
-  assert.match(r.headline, new RegExp(`^HTH ${assessment.hth.days} hari`))
+  assert.match(r.headline, new RegExp(`^${assessment.hth.days} hari tanpa hujan`))
   assert.equal(r.metrics.find((m) => m.key === 'hthDays').value, assessment.hth.days)
   assert.equal(r.metrics.find((m) => m.key === 'balance30').value, assessment.balance30.balance)
   assert.equal(r.flags.lagDays, 5)

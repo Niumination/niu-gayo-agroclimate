@@ -66,7 +66,7 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
     return !v || v === k ? fallback : v
   }
   const title = label('fireDanger', 'Bahaya Kebakaran & Hotspot')
-  const subtitle = label('fireDangerSub', 'FWI System (FDRS Indonesia) dari ERA5/ECMWF + hotspot NASA FIRMS')
+  const subtitle = label('fireDangerSub', 'Perkiraan risiko kebakaran dari cuaca kering dan titik panas satelit.')
 
   const shell = (children) => (
     <section aria-label={title} className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">

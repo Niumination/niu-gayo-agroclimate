@@ -246,8 +246,8 @@ export function assessFireDanger({ fwi: codes = null, hotspots = null, hthDays: 
   // FR-API-5: Siaga Kebakaran Lokal = FFMC ≥ 78 DAN hotspot ≤ 25 km (24 jam).
   const siagaLokal = !!codes && codes.ffmc >= FWI_OPS.siagaFfmc && hs25 > 0
   const headline = codes
-    ? `FWI ${codes.fwi.toFixed(1)} — ${capital(classes.fwi)} · FFMC ${codes.ffmc.toFixed(0)} (${capital(classes.ffmc)})`
-    : 'Kode FWI belum tersedia'
+    ? `Api ${capital(classes.fwi)}${siagaLokal ? ' · siaga kebakaran setempat' : ''}`
+    : 'Kode bahaya api belum tersedia'
   return {
     level,
     displayClass: display,
@@ -288,11 +288,12 @@ export default {
     const level = a.level ?? p.level ?? 'rendah'
     const fdrs = a.displayClass ? ` (${String(a.displayClass).charAt(0).toUpperCase()}${String(a.displayClass).slice(1)})` : ''
     const hsTxt = p.hotspots?.degraded ? 'hotspot: tidak tersedia' : `hotspot 24 jam: ${hs?.within10km24h ?? 0} ≤ 10 km · ${hs?.within25km24h ?? 0} ≤ 25 km`
+    const fwiClass = a.displayClass ? `${String(a.displayClass).charAt(0).toUpperCase()}${String(a.displayClass).slice(1)}` : 'Rendah'
     return {
       level,
       score: codes ? Math.round(Math.min(100, (codes.fwi / 20) * 100)) : null,
-      headline: codes ? `FWI ${codes.fwi.toFixed(1)}${fdrs}${a.siagaLokal ? ' · SIAGA KEBAKARAN LOKAL' : ''}` : a.headline ?? 'Kode FWI belum tersedia',
-      detail: `${codes ? `FFMC ${Math.round(codes.ffmc)}, DC ${Math.round(codes.dc)}, ISI ${codes.isi.toFixed(1)}` : 'FWI belum dihitung'}; ${hsTxt}; HTH ${p.hth?.days ?? '–'} hari.${p.fwi?.latest?.isToday === false ? ' Kode terakhir = kemarin (pengamatan 12.00 WIB belum lewat).' : ''}`,
+      headline: codes ? `Api ${fwiClass}${a.siagaLokal ? ' · siaga kebakaran setempat' : ''}` : 'Kode bahaya api belum tersedia',
+      detail: `Fire Weather Index (FWI) ${codes ? codes.fwi.toFixed(1) : 'belum dihitung'}${fdrs}. ${codes ? `FFMC ${Math.round(codes.ffmc)}, DC ${Math.round(codes.dc)}, ISI ${codes.isi.toFixed(1)}` : ''}; ${hsTxt}; hari tanpa hujan ${p.hth?.days ?? '–'} hari.${p.fwi?.latest?.isToday === false ? ' Kode terakhir = kemarin (pengamatan 12.00 WIB belum lewat).' : ''}`,
       metrics: [
         { key: 'fwi', label: 'FWI', value: codes?.fwi ?? null, unit: '' },
         { key: 'ffmc', label: 'FFMC', value: codes ? Math.round(codes.ffmc) : null, unit: '' },
