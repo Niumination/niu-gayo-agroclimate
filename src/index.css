@@ -97,8 +97,8 @@
   --color-coffee-950: #341d17;
 
   /* "Stasiun Cuaca Kebun" — palet lapangan kopi Arabika Gayo */
-  --color-soil: #1A1512;        /* dasar gelap, coklat vulkanik hangat */
-  --color-mist: #E8E3DA;        /* kabut dataran tinggi — teks di gelap */
+  --color-soil: #101C28;        /* dasar gelap, coklat vulkanik hangat */
+  --color-mist: #F2F6FA;        /* kabut dataran tinggi — teks di gelap */
   --color-leaf: #4E7A52;        /* hijau daun arabika — primer/aman */
   --color-leaf-soft: #8FBE93;   /* tint leaf untuk teks kecil di mode gelap (AA) */
   --color-leaf-deep: #2F5A35;   /* shade leaf untuk teks di mode terang (AA) */
@@ -111,30 +111,30 @@
   --color-rain: #3E6B8A;        /* biru hujan — info */
   --color-rain-soft: #8FB6CE;
   --color-rain-deep: #2C5069;
-  --color-surface: #FAF7F2;     /* kertas penjemuran (mode terang) */
-  --color-ink: #221C18;         /* teks mode terang */
+  --color-surface: #F1E7D8;     /* kertas penjemuran (mode terang) */
+  --color-ink: #241E17;         /* teks mode terang */
 
   /* --- Token semantik peran (fase design/UX, 2026-10-16) -------------------
      Nilai & kontras terukur ada di docs/reference/DESIGN-TOKENS.md.
      Pemakaian: `text-ink-muted`, `dark:text-mist-body`, `bg-surface-raised`, dst.
      Jangan kembali memakai opasitas (text-ink/45) untuk teks — gerbang
      `npm run check:contrast -- --strict` akan menolaknya. */
-  --color-surface-raised: #FFFFFF;   /* kartu di atas permukaan (terang) */
-  --color-surface-sunken: #F1ECE4;   /* area terbenam (terang) */
-  --color-ink-soft: #3D352E;         /* teks sekunder kuat     (11,25:1) */
-  --color-ink-body: #524941;         /* teks isi               ( 8,23:1) */
-  --color-ink-muted: #6A6058;        /* metadata/label         ( 5,73:1) */
-  --color-ink-subtle: #70665C;       /* teks bantuan           ( 5,25:1) */
-  --color-mist-soft: #D3CCC2;        /* padanan gelap dari ink-soft   (11,37:1) */
-  --color-mist-body: #B8B1A7;        /* padanan gelap dari ink-body   ( 8,52:1) */
-  --color-mist-muted: #A79F95;       /* padanan gelap dari ink-muted  ( 6,93:1) */
-  --color-mist-subtle: #8F877E;      /* padanan gelap dari ink-subtle ( 5,12:1) */
-  --color-soil-raised: #241E19;      /* kartu tema gelap */
-  --color-soil-sunken: #120E0B;      /* area terbenam tema gelap */
-  --color-line-strong: #8A8078;      /* batas kontrol (3,61:1) */
-  --color-line-subtle: #DCD4C8;      /* pemisah dekoratif */
-  --color-line-strong-dark: #6B635C; /* batas kontrol tema gelap (3,07:1) */
-  --color-line-subtle-dark: #3A322B; /* pemisah dekoratif tema gelap */
+  --color-surface-raised: #FBF6EC;   /* kartu di atas permukaan (terang) */
+  --color-surface-sunken: #EFE4D2;   /* area terbenam (terang) */
+  --color-ink-soft: #3A3228;         /* teks sekunder kuat     (11,25:1) */
+  --color-ink-body: #4E4435;         /* teks isi               ( 8,23:1) */
+  --color-ink-muted: #6A5C4B;        /* metadata/label         ( 5,73:1) */
+  --color-ink-subtle: #6F614C;       /* teks bantuan           ( 5,25:1) */
+  --color-mist-soft: #DCE6F0;        /* padanan gelap dari ink-soft   (11,37:1) */
+  --color-mist-body: #CFDAE5;        /* padanan gelap dari ink-body   ( 8,52:1) */
+  --color-mist-muted: #A9B8C7;       /* padanan gelap dari ink-muted  ( 6,93:1) */
+  --color-mist-subtle: #93A5B6;      /* padanan gelap dari ink-subtle ( 5,12:1) */
+  --color-soil-raised: #16273B;      /* kartu tema gelap */
+  --color-soil-sunken: #0B1520;      /* area terbenam tema gelap */
+  --color-line-strong: #8A755A;      /* batas kontrol (3,61:1) */
+  --color-line-subtle: #DCCDB6;      /* pemisah dekoratif */
+  --color-line-strong-dark: #5C7389; /* batas kontrol tema gelap (3,07:1) */
+  --color-line-subtle-dark: #27394C; /* pemisah dekoratif tema gelap */
   --color-on-accent: #FFFFFF;        /* teks di atas aksen berwarna */
 
   /* Ramp level bahaya: warna + label + ikon (jangan warna saja — R5).

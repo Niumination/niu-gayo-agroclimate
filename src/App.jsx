@@ -5,6 +5,7 @@ import BottomNav from './components/BottomNav'
 import MobileTabShell from './components/MobileTabShell'
 import LocationRail from './components/LocationRail'
 import InstrumentPanel from './components/InstrumentPanel'
+import RingkasMobile from './pages/RingkasMobile.jsx'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
 import DisasterWarning from './components/DisasterWarning'
 import AirQualityCard from './components/AirQualityCard'
@@ -183,7 +184,15 @@ export default function App() {
   /* ---------- Konten per tab mobile ---------- */
   const mobileNow = data && (
     <>
-      <InstrumentPanel current={data.current} daily={data.daily} location={selectedLocation} tr={tr} />
+      <RingkasMobile
+        current={data.current}
+        daily={data.daily}
+        location={selectedLocation}
+        hazards={data.hazards}
+        hourly={data.hourly}
+        tr={tr}
+        onOpenRisk={() => setTab('risk')}
+      />
       {/* H-ASAP (v2 Fase 1) — kabut asap & kualitas udara, tampil di tab utama selama episode karhutla */}
       <AirQualityCard airQuality={data.airQuality} tr={tr} />
       <CoffeeAdvisory coffee={data.coffee} tr={tr} />

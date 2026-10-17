@@ -25,6 +25,8 @@ export default function DetailPanel({
   onClose,
   closeLabel = 'Tutup rincian',
   modal = false,
+  bare = false,
+  panels,
   aside,
   children,
 }) {
@@ -64,12 +66,17 @@ export default function DetailPanel({
   return (
     <div
       id={id}
-      role={modal ? 'dialog' : 'region'}
+      role={bare ? undefined : modal ? 'dialog' : 'region'}
       aria-modal={modal ? 'true' : undefined}
-      aria-labelledby={titleId}
-      className="rounded-tanah-kartu border border-tanah-garis bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu"
+      aria-labelledby={bare ? undefined : titleId}
+      aria-label={bare ? undefined : title}
+      className={
+        bare
+          ? ''
+          : 'rounded-tanah-kartu border border-tanah-garis bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu'
+      }
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className={bare ? 'sr-only' : 'flex items-start justify-between gap-3'}>
         <div className="min-w-0">
           <h2
             id={titleId}
@@ -129,10 +136,10 @@ export default function DetailPanel({
                   tabIndex={selected ? 0 : -1}
                   onClick={() => pick(t.id)}
                   onKeyDown={onKeyDown}
-                  className={`min-h-11 flex-1 rounded-t-tanah-kendali px-2 text-body-sm font-semibold transition-colors duration-100 ease-out dark:rounded-t-langit-kendali ${
+                  className={`-mb-px min-h-11 flex-1 border-b-2 px-2 text-body-sm font-semibold transition-colors duration-100 ease-out ${
                     selected
-                      ? 'bg-tanah-terbenam text-tanah-tinta dark:bg-langit-terbenam dark:text-langit-tinta'
-                      : 'text-tanah-tinta-redup hover:bg-tanah-terbenam/60 dark:text-langit-tinta-redup dark:hover:bg-langit-terbenam/60'
+                      ? 'border-tanah-aksen text-tanah-tinta dark:border-langit-aksen dark:text-langit-tinta'
+                      : 'border-transparent text-tanah-tinta-redup hover:border-tanah-garis-kuat hover:text-tanah-tinta dark:text-langit-tinta-redup dark:hover:border-langit-garis-kuat dark:hover:text-langit-tinta'
                   }`}
                 >
                   {t.label}
@@ -147,7 +154,7 @@ export default function DetailPanel({
             tabIndex={0}
             className="detail-scroll mt-3 overflow-x-auto"
           >
-            {children}
+            {panels ? panels[active] : children}
           </div>
         </>
       )}
