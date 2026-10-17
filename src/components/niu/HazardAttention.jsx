@@ -3,6 +3,7 @@ import AttentionCard from './AttentionCard.jsx'
 import DetailPanel from './DetailPanel.jsx'
 import { hazardPanels, HAZARD_TABS } from './HazardDetail.jsx'
 import { LEVEL_ORDER } from '../../domain/hazards/levels.js'
+import { HazardIcon } from '../../icons/index.jsx'
 
 /**
  * P7.4/P7.5 — daftar "Perlu perhatian".
@@ -67,6 +68,7 @@ export default function HazardAttention({
               <AttentionCard
                 id={`attn-${r.id}`}
                 title={name}
+                icon={<HazardIcon id={r.id} />}
                 summary={r.headline}
                 meta={score == null ? null : `Skor ${score}/100`}
                 level={r.level}

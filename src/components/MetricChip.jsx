@@ -11,13 +11,16 @@ const TONE = {
   info: 'text-rain-deep dark:text-rain-soft',
 }
 
+const fmt = (v) =>
+  typeof v === 'number' ? v.toLocaleString('id-ID', { maximumFractionDigits: 1 }) : v
+
 export default function MetricChip({ label, value, unit, note, tone = 'default', className = '' }) {
   return (
     <div className={`min-w-0 ${className}`}>
       <div className="text-body font-medium text-ink-muted dark:text-mist-muted leading-tight">{label}</div>
       <div className="mt-1 flex items-baseline gap-1">
         <span className={`font-data text-xl font-semibold tabular-nums tracking-tight ${TONE[tone] || TONE.default}`}>
-          {value}
+          {fmt(value)}
         </span>
         {unit ? <span className="font-data text-caption text-ink-muted dark:text-mist-muted tabular-nums">{unit}</span> : null}
       </div>

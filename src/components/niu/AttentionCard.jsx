@@ -31,6 +31,7 @@ export default function AttentionCard({
   expanded = false,
   onToggle,
   detailId = `${id}-detail`,
+  icon = null,
   actionLabel = 'Detail',
   closeLabel = 'Tutup rincian',
   children,
@@ -43,7 +44,9 @@ export default function AttentionCard({
       className={`rounded-tanah-kartu border border-tanah-garis border-l-4 bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu ${EDGE[key]}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
-        <div className="min-w-0">
+        <div className="flex min-w-0 items-start gap-2.5">
+          {icon && <span className="mt-0.5 shrink-0 text-tanah-aksen dark:text-langit-aksen">{icon}</span>}
+          <div className="min-w-0">
           <h3 className="text-body font-semibold leading-snug break-words text-tanah-tinta dark:text-langit-tinta">
             {title}
           </h3>
@@ -52,6 +55,7 @@ export default function AttentionCard({
               {summary}
             </p>
           )}
+          </div>
         </div>
         <LevelBadge level={key} label={levelLabel} size="sm" className="pt-0.5" />
       </div>

@@ -22,7 +22,7 @@ export const messages = {
     humidity: 'Kelembapan udara',
     humiditySub: 'Seberapa banyak uap air di udara',
     rainNow: 'Hujan saat ini',
-    rainProb: 'Peluang hujan hari ini',
+    rainProb: 'Peluang hujan',
     windSpeed: 'Kecepatan angin',
     windSub: 'Angin pada ketinggian 10 meter',
     hourlyTrend: 'Cuaca 12 jam ke depan',

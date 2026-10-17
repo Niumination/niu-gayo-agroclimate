@@ -5,6 +5,7 @@ import { InteractionsList } from './HazardFocusCards.jsx'
 import { prefs } from '../lib/prefs.js'
 import ShareButton from './ShareButton.jsx'
 import EmptyState from './EmptyState'
+import { HazardIcon } from '../icons/index.jsx'
 import LevelBadge from './niu/LevelBadge.jsx'
 
 /**
@@ -67,7 +68,10 @@ function HazardRow({ r, open, onToggle, onSelect }) {
         className="min-h-11 inline-flex items-center w-full text-left flex items-start justify-between gap-3 transition duration-100 ease-out active:scale-[.97]"
       >
         <div className="min-w-0">
-          <p className="text-body font-medium text-ink-body dark:text-mist-body break-words">{label}</p>
+          <p className="flex items-start gap-2 text-body font-medium text-ink-body dark:text-mist-body break-words">
+            <HazardIcon id={r.id} className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted dark:text-mist-muted" />
+            <span className="min-w-0">{label}</span>
+          </p>
           <p className={`text-caption leading-snug mt-0.5 ${r.level === 'n/a' ? 'text-ink-muted dark:text-mist-subtle' : 'text-ink-body dark:text-mist-muted'}`}>{r.headline}</p>
         </div>
         <div className="shrink-0 flex items-baseline gap-2">
@@ -120,18 +124,23 @@ export default function HazardPanel({ hazards, location, onAbout, onToggleHidden
       ? counts.degraded === counts.total
         ? 'Data bahaya belum tersedia'
         : 'Tidak ada bahaya aktif saat ini'
-      : `${active.length} bahaya aktif — tertinggi: ${LEVEL_LABEL[worst]}`
+      : `${active.length} bahaya perlu perhatian, terberat: ${LEVEL_LABEL[worst]}`
   const groups = [...new Set(results.map((r) => r.group))].map((g) => GROUP_LABEL[g] || g).join(' · ')
+  const groupsHuman = groups
+    .replace('Agro-kopi', 'Kebun kopi')
+    .replace('Hidrometeorologi', 'Hujan & angin')
+    .replace('Atmosfer & kebakaran', 'Udara & api')
+    .replace('Geologi', 'Tanah & gunung')
 
   return (
     <section
-      aria-label="Indeks bahaya majemuk"
+      aria-label="Daftar bahaya di sekitar"
       className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
     >
       <div className="pb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">Indeks Bahaya {location?.name ? `— ${location.name}` : ''}</h2>
-          <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{groups}</p>
+          <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">Bahaya di sekitar {location?.name ?? 'Anda'}</h2>
+          <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">Semua yang perlu dipantau hari ini: {groupsHuman}</p>
         </div>
         <LevelBadge level={worst} />
       </div>
