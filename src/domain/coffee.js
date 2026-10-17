@@ -12,7 +12,7 @@ export function tempStatus(temp) {
 
 export function rustRisk(rh, temp) {
   if (rh >= RUST.rhHigh && temp >= RUST.tempMin && temp <= RUST.tempMax) {
-    return { level: 'Tinggi', desc: 'Kombinasi RH >85% dan suhu hangat sangat kondusif untuk spora karat daun. Periksa naungan dan sanitasi kebun.' }
+    return { level: 'Tinggi', desc: 'Udara lembap di atas 85 % dan hangat. Spora karat mudah tumbuh. Periksa naungan dan bersihkan daun gugur.' }
   }
   if (rh >= RUST.rhMedium) {
     return { level: 'Sedang', desc: 'Kelembapan cukup tinggi, pantau tanaman rentan di area cekungan.' }
@@ -82,7 +82,7 @@ export function leafWetnessRustRisk(rolling48h) {
   let description = 'Daun relatif kering, risiko infeksi spora karat rendah.'
   if (score >= 70) {
     level = 'Tinggi'
-    description = 'Durasi basah daun panjang & suhu hangat 18-25°C sangat kondusif untuk Hemileia vastatrix. Pertimbangkan fungisida & perbaiki aerasi kanopi.'
+    description = 'Daun basah lama dan udara hangat pada 18–25 °C. Jamur karat (Hemileia vastatrix) cepat tumbuh. Semprot pagi bila tidak hujan, dan rapikan tajuk agar udara mengalir.'
   } else if (score >= 40) {
     level = 'Sedang'
     description = 'Basah daun cukup lama; pantau kebun dan siapkan sanitasi kanopi.'

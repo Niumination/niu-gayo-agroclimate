@@ -28,7 +28,10 @@ export default function CoffeeAdvisory({ coffee, tr = (k, f) => defaultTr(k, f) 
       {/* Karat daun */}
       <div className="pt-4 border-t border-ink/10 dark:border-mist/10">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-body font-medium text-ink-body dark:text-mist-muted">Risiko Karat Daun (Hemileia vastatrix)</h3>
+          <h3 className="text-body font-medium text-ink-body dark:text-mist-muted">
+            Risiko jamur karat daun
+            <span className="block text-caption font-normal text-ink-muted dark:text-mist-subtle">Hemileia vastatrix</span>
+          </h3>
           <span className={`shrink-0 inline-flex items-center gap-1.5 text-caption font-medium px-2 py-0.5 rounded-full border border-ink/10 dark:border-mist/15 ${coffee.rustColor || 'text-ink dark:text-mist'}`}>
             <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-current" />
             {coffee.rustRisk}
