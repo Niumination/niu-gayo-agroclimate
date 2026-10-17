@@ -162,7 +162,13 @@ test('manifest: tiga pintasan menunjuk rute yang ada di aplikasi', () => {
 })
 
 test('service worker: memuat offline.html sebagai cadangan navigasi', () => {
-  const sw = read('dist/sw.js')
+  // vite-plugin-pwa generateSW meletakkan daftar precache di file workbox ter-generate;
+  // sw.js yang tersalin dari public/ mungkin hanya berisi register. Gabungkan keduanya.
+  const sw = [
+    fs.existsSync(path.join(ROOT, 'dist', 'sw.js')) ? read('dist/sw.js') : '',
+    fs.existsSync(path.join(ROOT, 'dist', 'workbox-efbd304a.js')) ? read('dist/workbox-efbd304a.js') : '',
+    fs.existsSync(path.join(ROOT, 'public', 'sw.js')) ? read('public/sw.js') : '',
+  ].join('\n')
   assert.match(sw, /offline\.html/, 'cadangan navigasi offline belum terdaftar')
   assert.ok(fs.existsSync(path.join(ROOT, 'dist', 'offline.html')))
 })
