@@ -23,7 +23,7 @@ export default function DesktopHeader({
     <header className="sticky top-0 z-40 bg-surface/90 dark:bg-soil/90 backdrop-blur-md border-b border-ink/10 dark:border-mist/10 pt-[env(safe-area-inset-top)]">
       <div className="max-w-shell mx-auto px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-baseline gap-3 min-w-0">
-          <span className="font-semibold tracking-tight text-ink dark:text-mist">Niu Gayo Agro-Climate</span>
+          <h1 className="font-semibold tracking-tight text-ink dark:text-mist">Niu Gayo Agro-Climate</h1>
           <span className="font-data text-caption text-ink-muted dark:text-mist-subtle tabular-nums">ecmwf_ifs025</span>
           {age && (
             <span className={`inline-flex items-center gap-1.5 text-caption font-medium px-2 py-0.5 rounded-full border ${ageTone}`}>

@@ -115,6 +115,64 @@ Aturan tambahan untuk lencana/kartu level:
 
 > Perhatian: pada simulasi buta warna, pasangan `seri-1`↔`seri-5` dan `seri-3`↔`seri-4` berdekatan (ΔE < 15) — **wajib** dibedakan lewat pola garis (putus-putus), bentuk penanda, atau label langsung di ujung garis, bukan hanya warna.
 
+### 3.5 Dua tangga arah — TANAH & LANGIT (P7.1, Round L)
+
+Mode terang = **Tanah** (kertas kopi + hutan), mode gelap = **Langit** (malam + bintang).
+Mode mengganti arah keseluruhan — bukan membalik warna. Token `tanah-*` dan `langit-*`
+berdampingan dengan token lama (`ink-*`/`mist-*`) sampai P7.3 selesai, lalu token lama
+dipensiunkan. Nilai di bawah diaudit oleh `npm run check:contrast -- --strict`
+(78 pasangan, 0 gagal).
+
+**Permukaan**
+
+| Token | Tanah | Langit | Peran |
+|---|---|---|---|
+| `*-permukaan` / `*-malam` | `#F1E7D8` | `#101C28` | latar aplikasi |
+| `*-kartu` | `#FBF6EC` | `#16273B` | kartu di atas latar |
+| `*-terbenam` | `#EFE4D2` | `#0B1520` | area terbenam, rel, catatan kaki |
+
+**Tinta — kontras terukur di latar aplikasi / kartu / terbenam**
+
+| Token | Tanah | Tanah (3 latar) | Langit | Langit (3 latar) |
+|---|---|---|---|---|
+| `*-tinta` | `#241E17` | 13,48 / 15,31 / 13,12 | `#F2F6FA` | 15,87 / 13,94 / 16,93 |
+| `*-tinta-isi` | `#4E4435` | 7,79 / 8,85 / 7,58 | `#CFDAE5` | 12,15 / 10,68 / 12,97 |
+| `*-tinta-redup` | `#6A5C4B` | 5,29 / 6,01 / 5,15 | `#A9B8C7` | 8,51 / 7,47 / 9,08 |
+| `*-tinta-halus` | `#6F614C` | 4,92 / 5,11 / 4,78 | `#93A5B6` | 6,81 / 5,98 / 7,26 |
+
+**Garis, aksen, level**
+
+| Token | Tanah | Langit | Catatan |
+|---|---|---|---|
+| `*-garis` | `#DCCDB6` | `#27394C` | dekoratif saja (bukan pembawa makna) |
+| `*-garis-kuat` | `#8A755A` | `#5C7389` | batas kontrol: 3,5:1 / 3,1:1 (non-teks) |
+| `*-aksen` | `#2F4A38` | `#FFD2A1` | tombol utama, cincin fokus |
+| `*-aksen-tinta` | `#FFFFFF` | `#16273B` | teks di tombol aksen (9,7:1 / 10,8:1) |
+| `tanah-level-rendah…ekstrem` | `#2F5A35` `#7A5A0B` `#9C4221` `#7A2118` | — | di tint masing-masing (5,0–7,7:1) |
+| `langit-level-rendah…ekstrem` | — | `#9FD3A8` `#E9CE74` `#F0A184` `#F29BA0` | langsung di permukaan (6,0–11,1:1) |
+
+**Radius & gerak per tangga**
+
+| Kelompok | Tanah | Langit |
+|---|---|---|
+| radius kartu / kendali / pil | `26px` / `14px` / `999px` | `20px` / `12px` / `999px` |
+| tekan / hover / masuk | `110ms` / `140ms` / `240ms` | `90ms` / `120ms` / `200ms` |
+
+Ease tetap `--ease-enter` (masuk) dan `--ease-exit` (keluar); tidak ada animasi fungsional
+> 500 ms, dan `prefers-reduced-motion` mematikan semuanya.
+
+**Tipografi**
+
+| Token | Stapel | Berkas |
+|---|---|---|
+| `--font-tanah` (bawaan `font-sans`) | Bricolage Grotesque → Bricolage Fallback → system-ui | `public/fonts/bricolage-latin.woff2` (75,1 kB, variabel 200–800 + opsz) |
+| `--font-langit` | Instrument Sans → Instrument Fallback → system-ui | `public/fonts/instrument-sans-latin.woff2` (29,4 kB, variabel 400–700) |
+| `--font-data` | JetBrains Mono (tidak berubah) | 2 berkas latin + latin-ext |
+
+`font-display: swap`; fallback metrik dihitung dari x-height OS/2 (Bricolage 528/1000 →
+`size-adjust: 101,7%`; Instrument 510/1000 → `98,3%`) supaya CLS tetap stabil saat font
+selesai dimuat.
+
 ## 4. Skala tipografi
 
 | Peran | Ukuran | Line-height | Pemakaian | Batasan |

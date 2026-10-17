@@ -16,8 +16,8 @@ export default function AppBar({
   tr,
 }) {
   const ageTone = age?.stale
-    ? 'text-husk-deep border-husk/40 bg-husk/10'
-    : 'text-leaf-deep border-leaf/40 bg-leaf/10'
+    ? 'text-husk-deep dark:text-husk-soft border-husk/40 bg-husk/10'
+    : 'text-leaf-deep dark:text-leaf-soft border-leaf/40 bg-leaf/10'
 
   return (
     <header className="sticky top-0 z-40 bg-surface/90 dark:bg-soil/90 backdrop-blur-md border-b border-ink/10 dark:border-mist/10 pt-[env(safe-area-inset-top)]">

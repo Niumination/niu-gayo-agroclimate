@@ -17,7 +17,7 @@ export default function SeasonalBanner({ seasonal, tr = (k) => k }) {
       className={`flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border rounded-card px-4 py-3 text-body ${PHASE_STYLE[seasonal.phase] || PHASE_STYLE.rendah}`}
     >
       <span className="font-semibold">Musim risiko longsor: {seasonal.label} ({seasonal.peakMonths})</span>
-      <span className="text-caption opacity-75">{seasonal.note}</span>
+      <span className="text-caption">{seasonal.note}</span>
       {/* Fase 3.4 — fase kering (karhutla/kekeringan) + jendela embun upas + penyesuaian ENSO/IOD */}
       {seasonal.dry && (
         <span className="basis-full text-caption opacity-90">
@@ -25,7 +25,7 @@ export default function SeasonalBanner({ seasonal, tr = (k) => k }) {
           {seasonal.frostWindow ? ' Jendela embun upas plato > 1.400 m (malam cerah & tenang).' : ''}
         </span>
       )}
-      {seasonal.climate?.active && seasonal.climate.note && <span className="basis-full text-caption opacity-75">Penyesuaian iklim: {seasonal.climate.note}</span>}
+      {seasonal.climate?.active && seasonal.climate.note && <span className="basis-full text-caption">Penyesuaian iklim: {seasonal.climate.note}</span>}
     </div>
   )
 }

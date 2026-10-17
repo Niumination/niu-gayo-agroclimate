@@ -187,7 +187,7 @@ export function TemperatureCard({ hazards }) {
         {days.map((d) => (
           <div key={d.date} className="rounded-lg border border-ink/10 dark:border-mist/10 p-2">
             <p className="text-caption text-ink-muted dark:text-mist-muted">{ddmm(d.date)}</p>
-            <p className="font-data text-body tabular-nums text-ink dark:text-mist"><span className={TONE[d.cold] || ''}>{num(d.tmin, 1)}</span> <span className="text-ink-subtle dark:text-mist-subtle">/</span> <span className={TONE[d.heat] || ''}>{num(d.tmax, 1)}</span> <span className="text-caption text-ink-muted">°C</span></p>
+            <p className="font-data text-body tabular-nums text-ink dark:text-mist"><span className={TONE[d.cold] || ''}>{num(d.tmin, 1)}</span> <span className="text-ink-subtle dark:text-mist-subtle">/</span> <span className={TONE[d.heat] || ''}>{num(d.tmax, 1)}</span> <span className="text-caption text-ink-muted dark:text-mist-muted">°C</span></p>
             {d.vpd != null && <p className="text-caption text-ink-muted dark:text-mist-subtle">VPD {num(d.vpd, 2)} kPa</p>}
           </div>
         ))}

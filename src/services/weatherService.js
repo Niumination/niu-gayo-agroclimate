@@ -14,9 +14,9 @@ import { getHiddenHazards } from '../lib/prefs.js'
 
 function colorForLevel(level) {
   const l = String(level)
-  if (l.includes('Bahaya') || l === 'Tinggi' || l.startsWith('Tunda')) return 'text-rose-500 dark:text-rose-400'
-  if (l.includes('Waspada') || l === 'Sedang') return 'text-amber-500 dark:text-amber-400'
-  return 'text-emerald-500 dark:text-emerald-400'
+  if (l.includes('Bahaya') || l === 'Tinggi' || l.startsWith('Tunda')) return 'text-level-bahaya dark:text-level-bahaya-dark'
+  if (l.includes('Waspada') || l === 'Sedang') return 'text-level-waspada dark:text-level-waspada-dark'
+  return 'text-level-rendah dark:text-level-rendah-dark'
 }
 
 export async function getAgroClimateData(location) {

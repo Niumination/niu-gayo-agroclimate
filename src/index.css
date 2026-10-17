@@ -37,6 +37,48 @@
   line-gap-override: 0%;
 }
 
+/* --- Font identitas baru (P7.1) --------------------------------------------
+   Bricolage Grotesque = tangga TANAH (terang); Instrument Sans = tangga LANGIT (gelap).
+   Keduanya variable font self-host, subset latin, `font-display: swap`, plus fallback
+   metrik (x-height diukur dari OS/2: Bricolage 528/1000, Instrument 510/1000; Arial 519/1000)
+   supaya pertukaran font tidak menggeser tata letak (CLS). */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("/fonts/bricolage-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Instrument Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/instrument-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Bricolage Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica Neue");
+  size-adjust: 101.7%;
+  ascent-override: 91.4%;
+  descent-override: 26.5%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Instrument Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica Neue");
+  size-adjust: 98.3%;
+  ascent-override: 98.7%;
+  descent-override: 25.4%;
+  line-gap-override: 0%;
+}
+
 /* Dark mode berbasis kelas (setara darkMode: 'class' di v3) — <html class="dark"> */
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -131,15 +173,94 @@
   --font-data: "JetBrains Mono", "JetBrains Mono Fallback", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --max-width-shell: 1400px;
   --radius-card: 16px;
+
+  /* --- Dua tangga arah (P7.1, Round L) ------------------------------------
+     TANAH = mode terang (kertas kopi + hutan); LANGIT = mode gelap (malam + bintang).
+     Mode mengganti arah keseluruhan, bukan sekadar membalik warna: permukaan, tinta,
+     garis, dan level punya nilai sendiri per tangga. Nama token sengaja Bahasa
+     Indonesia agar berbeda jelas dari palet lama (`ink-*`/`mist-*`) yang tetap
+     dipertahankan sampai P7.3 selesai. Semua pasangan teks diuji
+     `npm run check:contrast -- --strict` (lihat scripts/check-contrast.mjs). */
+
+  /* Tangga TANAH — permukaan */
+  --color-tanah-permukaan: #F1E7D8;      /* latar aplikasi (kertas) */
+  --color-tanah-kartu: #FBF6EC;          /* kartu di atas kertas */
+  --color-tanah-terbenam: #EFE4D2;       /* area terbenam / rel */
+  /* Tangga TANAH — tinta (13,5 : 8,9 : 6,0 : 4,9 di kartu) */
+  --color-tanah-tinta: #241E17;
+  --color-tanah-tinta-isi: #4E4435;
+  --color-tanah-tinta-redup: #6A5C4B;
+  --color-tanah-tinta-halus: #6F614C;
+  /* Tangga TANAH — garis (kuat 3,5:1 di kertas — batas kontrol) */
+  --color-tanah-garis: #DCCDB6;
+  --color-tanah-garis-kuat: #8A755A;
+  /* Tangga TANAH — aksen hutan */
+  --color-tanah-aksen: #2F4A38;
+  --color-tanah-aksen-tinta: #FFFFFF;
+  /* Tangga TANAH — level bahaya (teks di tint) */
+  --color-tanah-level-rendah: #2F5A35;
+  --color-tanah-level-waspada: #7A5A0B;
+  --color-tanah-level-bahaya: #9C4221;
+  --color-tanah-level-ekstrem: #7A2118;
+  --color-tanah-level-rendah-tint: #E4E6DE;
+  --color-tanah-level-waspada-tint: #EBE4D6;
+  --color-tanah-level-bahaya-tint: #EFE1D9;
+  --color-tanah-level-ekstrem-tint: #EBDDD8;
+
+  /* Tangga LANGIT — permukaan */
+  --color-langit-malam: #101C28;         /* latar aplikasi */
+  --color-langit-kartu: #16273B;
+  --color-langit-terbenam: #0B1520;
+  /* Tangga LANGIT — tinta (13,9 : 10,7 : 7,5 : 6,0 di kartu) */
+  --color-langit-tinta: #F2F6FA;
+  --color-langit-tinta-isi: #CFDAE5;
+  --color-langit-tinta-redup: #A9B8C7;
+  --color-langit-tinta-halus: #93A5B6;
+  /* Tangga LANGIT — garis (kuat 3,1:1 di kartu) */
+  --color-langit-garis: #27394C;
+  --color-langit-garis-kuat: #5C7389;
+  /* Tangga LANGIT — aksen bintang */
+  --color-langit-aksen: #FFD2A1;
+  --color-langit-aksen-tinta: #16273B;
+  /* Tangga LANGIT — level bahaya (teks langsung di permukaan) */
+  --color-langit-level-rendah: #9FD3A8;
+  --color-langit-level-waspada: #E9CE74;
+  --color-langit-level-bahaya: #F0A184;
+  --color-langit-level-ekstrem: #F29BA0;
+
+  /* Radius per tangga: tanah lebih membulat (kertas lembut), langit lebih tegas. */
+  --radius-pil: 999px;
+  --radius-tanah-kartu: 26px;
+  --radius-tanah-kendali: 14px;
+  --radius-langit-kartu: 20px;
+  --radius-langit-kendali: 12px;
+
+  /* Gerak per tangga: tanah sedikit lebih lambat/lembut, langit lebih gesit.
+     (durasi dipakai lewat `transition-duration: var(--dur-*)` di komponen P7.3) */
+  --dur-tanah-tekan: 110ms;
+  --dur-tanah-hover: 140ms;
+  --dur-tanah-masuk: 240ms;
+  --dur-langit-tekan: 90ms;
+  --dur-langit-hover: 120ms;
+  --dur-langit-masuk: 200ms;
+
+  /* Stapel font per arah — dipakai `font-family: var(--font-tanah | --font-langit)` */
+  --font-tanah: "Bricolage Grotesque", "Bricolage Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-langit: "Instrument Sans", "Instrument Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-tanah);
 }
 
 :root {
-  --app-bg: #faf7f2;
-  --app-text: #221c18;
+  /* Tangga TANAH sebagai bawaan (mode terang) */
+  --app-bg: var(--color-tanah-permukaan);
+  --app-text: var(--color-tanah-tinta);
+  --app-font: var(--font-tanah);
 }
 html.dark {
-  --app-bg: #1a1512;
-  --app-text: #e8e3da;
+  /* Tangga LANGIT (mode gelap) */
+  --app-bg: var(--color-langit-malam);
+  --app-text: var(--color-langit-tinta);
+  --app-font: var(--font-langit);
 }
 
 html {
@@ -147,7 +268,9 @@ html {
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--app-font);
+  font-optical-sizing: auto;
+  font-synthesis-weight: none;
   margin: 0;
   padding: 0;
   min-height: 100vh;
