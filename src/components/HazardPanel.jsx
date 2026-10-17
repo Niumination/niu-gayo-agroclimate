@@ -5,6 +5,7 @@ import { InteractionsList } from './HazardFocusCards.jsx'
 import { prefs } from '../lib/prefs.js'
 import ShareButton from './ShareButton.jsx'
 import EmptyState from './EmptyState'
+import LevelBadge from './niu/LevelBadge.jsx'
 
 /**
  * v2 Fase 0 (roadmap 0.4 / FR-X-2, FR-X-3, FR-X-6) — panel "Indeks Bahaya" yang dirender dari registry.
@@ -22,60 +23,11 @@ const TONE = {
   'n/a': 'text-ink-muted dark:text-mist-subtle',
 }
 
-/**
- * Glyph level — bentuk berbeda per tingkat supaya makna tidak bergantung warna saja
- * (WCAG 1.4.1; ~8 % pria buta warna merah-hijau). Dekoratif → aria-hidden.
- */
-function LevelGlyph({ level, className = 'w-3 h-3 shrink-0' }) {
-  const common = { viewBox: '0 0 12 12', className, 'aria-hidden': 'true', focusable: 'false' }
-  if (level === 'rendah')
-    return (
-      <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M2 6.4 4.6 9 10 3.2" />
-      </svg>
-    )
-  if (level === 'waspada')
-    return (
-      <svg {...common} fill="currentColor">
-        <path d="M6 1 11.4 10.6H.6z" />
-        <path d="M5.4 4.4h1.2v3.2H5.4zM5.4 8.4h1.2v1.2H5.4z" fill="var(--color-surface)" stroke="none" />
-      </svg>
-    )
-  if (level === 'bahaya')
-    return (
-      <svg {...common} fill="currentColor">
-        <path d="M6 1.2a3.6 3.6 0 0 1 3.6 3.6c0 1.5.5 2.2 1.1 3H1.3c.6-.8 1.1-1.5 1.1-3A3.6 3.6 0 0 1 6 1.2Z" />
-        <path d="M4.6 9.1h2.8a1.4 1.4 0 0 1-2.8 0Z" />
-      </svg>
-    )
-  if (level === 'ekstrem')
-    return (
-      <svg {...common} fill="currentColor">
-        <path d="M3.9.8h4.2l3.1 3.1v4.2l-3.1 3.1H3.9L.8 8.1V3.9z" />
-        <path d="M5.4 3.4h1.2v3.4H5.4zM5.4 7.8h1.2v1.2H5.4z" fill="var(--color-surface)" stroke="none" />
-      </svg>
-    )
-  return (
-    <svg {...common} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-      <path d="M2.5 6h7" />
-    </svg>
-  )
-}
-
 const num = (v, digits = 1) => (v == null || v === '' ? '—' : typeof v === 'number' ? v.toLocaleString('id-ID', { maximumFractionDigits: digits }) : String(v))
 const clock = (iso) => {
   if (!iso) return null
   const d = new Date(iso)
   return Number.isNaN(d.getTime()) ? null : d.toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
-}
-
-function Badge({ level, label }) {
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-body font-semibold ${TONE[level] || TONE['n/a']}`}>
-      <LevelGlyph level={level} />
-      {label ?? LEVEL_LABEL[level] ?? level}
-    </span>
-  )
 }
 
 function AdviceList({ advice }) {
@@ -118,7 +70,7 @@ function HazardRow({ r, open, onToggle }) {
           <p className={`text-caption leading-snug mt-0.5 ${r.level === 'n/a' ? 'text-ink-muted dark:text-mist-subtle' : 'text-ink-body dark:text-mist-muted'}`}>{r.headline}</p>
         </div>
         <div className="shrink-0 flex items-baseline gap-2">
-          <Badge level={r.level} />
+          <LevelBadge level={r.level} />
           {typeof r.score === 'number' && <span className="font-data text-caption text-ink-muted dark:text-mist-subtle tabular-nums">{r.score}</span>}
           <span aria-hidden="true" className="text-caption text-ink-subtle dark:text-mist-subtle">{open ? '▴' : '▾'}</span>
         </div>
@@ -180,7 +132,7 @@ export default function HazardPanel({ hazards, location, onAbout, onToggleHidden
           <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">Indeks Bahaya {location?.name ? `— ${location.name}` : ''}</h2>
           <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{groups}</p>
         </div>
-        <Badge level={worst} />
+        <LevelBadge level={worst} />
       </div>
 
       <div className="py-3 border-y border-ink/10 dark:border-mist/10">
