@@ -122,5 +122,6 @@ test('modul badai: evaluate dari payload /api/convective (fixture) → kontrak +
   const e = convective.evaluate({ convective: { degraded: true, error: 'ECMWF: HTTP 500', hourly: null } })
   assert.equal(e.level, 'n/a')
   assert.equal(e.degraded, true)
-  assert.match(e.headline, /ECMWF/)
+  assert.doesNotMatch(e.headline, /ECMWF|HTTP 500/)
+  assert.match(e.detail, /ECMWF: HTTP 500/)
 })

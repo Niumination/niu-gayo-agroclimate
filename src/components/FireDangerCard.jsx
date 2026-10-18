@@ -66,7 +66,7 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
     return !v || v === k ? fallback : v
   }
   const title = label('fireDanger', 'Bahaya Kebakaran & Hotspot')
-  const subtitle = label('fireDangerSub', 'Perkiraan risiko kebakaran dari cuaca kering dan titik panas satelit.')
+  const subtitle = label('fireDangerSub', 'Pantau risiko api dan lakukan pencegahan di sekitar kebun.')
 
   const shell = (children) => (
     <section aria-label={title} className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
@@ -81,12 +81,15 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
   const latest = fireDanger.fwi?.latest
   if (!latest) {
     return shell(
-      <p className="pt-3 border-t border-ink/10 dark:border-mist/10 text-body text-ink-muted dark:text-mist-muted">
-        {label('fireDangerUnavailable', 'Kode bahaya kebakaran belum tersedia saat ini.')}
+      <div className="pt-3 border-t border-ink/10 dark:border-mist/10 text-body text-ink-muted dark:text-mist-muted">
+        <p>{label('fireDangerUnavailable', 'Data risiko kebakaran belum tersedia saat ini.')}</p>
         {fireDanger.warnings?.length > 0 && (
-          <span className="block mt-1 text-caption text-ink-muted dark:text-mist-subtle">({fireDanger.warnings[0]})</span>
+          <details className="mt-2 text-caption">
+            <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Lihat rincian gangguan sumber</summary>
+            <p className="mt-1 break-words">{fireDanger.warnings.join('; ')}</p>
+          </details>
         )}
-      </p>,
+      </div>,
     )
   }
 
@@ -110,11 +113,11 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">
-            Angka risiko api · {latest.isToday ? 'hari ini' : shortDate(latest.date)} pukul {String(fireDanger.fwi.obsHourWib).padStart(2, '0')}.00 WIB
+            Perkiraan risiko kebakaran · {latest.isToday ? 'hari ini' : shortDate(latest.date)}
           </p>
           <p className="font-data text-4xl font-semibold tabular-nums leading-none mt-1 text-ink dark:text-mist">{num(c.fwi, 1)}</p>
           <div className="mt-2">
-            <Badge level={k.fwi} label={`${CLASS_LABEL[k.fwi]} — kesulitan kendali api`} toneMap={CLASS_TONE} dotMap={CLASS_DOT} />
+            <Badge level={k.fwi} label={`${CLASS_LABEL[k.fwi]} — tingkat kesulitan mengendalikan api`} toneMap={CLASS_TONE} dotMap={CLASS_DOT} />
           </div>
         </div>
         <div className="text-right shrink-0">
@@ -130,12 +133,12 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
 
       {a.siagaLokal && (
         <p role="alert" className="mt-3 border border-cherry/30 bg-cherry/5 rounded-md px-3 py-2 text-caption text-cherry-deep dark:text-cherry-soft">
-          FFMC ≥ 78 dan ada hotspot ≤ 25 km dalam 24 jam — bahan bakar permukaan mudah menyala. Pantau arah angin dan laporkan asap/api.
+          Kondisi setempat mendukung api cepat menyala. Jangan membakar lahan; pantau arah angin dan segera laporkan asap atau api.
         </p>
       )}
       {a.drivers?.ffmcExtremeGated && (
         <p className="mt-2 text-caption text-ink-muted dark:text-mist-muted">
-          FFMC kelas ekstrem ditampilkan "tinggi" karena belum ada hotspot ≤ 10 km atau HTH ≥ 21 hari (kalibrasi lokal).
+          Perkiraan menunjukkan kondisi kering, tetapi belum ada tanda kebakaran dekat lokasi; tetap cegah pembakaran dan pantau kondisi setempat.
         </p>
       )}
 
@@ -143,6 +146,9 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
         <summary className="mt-4 min-h-11 inline-flex cursor-pointer list-none items-center gap-2 rounded-lg border border-ink/15 px-3 text-body font-semibold text-leaf-deep dark:border-mist/15 dark:text-leaf-soft">
           Angka &amp; istilah teknis
         </summary>
+        <p className="mt-2 text-caption text-ink-muted dark:text-mist-muted">
+          Ambang siaga setempat: FFMC ≥ 78 disertai titik panas dalam 25 km pada 24 jam terakhir. Kelas ekstrem diturunkan bila belum ada titik panas dalam 10 km atau masa tanpa hujan belum mencapai 21 hari.
+        </p>
 
       {/* Kode komponen */}
       <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10 grid grid-cols-3 gap-3">
@@ -163,7 +169,7 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
         </div>
         {hs?.degraded ? (
           <p className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
-            Data titik panas belum aktif{hs.reason ? ` — ${hs.reason}` : ''}.
+            Data titik panas dari satelit belum diperbarui; periksa informasi resmi dan pantau keadaan sekitar.
           </p>
         ) : (
           <>
@@ -207,12 +213,18 @@ export default function FireDangerCard({ fireDanger, tr = (k) => k }) {
         )}
       </div>
 
-      <p className="mt-3 text-caption text-ink-muted dark:text-mist-subtle leading-relaxed">
-        Kelas FDRS Indonesia (de Groot dkk. 2007 / BMKG SPBK); FWI dihitung dari ERA5-Land + ECMWF (Open-Meteo, CC BY 4.0). Rujukan resmi:{' '}
-        <a className="min-h-11 inline-flex items-center underline" href="https://www.bmkg.go.id/cuaca/karhutla/dc" target="_blank" rel="noreferrer">BMKG Karhutla</a> ·{' '}
-        <a className="min-h-11 inline-flex items-center underline" href="https://sipongi.menlhk.go.id/" target="_blank" rel="noreferrer">SiPongi KLHK</a>
-        {fireDanger.warnings?.length > 0 && <span className="block mt-1">Catatan: {fireDanger.warnings.join('; ')}</span>}
-      </p>
+      <details className="group mt-4 border-t border-ink/10 pt-1 dark:border-mist/10">
+        <summary className="mt-3 min-h-11 inline-flex cursor-pointer list-none items-center gap-2 rounded-lg border border-ink/15 px-3 text-body font-semibold text-leaf-deep dark:border-mist/15 dark:text-leaf-soft">
+          Sumber, metode, dan catatan data
+        </summary>
+        <p className="mt-2 text-caption text-ink-muted dark:text-mist-subtle leading-relaxed">
+          Perhitungan indeks kebakaran menggunakan metode FWI dan kelas FDRS Indonesia, dengan data ERA5-Land/ECMWF dari Open-Meteo. Rujukan resmi:{' '}
+          <a className="min-h-11 inline-flex items-center underline" href="https://www.bmkg.go.id/cuaca/karhutla/dc" target="_blank" rel="noreferrer">BMKG Karhutla</a> ·{' '}
+          <a className="min-h-11 inline-flex items-center underline" href="https://sipongi.menlhk.go.id/" target="_blank" rel="noreferrer">SiPongi KLHK</a>.
+          {hs?.degraded && hs.reason && <span className="block mt-1">Rincian sumber titik panas: {hs.reason}</span>}
+          {fireDanger.warnings?.length > 0 && <span className="block mt-1">Catatan teknis: {fireDanger.warnings.join('; ')}</span>}
+        </p>
+      </details>
     </>,
   )
 }

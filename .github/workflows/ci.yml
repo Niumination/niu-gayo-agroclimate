@@ -60,6 +60,9 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
+      - name: Verify build provenance and local assets
+        run: npm run check:build-info
+
       # Fase design/UX (P3 selesai 2026-10-16): skala tipografi berbasis token — tanpa teks < 16 px
       # untuk teks isi, tanpa ukuran bawaan kecil (text-xs/text-sm), kontrol formulir >= 16 px,
       # tanpa `truncate` (label Gayo memanjang), dan font data ter-self-host (public/fonts -> dist/fonts).

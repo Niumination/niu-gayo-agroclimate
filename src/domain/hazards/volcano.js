@@ -93,7 +93,7 @@ export default {
     if (me?.inSector && v.level >= 2) advice.umum = [`Sentra ini berada di sektor bawah angin (angin dari ${Math.round(windFrom)}°): bila terjadi erupsi, hujan abu paling mungkin ke arah sini — siapkan masker & tutup penampung air.`, ...(advice.umum ?? [])]
     if (v.reportUrl) sources.push({ name: 'Laporan aktivitas terakhir (MAGMA)', kind: 'official', url: v.reportUrl })
     if (doc.wind) sources.push({ name: doc.wind.source ?? 'Open-Meteo (angin puncak)', kind: 'model', retrievedAt: doc.retrievedAt })
-    const headline = `Aktivitas ${v.label ?? 'normal'} — ${v.name ?? 'Bur Ni Telong'}${distKm != null ? ` · ${Math.round(distKm)} km dari sentra` : ''}${v.radiusKm ? ` · radius rekomendasi ${v.radiusKm} km` : ''}${me?.inSector ? ' · di bawah angin' : ''}${doc.stale ? ' · data terakhir' : ''}`
+    const headline = `Status ${v.label ?? 'normal'} di Gunung ${v.name ?? 'Bur Ni Telong'}${me?.inSector ? ' — sentra berada di jalur yang berpotensi terdampak abu jika terjadi erupsi' : ''}${doc.stale ? ' — informasi terakhir' : ''}`
     const detail = [
       v.level === 2 ? 'Peningkatan aktivitas vulkanik teramati (PVMBG); ancaman utama saat ini gas vulkanik di sekitar kawah dan erupsi freatik kecil.' : v.level >= 3 ? 'Aktivitas meningkat nyata/erupsi — ikuti rilis PVMBG & BPBD Bener Meriah/Aceh Tengah.' : 'Aktivitas dalam batas normal menurut PVMBG.',
       windFrom != null ? `Angin ${doc.wind?.dir850 != null ? '850 hPa' : '10 m'} dari ${Math.round(windFrom)}° (${Math.round(doc.wind?.speed850 ?? doc.wind?.speed10m ?? 0)} km/jam); sentra di bawah angin: ${(doc.downwind ?? []).filter((d) => d.inSector).map((d) => d.name).join(', ') || 'tidak ada (≤ 30 km)'}.` : 'Arah angin puncak belum tersedia.',

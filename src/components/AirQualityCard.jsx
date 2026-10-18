@@ -69,7 +69,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
   }
   const a = airQuality.assessment
   const title = label('airQuality', 'Kabut Asap & Kualitas Udara')
-  const subtitle = label('airQualitySub', 'ISPU estimasi model CAMS global (~40 km) — bukan ISPU resmi')
+  const subtitle = label('airQualitySub', 'Perkiraan kondisi udara dan kabut asap di sekitar.')
 
   // Fungsi biasa (bukan komponen lokal) agar subtree tidak di-remount tiap render.
   const shell = (children) => (
@@ -84,10 +84,15 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
 
   if (!a) {
     return shell(
-      <p className="pt-3 border-t border-ink/10 dark:border-mist/10 text-body text-ink-muted dark:text-mist-muted">
-        {label('airQualityUnavailable', 'Data kualitas udara belum tersedia saat ini.')}
-        {airQuality.error && <span className="block mt-1 text-caption text-ink-muted dark:text-mist-subtle">({airQuality.error})</span>}
-      </p>,
+      <div className="pt-3 border-t border-ink/10 dark:border-mist/10 text-body text-ink-muted dark:text-mist-muted">
+        <p>{label('airQualityUnavailable', 'Data kualitas udara belum tersedia saat ini.')}</p>
+        {airQuality.error && (
+          <details className="mt-2 text-caption">
+            <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Lihat rincian gangguan sumber</summary>
+            <p className="mt-1 break-words">{airQuality.error}</p>
+          </details>
+        )}
+      </div>,
     )
   }
 
@@ -107,7 +112,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
       <div className="pt-3 border-t border-ink/10 dark:border-mist/10 flex items-start justify-between gap-3">
         <div>
           <p className="text-caption uppercase tracking-wide text-ink-muted dark:text-mist-muted">
-            Angka udara {a.ispu.basis === '24h' ? 'rata-rata sehari' : 'saat ini'} · {a.ispu.paramLabel}
+            Perkiraan kualitas udara {a.ispu.basis === '24h' ? 'rata-rata hari ini' : 'saat ini'}
           </p>
           <p className="font-data text-4xl font-semibold tabular-nums leading-none mt-1 text-ink dark:text-mist">{a.ispu.index}</p>
           <div className="mt-2">
@@ -131,14 +136,14 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
       {/* Kabut asap (proksi jarak pandang) */}
       <div className="mt-4 pt-4 border-t border-ink/10 dark:border-mist/10">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-body font-medium text-ink-body dark:text-mist-muted">{label('haze', 'Kabut asap')} · jarak pandang siang ({haze.windowLabel})</h3>
+          <h3 className="text-body font-medium text-ink-body dark:text-mist-muted">{label('haze', 'Kabut asap')} dan jarak pandang</h3>
           <Badge level={hazeLevelKey} label={haze.level === 'tidak_diketahui' ? 'Tidak diketahui' : haze.level === 'tidak_ada' ? 'Tidak terdeteksi' : haze.label} />
         </div>
         <p className="mt-1 text-body text-ink-body dark:text-mist-body tabular-nums">
           {haze.visibilityKm != null ? (
             <>
               Minimum <span className="font-data font-medium tabular-nums">{num(haze.visibilityKm, 1)} km</span> pukul {hhmm(haze.time)}
-              {haze.supported && haze.level !== 'tidak_ada' && <span className="text-ink-muted dark:text-mist-muted"> · didukung {haze.supportReason}</span>}
+              {haze.supported && haze.level !== 'tidak_ada' && <span className="text-ink-muted dark:text-mist-muted"> · tanda asap terpantau pada lebih dari satu indikator</span>}
             </>
           ) : (
             'Jarak pandang tidak tersedia dari model.'
@@ -146,7 +151,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
         </p>
         {haze.lowVisibilityNonSmoke && (
           <p className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
-            Jarak pandang rendah tetapi PM2,5/AOD rendah — kemungkinan kabut atau awan rendah, bukan asap.
+            Pandangan sedang terbatas, tetapi belum terlihat peningkatan partikel; kabut biasa atau awan rendah mungkin menjadi penyebabnya.
           </p>
         )}
       </div>
@@ -229,13 +234,17 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
       </div>
 
       {/* Sumber */}
-      <p className="mt-4 pt-3 border-t border-ink/10 dark:border-mist/10 text-caption text-ink-muted dark:text-mist-subtle leading-relaxed">
-        Estimasi {a.flags.model} via Open-Meteo Air Quality · jam data {hhmm(a.time)} WIB · diambil {clock(airQuality.retrievedAt)}.
-        Bukan pengganti pengumuman resmi:{' '}
-        <a href="https://ispu.menlhk.go.id/" target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">ISPUNet KLHK</a>
-        {' · '}
-        <a href="https://www.bmkg.go.id/kualitas-udara/informasi-partikulat-pm25.bmkg" target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">PM2,5 BMKG</a>.
-      </p>
+      <details className="group mt-4 border-t border-ink/10 pt-1 dark:border-mist/10">
+        <summary className="mt-3 min-h-11 inline-flex cursor-pointer list-none items-center gap-2 rounded-lg border border-ink/15 px-3 text-body font-semibold text-leaf-deep dark:border-mist/15 dark:text-leaf-soft">
+          Sumber dan keterbatasan data
+        </summary>
+        <p className="mt-2 text-caption text-ink-muted dark:text-mist-subtle leading-relaxed">
+          Angka merupakan perkiraan dari {a.flags.model} melalui Open-Meteo Air Quality; cakupan model sekitar 40 km. Data berlaku pukul {hhmm(a.time)} WIB dan diambil {clock(airQuality.retrievedAt)}. Bukan pengganti pengumuman resmi:{' '}
+          <a href="https://ispu.menlhk.go.id/" target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">ISPUNet KLHK</a>
+          {' · '}
+          <a href="https://www.bmkg.go.id/kualitas-udara/informasi-partikulat-pm25.bmkg" target="_blank" rel="noopener noreferrer" className="min-h-11 inline-flex items-center underline underline-offset-2">PM2,5 BMKG</a>.
+        </p>
+      </details>
     </>,
   )
 }

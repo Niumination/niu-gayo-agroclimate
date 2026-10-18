@@ -76,13 +76,17 @@ function HazardRow({ r, open, onToggle, onSelect }) {
         </div>
         <div className="shrink-0 flex items-baseline gap-2">
           <LevelBadge level={r.level} />
-          {typeof r.score === 'number' && <span className="font-data text-caption text-ink-muted dark:text-mist-subtle tabular-nums">{r.score}</span>}
           <span aria-hidden="true" className="text-caption text-ink-subtle dark:text-mist-subtle">{open ? '▴' : '▾'}</span>
         </div>
       </button>
       {open && !onSelect && (
         <div className="mt-2 pl-0.5">
-          {r.detail && <p className="text-caption leading-snug text-ink-body dark:text-mist-muted">{r.detail}</p>}
+          {r.detail && (
+            <details className="text-caption leading-snug text-ink-body dark:text-mist-muted">
+              <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Catatan teknis</summary>
+              <p className="mt-1">{r.detail}</p>
+            </details>
+          )}
           {metrics.length > 0 && (
             <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
               {metrics.map((m) => (
@@ -98,10 +102,13 @@ function HazardRow({ r, open, onToggle, onSelect }) {
           )}
           <AdviceList advice={r.advice} />
           {r.sources?.length > 0 && (
-            <p className="mt-2 text-caption text-ink-muted dark:text-mist-subtle">
-              Sumber: {r.sources.map((s) => s.name).join(' · ')}
-              {r.flags?.estimate ? ' · nilai estimasi model, bukan pengukuran stasiun' : ''}
-            </p>
+            <details className="mt-2 text-caption text-ink-muted dark:text-mist-subtle">
+              <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Sumber dan cara memperkirakan</summary>
+              <p className="mt-1">
+                Sumber: {r.sources.map((s) => s.name).join(' · ')}
+                {r.flags?.estimate ? ' · angka ini merupakan perkiraan, bukan pengukuran langsung di stasiun' : ''}
+              </p>
+            </details>
           )}
         </div>
       )}

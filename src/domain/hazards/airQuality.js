@@ -302,7 +302,7 @@ export default {
   evaluate(ctx) {
     const p = ctx.airQuality
     const a = p?.assessment
-    if (!a) return { level: 'n/a', degraded: true, headline: p?.error ? `Kualitas udara tidak tersedia (${p.error})` : 'Kualitas udara belum tersedia', sources: p?.source ? [{ name: p.source.name, kind: 'model' }] : [] }
+    if (!a) return { level: 'n/a', degraded: true, headline: 'Data kualitas udara belum tersedia.', detail: p?.error ? `Gangguan sumber: ${p.error}` : 'Data kualitas udara belum tersedia saat ini.', sources: p?.source ? [{ name: p.source.name, kind: 'model' }] : [] }
     const esc = asapReportEscalation(ctx.reports, ctx.now ?? new Date())
     let level = maxLevel(a.level, hazeLevel(a.haze))
     if (esc.escalate) level = bumpLevel(level, 1, 'bahaya')
@@ -310,7 +310,7 @@ export default {
     return {
       level,
       score: a.ispu?.index ?? null,
-      headline: `Udara ${a.ispu.category.label.toLowerCase()} · ${a.ispu.paramLabel}${hazeTxt}`,
+      headline: `Kualitas udara ${a.ispu.category.label.toLowerCase()}${hazeTxt ? ' · kabut asap terpantau' : ''}`,
       detail: `Indeks Standar Pencemar Udara (ISPU) ${a.ispu.index} — ${a.ispu.category.label}. ${a.ispu.basis === 'sesaat' ? 'Nilai sesaat' : `Rata-rata ${a.ispu.hours} jam`}; PM2,5 ${a.measurements?.pm25 ?? '–'} µg/m³, AOD ${a.measurements?.aod ?? '–'}. ${a.outlook?.peakIndex != null ? `Prospek puncak ISPU ${a.outlook.peakIndex} (${a.outlook.trend}).` : ''}${esc.escalate ? ` Dinaikkan 1 tingkat: ${esc.count} laporan warga jarak pandang < 1 km dalam 6 jam.` : ''}`.trim(),
       metrics: [
         { key: 'ispu', label: 'ISPU', value: a.ispu.index, unit: '' },

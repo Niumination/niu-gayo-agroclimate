@@ -216,12 +216,16 @@ export default {
   evaluate(ctx) {
     const p = ctx.drought
     const a = p?.assessment
-    if (!a) return { level: 'n/a', degraded: true, headline: p?.error ? `Kekeringan tidak tersedia (${p.error})` : 'Data kekeringan belum tersedia' }
+    if (!a) return {
+      level: 'n/a',
+      degraded: true,
+      headline: 'Data kekeringan belum tersedia.',
+      detail: p?.error ? `Gangguan sumber: ${p.error}` : 'Data kekeringan belum tersedia saat ini.',
+    }
     const h = a.hth
     const b = a.balance30
     const v = a.vpd7
     const spi = p.spi
-    const proj = h.projected?.days > h.days ? ` → proyeksi ${h.projected.days} hari (${h.projected.horizonDays} hari ke depan)` : ''
     // Fase 3.1 — SPI-1/3 (McKee) menaikkan level agregat bila lebih kering dari HTH/neraca; VPD hanya indikator stres bunga.
     const spiLevel = spi?.level ?? 'n/a'
     const level = LEVEL_RANK[spiLevel] > LEVEL_RANK[a.level] ? spiLevel : a.level
@@ -234,7 +238,7 @@ export default {
     return {
       level,
       score: h.days != null ? Math.min(100, Math.round((h.days / 60) * 100)) : null,
-      headline: `${h.days} hari tanpa hujan — ${h.classLabel}${proj}`,
+      headline: `${h.days} hari tanpa hujan — ${h.classLabel}${h.projected?.days > h.days ? `; diperkirakan berlanjut hingga ${h.projected.days} hari` : ''}`,
       detail: `Hari Tanpa Hujan (HTH) ${h.days} hari. Hujan terakhir ${h.lastRainDate ?? '–'}${h.lastRainMm != null ? ` (${h.lastRainMm} mm)` : ''}; neraca air 30 hari ${b?.balance ?? '–'} mm (hujan ${b?.rain ?? '–'} / ET0 ${b?.et0 ?? '–'} mm).${spiTxt}${vpdTxt}${p.archive?.lagDays != null ? ` Arsip tertinggal ${p.archive.lagDays} hari.` : ''}`,
       metrics: [
         { key: 'hthDays', label: 'Hari tanpa hujan', value: h.days, unit: 'hari' },

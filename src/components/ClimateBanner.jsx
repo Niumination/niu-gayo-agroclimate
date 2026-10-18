@@ -25,10 +25,12 @@ export default function ClimateBanner({ drought, now, tr = (k) => k }) {
         <span className="font-semibold">{m.title}</span>
         <span className="text-caption">{m.summary}{m.issuedAt ? ` · rilis ${m.issuedAt}` : ''} {open ? '▴' : '▾'}</span>
       </button>
-      {m.local && <p className={`mt-1 text-caption ${m.localTone === 'rendah' ? 'text-leaf-deep dark:text-leaf-soft' : ''}`}>{m.local}</p>}
+      {m.localSummary && <p className={`mt-1 text-caption ${m.localTone === 'rendah' ? 'text-leaf-deep dark:text-leaf-soft' : ''}`}>{m.localSummary}</p>}
       {open && (
         <div className="mt-2 space-y-1.5 text-caption text-ink-body dark:text-mist-body">
           {m.detail && <p>{m.detail}</p>}
+          {m.local && <p>{m.local}</p>}
+          {m.technicalSummary && <p><strong>Angka dan istilah teknis:</strong> {m.technicalSummary}</p>}
           {m.implications.length > 0 && (
             <ul className="list-disc pl-4 space-y-0.5">
               {m.implications.map((x, i) => <li key={i}>{x}</li>)}

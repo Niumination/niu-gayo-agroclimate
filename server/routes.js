@@ -63,7 +63,7 @@ export function createHandler(ctx) {
       SPI_BASELINE, computeSpi, assessDrought, seasonalInfoExtended, climateOutlook, disasterHistory,
       readFeed, runAlertCycle, toCapXml,
       validateReport, rateLimited, submitReport, recentReports,
-      PKG_VERSION, HAZARDS_ON, FIRMS_MAP_KEY, readToken,
+      PKG_VERSION, BUILD_INFO = {}, HAZARDS_ON, FIRMS_MAP_KEY, readToken,
   } = ctx
   return async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
@@ -80,6 +80,13 @@ export function createHandler(ctx) {
         return json(res, 200, {
           ok: true,
           version: PKG_VERSION,
+          build: {
+            revision: BUILD_INFO.revision ?? 'unknown',
+            dirty: BUILD_INFO.dirty ?? null,
+            frontendRevision: BUILD_INFO.frontendRevision ?? null,
+            frontendVersion: BUILD_INFO.frontendVersion ?? null,
+            frontendBuiltAt: BUILD_INFO.frontendBuiltAt ?? null,
+          },
           uptime: process.uptime(),
           cache: cacheStats(),
           features: { hazardsEnabled: HAZARDS_ON, firmsKey: !!FIRMS_MAP_KEY, telegram: !!readToken('TELEGRAM_BOT_TOKEN'), cronToken: !!process.env.ALERTS_CRON_TOKEN },
@@ -91,24 +98,70 @@ export function createHandler(ctx) {
         if (!id || !VALID_LOCATIONS.has(id)) {
           return json(res, 400, { error: "parameter 'location' wajib dan harus id lokasi yang valid" })
         }
-        const { raw, ...data } = await weatherGet(id)
-        return json(res, 200, data)
+        try {
+          const { raw, ...data } = await weatherGet(id)
+          return json(res, 200, data)
+        } catch (err) {
+          const location = LOCATIONS.find((item) => item.id === id)
+          return json(res, 200, {
+            location: location ? { id: location.id, name: location.name } : { id },
+            retrievedAt: new Date().toISOString(),
+            degraded: true,
+            error: err?.message || 'Data cuaca belum tersedia',
+            current: null,
+            times: [],
+            precipitation: [],
+            temperature_2m: [],
+            leaf_wetness_probability: [],
+            soil_moisture_0_to_7cm: [],
+            wind_gusts_10m: [],
+          })
+        }
       }
       if (path === '/api/ensemble') {
         const id = url.searchParams.get('location')
         if (!id || !VALID_LOCATIONS.has(id)) {
           return json(res, 400, { error: "parameter 'location' wajib dan harus id lokasi yang valid" })
         }
-        const data = await ensembleGet(id)
-        return json(res, 200, data)
+        try {
+          const data = await ensembleGet(id)
+          return json(res, 200, data)
+        } catch (err) {
+          // Upstream ensemble is best-effort: an unavailable model must not turn
+          // the documented JSON endpoint into a 502 or break the dashboard.
+          const location = LOCATIONS.find((item) => item.id === id)
+          return json(res, 200, {
+            location: location ? { id: location.id, name: location.name } : { id },
+            retrievedAt: new Date().toISOString(),
+            degraded: true,
+            error: err?.message || 'Data ensemble belum tersedia',
+            data: null,
+          })
+        }
       }
       if (path === '/api/alerts') {
         // 1.8: agregat lama + ringkasan ISPU (H-ASAP) + level registry per sentra (best-effort, tidak memblokir bila gagal)
         const [base, aq, hz] = await Promise.allSettled([alertsGet(), aqSummaryGet(), hazardsAllGet()])
-        if (base.status !== 'fulfilled') throw base.reason
-        const data = { ...base.value }
-        data.airQuality = aq.status === 'fulfilled' ? { retrievedAt: aq.value.retrievedAt, worst: aq.value.worst ?? null, degradedCount: aq.value.degradedCount ?? null, locations: (aq.value.locations ?? []).map((l) => ({ id: l.id, level: l.level, ispu: l.ispu, category: l.category ?? null, haze: l.haze ?? null })) } : { degraded: true, error: aq.reason?.message }
-        data.hazards = hz.status === 'fulfilled' ? { retrievedAt: hz.value.retrievedAt, worst: hz.value.worst, activeByHazard: hz.value.activeByHazard, locations: hz.value.locations.map((l) => ({ id: l.id, worst: l.worst, active: l.active, levels: l.levels })) } : { degraded: true, error: hz.reason?.message }
+        const sourceErrors = {}
+        const data = base.status === 'fulfilled'
+          ? { ...base.value }
+          : { generatedAt: new Date().toISOString(), watershedRainIndex24h: null, locations: [], staleness: null }
+        if (base.status !== 'fulfilled') sourceErrors.alerts = base.reason?.message || 'Ringkasan cuaca belum tersedia'
+        data.airQuality = aq.status === 'fulfilled'
+          ? { retrievedAt: aq.value.retrievedAt, count: aq.value.count ?? null, worst: aq.value.worst ?? null, degradedCount: aq.value.degradedCount ?? 0, locations: (aq.value.locations ?? []).map((l) => ({ id: l.id, level: l.level, ispu: l.ispu, category: l.category ?? null, haze: l.haze ?? null })) }
+          : { degraded: true, error: aq.reason?.message || 'Ringkasan kualitas udara belum tersedia' }
+        data.hazards = hz.status === 'fulfilled'
+          ? { retrievedAt: hz.value.retrievedAt, total: hz.value.total ?? null, degradedCount: hz.value.degradedCount ?? 0, worst: hz.value.worst, activeByHazard: hz.value.activeByHazard, locations: (hz.value.locations ?? []).map((l) => ({ id: l.id, worst: l.worst, active: l.active, levels: l.levels })) }
+          : { degraded: true, error: hz.reason?.message || 'Ringkasan bahaya belum tersedia' }
+        if (aq.status !== 'fulfilled') sourceErrors.airQuality = data.airQuality.error
+        if (hz.status !== 'fulfilled') sourceErrors.hazards = data.hazards.error
+        const degradedSources = []
+        if (base.status !== 'fulfilled' || base.value?.degraded) degradedSources.push('alerts')
+        if (aq.status !== 'fulfilled' || data.airQuality.degradedCount > 0) degradedSources.push('airQuality')
+        if (hz.status !== 'fulfilled' || data.hazards.degradedCount > 0) degradedSources.push('hazards')
+        data.degraded = degradedSources.length > 0
+        if (data.degraded) data.degradedSources = degradedSources
+        if (Object.keys(sourceErrors).length) data.sourceErrors = sourceErrors
         return json(res, 200, data)
       }
       // v2 — registry bahaya per lokasi / ringkasan semua sentra
@@ -203,7 +256,13 @@ export function createHandler(ctx) {
       // H-API — hotspot FIRMS (semua / per sentra ≤ 50 km)
       if (path === '/api/hotspots') {
         const id = url.searchParams.get('location')
-        const all = await hotspotsGet()
+        let all
+        try {
+          all = await hotspotsGet()
+        } catch (err) {
+          const message = err?.message || 'Data titik panas belum tersedia'
+          all = { retrievedAt: new Date().toISOString(), degraded: true, reason: message, warnings: [message], hotspots: [], perLocation: {} }
+        }
         if (!id) return json(res, 200, all)
         if (!VALID_LOCATIONS.has(id)) return json(res, 400, { error: "parameter 'location' harus id lokasi yang valid" })
         return json(res, 200, hotspotsForLocation(all, id))

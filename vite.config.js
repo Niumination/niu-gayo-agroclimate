@@ -71,12 +71,11 @@ export default defineConfig({
     }),
   ],
   build: {
-    // F-11 (v2.0.1) diperbarui untuk Vite 8/Rolldown: `manualChunks` (objek) tidak lagi
-    // didukung — API penggantinya adalah `advancedChunks.groups`.
+    // Vite 8 memakai Rolldown; codeSplitting.groups adalah API resmi untuk pemisahan vendor.
     // Pisahkan vendor agar cache lebih baik & tiap berkas lebih kecil (anggaran total gzip tetap berlaku).
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        advancedChunks: {
+        codeSplitting: {
           groups: [
             { name: 'vendor-react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
             { name: 'vendor-icons', test: /node_modules[\\/]lucide-react[\\/]/ },

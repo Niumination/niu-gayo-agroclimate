@@ -46,7 +46,7 @@ export function hazardPanels(r) {
     ringkas: (
       <>
         <p className="text-body-sm leading-relaxed break-words text-tanah-tinta-isi dark:text-langit-tinta-isi">
-          {r.detail || r.headline}
+          {r.headline || 'Informasi bahaya terbaru tersedia.'}
         </p>
         {r.advice?.umum?.length > 0 && (
           <div className="mt-3">
@@ -87,10 +87,12 @@ export function hazardPanels(r) {
             Belum ada angka model untuk bahaya ini.
           </p>
         )}
-        {r.sources?.length > 0 && (
-          <p className="mt-3 text-caption leading-relaxed break-words text-tanah-tinta-halus dark:text-langit-tinta-halus">
-            Sumber: {r.sources.map((s) => s.name).join(' · ')}
-          </p>
+        {(r.detail || r.sources?.length > 0) && (
+          <details className="mt-3 text-caption leading-relaxed break-words text-tanah-tinta-halus dark:text-langit-tinta-halus">
+            <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Sumber dan catatan teknis</summary>
+            {r.sources?.length > 0 && <p className="mt-1">Sumber: {r.sources.map((s) => s.name).join(' · ')}</p>}
+            {r.detail && <p className="mt-1">{r.detail}</p>}
+          </details>
         )}
       </>
     ),

@@ -280,7 +280,7 @@ export default {
   evaluate(ctx) {
     const p = ctx.fireDanger
     if (!p || (!p.fwi?.latest && !p.hotspots?.summary)) {
-      return { level: 'n/a', degraded: true, headline: p?.error ? `Bahaya kebakaran tidak tersedia (${p.error})` : 'Bahaya kebakaran belum tersedia' }
+      return { level: 'n/a', degraded: true, headline: 'Data bahaya kebakaran belum tersedia.', detail: p?.error ? `Gangguan sumber: ${p.error}` : 'Data bahaya kebakaran belum tersedia saat ini.' }
     }
     const a = p.assessment ?? {}
     const codes = p.fwi?.latest?.codes ?? null
@@ -292,7 +292,7 @@ export default {
     return {
       level,
       score: codes ? Math.round(Math.min(100, (codes.fwi / 20) * 100)) : null,
-      headline: codes ? `Api ${fwiClass}${a.siagaLokal ? ' · siaga kebakaran setempat' : ''}` : 'Kode bahaya api belum tersedia',
+      headline: codes ? `Risiko kebakaran ${fwiClass.toLowerCase()}${a.siagaLokal ? ' · siaga kebakaran setempat' : ''}` : 'Data risiko kebakaran belum tersedia',
       detail: `Fire Weather Index (FWI) ${codes ? codes.fwi.toFixed(1) : 'belum dihitung'}${fdrs}. ${codes ? `FFMC ${Math.round(codes.ffmc)}, DC ${Math.round(codes.dc)}, ISI ${codes.isi.toFixed(1)}` : ''}; ${hsTxt}; hari tanpa hujan ${p.hth?.days ?? '–'} hari.${p.fwi?.latest?.isToday === false ? ' Kode terakhir = kemarin (pengamatan 12.00 WIB belum lewat).' : ''}`,
       metrics: [
         { key: 'fwi', label: 'FWI', value: codes?.fwi ?? null, unit: '' },

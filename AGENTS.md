@@ -1,7 +1,7 @@
 # Niu-Gayo-Agroclimate — Project AGENTS.md
 
 **Lokasi:** `apps/niu-gayo-agroclimate/`  
-**Stack:** React 19, Vite 6, Tailwind CSS, Open-Meteo & WeatherNext 3 Pipeline, Node Native Test  
+**Stack:** React 19, Vite 8/Rolldown, Tailwind CSS 4, Open-Meteo & WeatherNext 3 Pipeline, Node Native Test
 **Remote:** `github.com/Niumination/niu-gayo-agroclimate`  
 **Kategori:** Apps — Pertanian Kopi Arabika Gayo & Mitigasi Bencana Hidrometeorologi  
 
@@ -29,11 +29,11 @@ Peta dokumentasi ada di **`docs/README.md`**. Aturan penempatan: **tutorial** (`
 
 ## Verification Commands
 
-- Test: `npm test` (node test runner; 377 test, semua fetch upstream di-mock)
+- Test: `npm test` (Node test runner; 517 test terverifikasi pada patch ini; fetch eksternal di unit test di-mock, smoke API menerima status `degraded` untuk sumber yang tidak tersedia)
 - Lint (sejak P6): `npm run lint` — ESLint flat config + `eslint-plugin-jsx-a11y` + `eslint-plugin-react-hooks` (`eslint.config.js`, devDependency; 0 dampak bundel). **Wajib 0 temuan sebelum commit.** Aturan penting: latar dialog = `<button tabIndex={-1} aria-label="Tutup">` (bukan `<div onClick>`); `role="tablist"` hanya pada daftar tab; jangan memakai `eslint-disable` bila dependansi hook bisa dibetulkan. Uji browser (pa11y/axe) dijalankan manual: `docs/how-to/09-uji-browser-a11y.md`.
 - Cakupan: `npm run check:coverage` — **gerbang ambang** (baris ≥ 95 %, cabang ≥ 80 %, fungsi ≥ 92 %; ambang di `scripts/check-coverage.mjs`) + tren vs `scripts/coverage-baseline.json`; `npm run test:coverage` tetap ada sebagai laporan mentah
 - Kesegaran outlook: `npm run check:outlook` (gagal bila `climateOutlook.json` kedaluwarsa; perbarui dari BMKG/NOAA CPC)
-- Inventaris Gayo: `npm run check:i18n` (daftar label `[?]` yang menunggu tinjauan penutur asli — tugas manusia H-4)
+- Pemeriksaan bahasa: `npm run check:i18n` (menjaga agar tidak ada teks/placeholder bahasa Gayo tersisa; target = 0)
 - Kontras & tipografi desain: `npm run check:contrast` — menilai pasangan token di `src/index.css` terhadap WCAG 2.2 AA (teks 4,5:1 · non-teks 3:1), memindai utilitas teks beropasitas, dan menghitung teks < 16 px. Sejak **P1 (2026-10-16)** CI menjalankannya **`--strict`**: 34/34 pasangan lulus, 0 utilitas beropasitas → regresi kontras menggagalkan build. Jangan menulis teks dengan opasitas (`text-ink/45`) — pakai token peran di `docs/reference/DESIGN-TOKENS.md`.
 - Kontrak aksesibilitas: `tests/a11yContract.test.js` (10 uji) mengunci hasil **P2** — tablist/tabpanel + roving tabindex, skip-link + `aria-live`, larangan `outline-none`, target seluruh `<button>` ≥ 44 px, token skala teks (`--text-body/body-sm/label/caption`), dan label i18n baru. Bila uji ini gagal, perbaiki kodenya — jangan melemahkan uji.
 - Tipografi (sejak P3): ukuran teks **wajib** memakai token skala — `text-caption` (12 px, hanya metadata), `text-body-sm`/`text-label` (14 px), `text-body` (16 px, teks isi & aksi). Jangan memakai `text-[Npx]` (< 16 px), `text-xs`, `text-sm`, atau `truncate` (label Gayo memanjang → pakai `break-words`). Angka memakai `font-data` + `tabular-nums`. Gerbang: `npm run check:typography`. Font `JetBrains Mono` self-host di `public/fonts/` (jangan ganti ke CDN; preload + fallback metrik ada di `src/index.css`/`index.html`).
@@ -41,7 +41,7 @@ Peta dokumentasi ada di **`docs/README.md`**. Aturan penempatan: **tutorial** (`
 - Gerak & area aman (sejak P5): token `--ease-enter`/`--ease-exit` di `@theme`; durasi ≤ 300 ms (fungsional ≤ 500 ms); **jangan** pakai `animate-pulse`/`animate-bounce` untuk membawa makna; aksi utama wajib punya `active:scale-[.97]`; `index.html` wajib `viewport-fit=cover` (tanpa itu `env(safe-area-inset-*)` = 0) dan `theme-color` tunggal yang diperbarui JS mengikuti tema terpilih. Dijaga `tests/motionContract.test.js`.
 - Build: `npm run build` (Vite 8/Rolldown; bundle production di `dist/`; ~0,4 dtk)
 - Toolchain v2.1.0: Vite 8 + `@vitejs/plugin-react` 6 (Oxc) + **Tailwind 4 CSS-first** — konfigurasi tema/varian ada di `src/index.css` (`@theme`, `@custom-variant dark`), BUKAN lagi di `tailwind.config.js` (dihapus). Node ≥ 20.19 (lihat `engines`).
-- Pemisahan chunk vendor memakai `build.rollupOptions.output.advancedChunks` (Rolldown); bentuk objek `manualChunks` v3 tidak didukung lagi.
+- Pemisahan chunk vendor memakai `build.rolldownOptions.output.codeSplitting.groups` (API Rolldown terkini); `advancedChunks` sudah deprecated dan bentuk objek `manualChunks` v3 tidak didukung.
 - Pemasangan: `npm ci` normal — **jangan** menambahkan flag. Berkas **`.npmrc`** di akar repo menetapkan `legacy-peer-deps=true` karena `eslint-plugin-jsx-a11y@6.10.2` belum mengakui peer `eslint` 10 (paket ini memakai ESLint 10.13.0). **Jangan memundurkan ESLint ke 9**: `no-unused-vars` inti versi 9 tidak menghitung pemakaian tag JSX (66 temuan palsu). Cabut baris `.npmrc` hanya setelah `npm view eslint-plugin-jsx-a11y peerDependencies` mengizinkan `^10`. Untuk kenaikan dependensi lain yang gagal `edgesOut`, jalankan sekali `npm install` (tanpa flag) lalu commit lockfile-nya.
 - Dev Server: `npm run dev` (berjalan di port 5188)
 - Production: `npm run build` → `dist/` di-serve `scripts/serve.py` (:7444); API `server/index.js` (:7455)
@@ -59,4 +59,4 @@ Peta dokumentasi ada di **`docs/README.md`**. Aturan penempatan: **tutorial** (`
 - Klimatologi tersimpan di repo (`server/clim/flood-clim.json`, `server/clim/spi-baseline.json`) — **jangan** jalankan `npm run clim:flood` / `clim:spi` kecuali memperbarui baseline (Open-Meteo membatasi laju, HTTP 429; GloFAS mulai 1997, SPI baseline 1991–2020 `best_match`, bukan `era5_land`).
 - Validasi musiman: `npm run validate:season -- --days 120 --min waspada --events <kejadian.json> --out <hasil.json>` (protokol `docs/reference/VALIDATION.md`, format `docs/validation/events-template.json`); arsip harian `server/data/hazard-archive/` terisi hanya bila `/api/hazards?location=all` dipanggil (cron). Perubahan ambang hasil validasi → `src/domain/thresholds.js` + `docs/reference/THRESHOLDS.md` + test, bersamaan.
 - Modul `suhu` memakai `ctx.weather.thermal` (dari `features.thermalSummary`, butuh hourly `cloud_cover, dew_point_2m, vapour_pressure_deficit` + daily Tmin/Tmax) — jangan hapus variabel itu dari `openMeteo.js` klien/server. Interaksi lintas-bahaya hanya di `src/domain/hazards/interactions.js` (`docs/reference/THRESHOLDS.md` §19); label hazard (id + Gayo `[?]`) ada di masing-masing modul, bukan di `src/i18n/messages.js`.
-- Tugas manusia terbuka: H-1 `FIRMS_MAP_KEY`, H-2 koordinat Rusip Antara, H-4 Gayo, H-5 nomor kecamatan, H-6 tag `v2.0.0`, H-7 aktivasi timer + token Telegram, H-8 surat BPBD (`docs/templates/surat-pengantar-BPBD.md`), H-9 VAPID (Web Push, ditunda), pembaruan `src/data/hazards/climateOutlook.json` sebelum `validUntil`.
+- Tugas manusia terbuka: H-1 `FIRMS_MAP_KEY`, H-2 koordinat Rusip Antara, H-5 nomor kecamatan, H-6 tag `v2.0.0`, H-7 aktivasi timer + token Telegram, H-8 surat BPBD (`docs/templates/surat-pengantar-BPBD.md`), H-9 VAPID (Web Push, ditunda), pembaruan `src/data/hazards/climateOutlook.json` sebelum `validUntil`.

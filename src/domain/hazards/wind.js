@@ -28,8 +28,8 @@ export default {
     return {
       level,
       score: Math.min(100, Math.round((w.gust / WIND_GUST.ekstrem) * 100)),
-      headline: `Hembusan ${Math.round(w.gust)} km/jam · maks 24 jam ke depan ${Math.round(w.gustMaxNext24)} km/jam${bmkgNow ? ' · kriteria cuaca ekstrem BMKG (≥ 45 km/jam)' : ''}`,
-      detail: r === 'Normal' ? 'Angin dalam batas normal untuk pohon pelindung kopi.' : r,
+      headline: `Hembusan angin ${Math.round(w.gust)} km/jam saat ini · hingga ${Math.round(w.gustMaxNext24)} km/jam dalam 24 jam ke depan`,
+      detail: `${r === 'Normal' ? 'Angin dalam batas normal untuk pohon pelindung kopi.' : r}${bmkgNow ? ' Kriteria cuaca ekstrem BMKG dimulai pada hembusan 45 km/jam.' : ''}`,
       metrics: [
         { key: 'gust', label: 'Hembusan saat ini', value: Math.round(w.gust), unit: 'km/jam' },
         { key: 'wind', label: 'Angin rata-rata', value: Math.round(w.wind), unit: 'km/jam' },

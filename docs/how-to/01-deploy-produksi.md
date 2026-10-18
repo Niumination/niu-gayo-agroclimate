@@ -19,7 +19,8 @@ Isi minimal: `ALERTS_CRON_TOKEN` (acak panjang), `TELEGRAM_*` bila peringatan in
 
 ```bash
 npm ci
-npm run build          # → dist/
+npm run build          # → dist/ + build-info.json
+npm run check:build-info
 npm run check:bundle   # JS utama ≤ 150 kB gzip, total ≤ 200 kB
 ```
 
@@ -61,11 +62,19 @@ python3 scripts/serve.py &
 ## 5. Verifikasi rilis
 
 ```bash
-npm test                 # 321 uji
+npm run lint
+npm test
 npm run check:coverage   # gerbang ambang cakupan
+npm audit --omit=dev --audit-level=high
 npm run check:outlook    # gagal bila climateOutlook.json kedaluwarsa
-npm run smoke            # 16 endpoint + penjaga, server nyala di port acak
-curl -s https://cuaca.abstract.biz.id/healthz | head -c 400
+npm run check:i18n
+npm run check:contrast -- --strict
+npm run check:typography
+npm run build
+npm run check:build-info
+npm run check:bundle
+npm run smoke            # endpoint, kontrak JSON, dan header keamanan
+npm run verify:deployment -- https://cuaca.abstract.biz.id --expect=<SHA-40-rilis>
 ```
 
 Di `/healthz` periksa `features` (`firmsKey`, `telegram`, `cronToken`) dan `sources.*.state` — `ok` berarti sumber terakhir sehat, `degraded` berarti fallback yang sedang dipakai (bukan kegagalan server).
@@ -73,12 +82,19 @@ Di `/healthz` periksa `features` (`firmsKey`, `telegram`, `cronToken`) dan `sour
 ## 6. Perbarui & kembalikan (rollback)
 
 ```bash
-git pull && npm ci && npm run build && systemctl --user restart agroclimate-api.service
+git fetch origin
+git switch main
+git pull --ff-only origin main
+npm ci
+npm run build
+npm run check:build-info
+systemctl --user restart agroclimate-api.service
 ```
 
-- Frontend: cukup `npm run build` — `serve.py` membaca `dist/` langsung.
-- API bermasalah: `git checkout <tag-sebelumnya> && npm ci && npm run build && systemctl --user restart agroclimate-api.service`.
+- Frontend: setelah `npm run build`, `serve.py` membaca `dist/` langsung. Pastikan `build-info.json`, HTML, service worker, dan aset berubah bersama.
+- API bermasalah: buat *revert commit* untuk rilis yang bermasalah, lalu jalankan kembali gerbang build dan restart API. Jangan reset paksa branch bersama.
 - Arsip & status peringatan aman: hidup di `server/data/` (tidak tersentuh git).
+- Setelah restart, jalankan `npm run verify:deployment -- https://cuaca.abstract.biz.id --expect=<SHA-40-rilis>` dari checkout bersih yang memuat SHA rilis.
 
 ## Jangan lakukan
 

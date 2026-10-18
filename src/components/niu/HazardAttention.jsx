@@ -51,8 +51,8 @@ export default function HazardAttention({
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-0.5">
         <h2 id="attn-title" className="text-body font-semibold break-words text-tanah-tinta dark:text-langit-tinta">
           {heading}
-          <span className="ml-2 font-data text-caption font-normal tabular-nums text-tanah-tinta-redup dark:text-langit-tinta-redup">
-            {active.length}
+          <span aria-label={`${active.length} bahaya aktif`} className="ml-2 font-data text-caption font-normal tabular-nums text-tanah-tinta-redup dark:text-langit-tinta-redup">
+            ({active.length})
           </span>
         </h2>
         <p className="text-caption text-tanah-tinta-redup dark:text-langit-tinta-redup">{sub}</p>
@@ -62,7 +62,6 @@ export default function HazardAttention({
         {shown.map((r) => {
           const name = r.label?.id || r.id
           const open = openId === r.id
-          const score = r.score == null ? null : Math.round(r.score)
           return (
             <li key={r.id}>
               <AttentionCard
@@ -70,7 +69,6 @@ export default function HazardAttention({
                 title={name}
                 icon={<HazardIcon id={r.id} />}
                 summary={r.headline}
-                meta={score == null ? null : `Skor ${score}/100`}
                 level={r.level}
                 levelLabel={r.levelLabel}
                 expanded={open}

@@ -3,7 +3,7 @@
  * ctx.weather: fitur dari `weatherFeatures()`; ctx.ari: ARI IMERG/model (opsional).
  */
 import { landslideScore } from '../disaster.js'
-import { normalizeLevel } from './levels.js'
+import { LEVEL_LABEL, normalizeLevel } from './levels.js'
 
 const ADVICE = {
   waspada: {
@@ -33,7 +33,7 @@ export default {
     return {
       level,
       score: r.score,
-      headline: `Skor longsor ${r.score}/100 — ${r.level}`,
+      headline: `Risiko tanah longsor ${LEVEL_LABEL[level].toLowerCase()}`,
       detail: r.detail,
       metrics: [
         { key: 'rain24', label: 'Hujan 24 jam', value: w.rain24, unit: 'mm' },

@@ -30,7 +30,12 @@ const ENDPOINTS = [
   '/api/disaster-history?location=takengon',
   '/api/reports?location=takengon',
   '/api/weather?location=takengon',
+  '/api/ensemble?location=takengon',
+  '/api/alerts',
+  '/api/consensus?location=takengon',
+  '/api/bmkg-nowcast',
   '/api/air-quality?location=takengon',
+  '/api/hotspots?location=takengon',
   '/api/drought?location=takengon',
   '/api/fire-danger?location=takengon',
   '/api/quakes?location=takengon',
@@ -39,6 +44,7 @@ const ENDPOINTS = [
   '/api/flood',
   '/api/external-reports',
   '/api/hazards?location=takengon',
+  '/api/hazards?location=all',
   '/api/alerts/feed?hours=1',
 ]
 
@@ -54,12 +60,12 @@ try {
       status = r.status
       const body = await r.json()
       note = body?.degraded ? 'degraded' : 'ok'
-      if (status >= 500) failed++
+      if (status !== 200) failed++
     } catch (err) {
       failed++
       note = `GAGAL: ${err.message}`
     }
-    console.log(`${status >= 500 || !status ? '✗' : '✓'} ${String(status).padEnd(3)} ${ep.padEnd(40)} ${note} (${Date.now() - t0} ms)`)
+    console.log(`${status !== 200 || !status ? '✗' : '✓'} ${String(status).padEnd(3)} ${ep.padEnd(40)} ${note} (${Date.now() - t0} ms)`)
   }
   // POST dry-run siklus peringatan (tanpa Telegram)
   const r = await fetch(`${base}/api/alerts/run?dryRun=1`, { method: 'POST', headers: { 'x-cron-token': 'smoke' }, signal: AbortSignal.timeout(120_000) })

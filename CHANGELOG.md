@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.2.1] — 2026-10-18 — Penerapan ulang bahasa manusia (2 commit)
+## [2.2.1] — 2026-10-18 — Bahasa manusia, sinkronisasi upstream & ketahanan deployment
 
 Penerapan paket zip v2.2.0 ke live site menghasilkan 57 akronim teknis tampil di lapisan 1 desktop (target prototipe = 10). Root cause: spesifikasi P7.7 hanya menguji `messages.js` + 3 kartu lama; `headline` modul bahaya dan `subtitle`/`footer` `HazardFocusCards.jsx` tidak terjangkau uji.
 
@@ -27,6 +27,16 @@ Penerapan paket zip v2.2.0 ke live site menghasilkan 57 akronim teknis tampil di
 Sisa = nama lembaga (BMKG/PVMBG/MAGMA) + label metrik (PM2,5/AOD/FWI) + footer Detail + teks arsip (MMI VII) — sesuai prototipe.
 
 **Gates:** 509/509 test pass · lint 0 · build 144.0 kB · bundle hash `CKKltsPD`
+
+### Sprint sinkronisasi upstream & ketahanan deploy — 2026-10-18
+
+- Patch disusun di atas upstream `main` terverifikasi `f5463cddf2e6327271b6fde0d555fd3e6813ccd3`; tidak mengubah remote dan tidak melakukan push/deploy.
+- Build mencatat versi, revisi Git, status working tree, waktu build, dan daftar aset JS/CSS. `/healthz` membandingkan revisi API dengan frontend; `verify:deployment` memeriksa build, aset, cache entry-point, service worker/PWA, dan API setelah penerapan.
+- `/api/weather`, `/api/ensemble`, agregat `/api/alerts`, dan `/api/hotspots` mempertahankan JSON `200` berstatus degraded saat sumber eksternal gagal; jalur SPA tidak lagi menyamarkan aset hilang sebagai `index.html`; cache entry-point/PWA diperketat.
+- Kesalahan muat utama dan batas aplikasi memakai pesan pengguna; rincian teknis tetap dapat dibuka. Ringkasan cuaca, musim, kartu bahaya, skor, sumber, ambang, dan metode berada pada lapisan Detail. Menu dan fitur tidak dihapus.
+- Outlook iklim ditinjau ulang terhadap publikasi BMKG 13 Oktober dan NOAA CPC 8 Oktober 2026; angka, periode, dan indeks dari dua lembaga dibedakan.
+- Pemisahan vendor diperbarui dari opsi Rolldown yang deprecated ke `rolldownOptions.output.codeSplitting.groups`.
+- **Verifikasi lokal:** 517/517 uji lulus; lint lulus; cakupan 96,49% baris / 84,25% cabang / 96,53% fungsi; audit dependensi penuh 0 temuan; outlook, i18n, kontras 78/78, tipografi, build, provenance, dan bundle diperiksa. Smoke test lokal lulus; sebagian sumber eksternal dapat berstatus degraded tanpa menghasilkan HTTP 5xx. Deployment live belum dilakukan dan tetap harus diverifikasi setelah penerapan.
 
 ## [2.2.0] — 2026-10-17 — Rilis **Niu** (Round L, P7.1–P7.9) ✅
 

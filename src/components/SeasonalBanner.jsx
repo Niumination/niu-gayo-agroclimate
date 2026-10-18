@@ -22,10 +22,16 @@ export default function SeasonalBanner({ seasonal, tr = (k) => k }) {
       {seasonal.dry && (
         <span className="basis-full text-caption opacity-90">
           Musim kering: <strong>{seasonal.dry.label}</strong> ({seasonal.dry.months}) — {seasonal.dry.note}
-          {seasonal.frostWindow ? ' Jendela embun upas plato > 1.400 m (malam cerah & tenang).' : ''}
+          {seasonal.frostWindow ? ' Wilayah dataran tinggi berpeluang mengalami embun upas pada malam cerah dan tenang.' : ''}
         </span>
       )}
-      {seasonal.climate?.active && seasonal.climate.note && <span className="basis-full text-caption">Penyesuaian iklim: {seasonal.climate.note}</span>}
+      {seasonal.climate?.active && seasonal.climate.note && <span className="basis-full text-caption">Perkiraan iklim: {seasonal.climate.note}</span>}
+      {seasonal.climate?.active && seasonal.climate.detail && (
+        <details className="basis-full mt-1 text-caption">
+          <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Rincian teknis iklim</summary>
+          <p className="mt-1">{seasonal.climate.detail}</p>
+        </details>
+      )}
     </div>
   )
 }

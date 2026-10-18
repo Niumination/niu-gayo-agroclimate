@@ -91,13 +91,19 @@ export function climateAdjustment(outlook, { now = new Date() } = {}) {
   if (enso.includes('la ni') || iod.includes('negatif')) shift = shift === 'drier' ? 'neutral' : 'wetter'
   const dryBoost = shift === 'drier' ? (strong ? 2 : 1) : 0
   const wetBoost = shift === 'wetter' ? (strong ? 2 : 1) : 0
+  const detail =
+    shift === 'drier'
+      ? `${cur.enso?.phase ?? ''}${cur.enso?.strength ? ` ${cur.enso.strength}` : ''}${iod.includes('positif') ? ' + IOD positif' : ''}: kemarau diperpanjang; awal musim hujan ${cur.season?.rainyOnset ?? 'berpotensi terlambat'}; risiko kekeringan dan kebakaran lahan dapat bertahan sampai hujan teratur.`
+      : shift === 'wetter'
+        ? `${cur.enso?.phase ?? ''}${iod.includes('negatif') ? ' + IOD negatif' : ''}: peluang hujan di atas normal; puncak longsor/banjir dapat lebih awal dan lebih basah.`
+        : null
   const note =
     shift === 'drier'
-      ? `${cur.enso?.phase ?? ''}${cur.enso?.strength ? ` ${cur.enso.strength}` : ''}${iod.includes('positif') ? ' + IOD positif' : ''}: kemarau diperpanjang, awal musim hujan ${cur.season?.rainyOnset ?? 'berpotensi terlambat'} — fase kering & karhutla dapat meluas hingga Okt–Nov.`
+      ? `Cuaca kering berpeluang bertahan lebih lama; awal hujan bisa terlambat. Hemat air kebun dan siapkan mulsa; hujan setempat tetap bisa terjadi.`
       : shift === 'wetter'
-        ? `${cur.enso?.phase ?? ''}${iod.includes('negatif') ? ' + IOD negatif' : ''}: hujan di atas normal — puncak longsor/banjir lebih awal & lebih basah; antisipasi karat daun.`
+        ? 'Hujan dapat lebih sering; jaga saluran air dan waspadai lereng serta aliran sungai.'
         : null
-  return { active: !stale, stale, shift, dryBoost, wetBoost, note }
+  return { active: !stale, stale, shift, dryBoost, wetBoost, note, detail }
 }
 
 const PHASE_RANK = { rendah: 0, sedang: 1, tinggi: 2 }
@@ -123,9 +129,9 @@ export function seasonalInfoExtended(month = new Date().getMonth() + 1, { outloo
   }
   const dryNote =
     dry === 'tinggi'
-      ? 'Puncak musim kering — bahan bakar permukaan kering: dilarang bakar lahan; pantau hari tanpa hujan & hotspot; hemat air kebun.'
+      ? 'Puncak musim kering — jangan membakar lahan; siapkan air kebun dan laporkan asap atau api.'
       : dry === 'sedang'
-        ? 'Musim kering — hari tanpa hujan mulai memanjang; siapkan mulsa, embung & sekat bakar.'
+        ? 'Musim kering — siapkan mulsa dan cadangan air; jaga jalur agar api tidak mudah meluas.'
         : 'Di luar musim kering — risiko karhutla rendah kecuali hari tanpa hujan memanjang.'
   return {
     ...base,

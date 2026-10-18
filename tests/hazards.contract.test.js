@@ -160,7 +160,8 @@ test('angin: tangga 40/60/75 monoton; ≥ 45 hanya penanda cuaca ekstrem BMKG (f
   assert.equal(at(44).flags.bmkgExtreme, false)
   assert.equal(at(45).level, 'waspada')
   assert.equal(at(45).flags.bmkgExtreme, true)
-  assert.match(at(45).headline, /kriteria cuaca ekstrem BMKG/)
+  assert.doesNotMatch(at(45).headline, /kriteria|BMKG/)
+  assert.match(at(45).detail, /kriteria cuaca ekstrem BMKG/i)
   assert.equal(at(65).level, 'bahaya')
   assert.equal(at(75).level, 'ekstrem')
   assert.equal(at(10).level, 'rendah')
@@ -176,7 +177,7 @@ test('asap: adaptor payload /api/air-quality + eskalasi laporan warga', () => {
   const payload = { location: LOC, retrievedAt: '2026-10-15T10:00:00Z', source: { name: 'CAMS' }, degraded: false, assessment }
   const base = evaluateAll({ location: LOC, now: '2026-10-15T10:00:00Z', airQuality: payload }, { enabled: ['asap'] }).results[0]
   assert.equal(base.level, assessment.level)
-  assert.match(base.headline, /^Udara /)
+  assert.match(base.headline, /^Kualitas udara /)
   assert.equal(base.metrics.find((m) => m.key === 'ispu').value, assessment.ispu.index)
   assert.equal(base.flags.estimate, true)
   assert.ok(Array.isArray(base.advice.umum) && typeof base.advice.umum[0] === 'string', 'advice.umum dari healthAdvice.groups')
@@ -195,7 +196,8 @@ test('asap: adaptor payload /api/air-quality + eskalasi laporan warga', () => {
 
   const bad = evaluateAll({ location: LOC, now: 'x', airQuality: { degraded: true, error: 'timeout', assessment: null } }, { enabled: ['asap'] }).results[0]
   assert.equal(bad.level, 'n/a')
-  assert.match(bad.headline, /timeout/)
+  assert.doesNotMatch(bad.headline, /timeout/)
+  assert.match(bad.detail, /timeout/)
 })
 
 test('kebakaran: adaptor payload /api/fire-danger (kode + hotspot + siaga lokal)', () => {
@@ -207,7 +209,7 @@ test('kebakaran: adaptor payload /api/fire-danger (kode + hotspot + siaga lokal)
   assert.equal(r.level, assessment.level)
   assert.equal(r.level, 'ekstrem')
   assert.equal(r.flags.siagaLokal, true)
-  assert.match(r.headline, /Api /)
+  assert.match(r.headline, /^Risiko kebakaran /)
   assert.match(r.headline, /siaga kebakaran setempat/)
   assert.equal(r.metrics.find((m) => m.key === 'hotspots25km24h').value, 1)
   assert.equal(r.sources.length, 2)
@@ -219,6 +221,8 @@ test('kebakaran: adaptor payload /api/fire-danger (kode + hotspot + siaga lokal)
 
   const empty = evaluateAll({ location: LOC, now: 'x', fireDanger: { degraded: true, error: 'arsip gagal' } }, { enabled: ['kebakaran'] }).results[0]
   assert.equal(empty.level, 'n/a')
+  assert.doesNotMatch(empty.headline, /arsip gagal/)
+  assert.match(empty.detail, /arsip gagal/)
 })
 
 test('kekeringan: adaptor payload /api/drought (HTH + neraca air)', () => {
@@ -232,8 +236,10 @@ test('kekeringan: adaptor payload /api/drought (HTH + neraca air)', () => {
   assert.equal(r.metrics.find((m) => m.key === 'balance30').value, assessment.balance30.balance)
   assert.equal(r.flags.lagDays, 5)
   assert.match(r.detail, /Arsip tertinggal 5 hari/)
-  const empty = evaluateAll({ location: LOC, now: 'x', drought: { degraded: true, assessment: null } }, { enabled: ['kekeringan'] }).results[0]
+  const empty = evaluateAll({ location: LOC, now: 'x', drought: { degraded: true, error: 'arsip gagal', assessment: null } }, { enabled: ['kekeringan'] }).results[0]
   assert.equal(empty.level, 'n/a')
+  assert.doesNotMatch(empty.headline, /arsip gagal/)
+  assert.match(empty.detail, /arsip gagal/)
 })
 
 test('evaluateAll: semua hasil memenuhi kontrak §2.1 (tipe field)', () => {

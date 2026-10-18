@@ -2,43 +2,51 @@
   "_meta": {
     "description": "Konteks iklim musiman terkurasi manual dari rilis BMKG (tanpa API). Diperbarui tiap dasarian/bulan oleh maintainer; UI menampilkan banner bila `validUntil` belum lewat, selain itu menampilkan 'perlu pembaruan'.",
     "howToUpdate": "Cek rilis BMKG (bmkg.go.id -> Iklim -> Prediksi musim / ENSO-IOD dasarian) & Staklim Aceh; cek silang NOAA CPC ENSO Diagnostics (bulanan): https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml; perbarui angka, tanggal rilis, sumber, validUntil. CI menjalankan `npm run check:outlook` (gagal bila kedaluwarsa, peringatan bila <= 14 hari).",
-    "lastReviewed": "2026-10-16",
-    "cadence": "dasarian (BMKG) + bulanan (NOAA CPC); pembaruan CPC berikutnya 2026-11-12"
+    "lastReviewed": "2026-10-18",
+    "cadence": "BMKG menerbitkan analisis atmosfer per dasarian dan buletin bulanan; NOAA CPC menerbitkan diskusi ENSO bulanan. Pembaruan berikutnya NOAA CPC: 2026-11-12."
   },
   "current": {
-    "issuedAt": "2026-10",
+    "issuedAt": "2026-10-13",
     "validUntil": "2026-11-12",
     "enso": {
       "phase": "El Niño",
       "strength": "sangat kuat",
-      "nino34Dasarian": 3.44,
-      "index3Month": 2.7,
-      "note": "Anomali Niño3.4 dasarian +3,44 °C; indeks JAS +2,70 (rilis BMKG, dikutip iterasi riset 4)."
+      "nino34Dasarian": 3.33,
+      "index3Month": 3.08,
+      "note": "Anomali suhu muka laut Niño-3.4 Dasarian I Oktober +3,33 °C; indeks ENSO tiga bulanan ASO +3,08 (sumber BMKG). Nilai ini memakai periode dan indeks berbeda dari NOAA CPC; jangan dibandingkan langsung.",
+      "nino34Period": "Dasarian I Oktober 2026 (BMKG)",
+      "index3MonthPeriod": "ASO: Agustus–September–Oktober 2026 (BMKG)"
     },
     "iod": {
       "phase": "positif",
-      "index": 0.935
+      "index": 0.703,
+      "period": "Dasarian I Oktober 2026 (BMKG); indeks bulanan September +0,72",
+      "note": "IOD dasarian +0,703; indeks bulanan September +0,72 (sumber BMKG)."
     },
     "season": {
       "status": "kemarau diperpanjang",
-      "rainyOnset": "terlambat (prediksi BMKG untuk sebagian Sumatra/Aceh)",
-      "peak": "Des–Feb",
-      "note": "Musim hujan 2026/27 diprediksi datang terlambat dan lebih singkat; kemarau panas, hujan berkurang signifikan."
+      "rainyOnset": "November–Desember 2026; awal musim hujan mundur di sebagian besar wilayah Indonesia.",
+      "peak": "Desember 2026–Februari 2027",
+      "note": "BMKG memprakirakan awal musim hujan 2026/27 mundur di 61,08% wilayah Indonesia; waktu mulai berbeda antarwilayah. Dampak El Niño dapat berkurang ketika hujan setempat mulai konsisten."
     },
     "implications": {
       "id": [
-        "Risiko karhutla & asap tetap tinggi sampai hujan konsisten.",
-        "HTH panjang → stres air kopi, kurangi pemupukan N, mulsa & naungan.",
-        "Saat hujan pertama deras setelah kemarau panjang: waspadai longsor & luapan (tanah retak, serasah kering)."
+        "Risiko kebakaran lahan dan asap dapat tetap tinggi sampai hujan turun teratur.",
+        "Hari kering berkepanjangan dapat menekan tanaman kopi; gunakan mulsa, atur naungan, dan hemat air kebun.",
+        "Saat hujan deras datang setelah masa kering, waspadai lereng retak dan luapan sungai."
       ]
     },
     "sources": [
       {
-        "title": "BMKG — perkembangan ENSO/IOD dasarian (dikutip di docs/dev/01-RESEARCH-LOG.md iterasi 4)",
-        "url": "https://www.bmkg.go.id/iklim"
+        "title": "BMKG — Analisis Dinamika Atmosfer Dasarian I Oktober 2026 (13 Okt 2026)",
+        "url": "https://www.bmkg.go.id/iklim/analisis-dinamika-atmosfer-dasarian-i-oktober-2026"
       },
       {
-        "title": "NOAA CPC - ENSO Diagnostic Discussion (8 Okt 2026): El Nino Advisory, indeks Nino-3.4 +2,1 C",
+        "title": "BMKG — Prediksi Musim Hujan 2026/2027 di Indonesia (2 Okt 2026)",
+        "url": "https://www.bmkg.go.id/iklim/prediksi-musim/prediksi-musim-hujan-2026-2027-di-indonesia"
+      },
+      {
+        "title": "NOAA CPC — ENSO Diagnostic Discussion (8 Okt 2026)",
         "url": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml"
       }
     ],
@@ -51,7 +59,8 @@
       "outlook": "El Nino kuat-sangat kuat hingga Jan-Mar 2027 (peluang >83%); peluang >= +2.5C RONI: 54% SON, 83% OND, 70% NDJ",
       "nextIssue": "2026-11-12",
       "url": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml",
-      "note": "Cek silang independen: memperkuat fase El Nino kuat dari rilis BMKG; anomali konveksi tersupresi di atas Indonesia."
+      "note": "Cek silang NOAA CPC (8 Okt) melaporkan Niño-3.4 +2,1 °C dan peluang El Niño kuat hingga sangat kuat. Angka NOAA dan BMKG tidak dibandingkan langsung karena periode pelaporan dan cara penghitungan indeksnya berbeda.",
+      "nino34Period": "September 2026 (NOAA CPC, laporan 8 Okt 2026)"
     }
   },
   "history": [

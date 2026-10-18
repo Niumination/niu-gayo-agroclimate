@@ -84,7 +84,7 @@ export default {
     const list = Array.isArray(doc?.quakes) ? doc.quakes : []
     const sources = [{ name: 'BMKG — gempa dirasakan & info gempa (data.bmkg.go.id)', kind: 'official', retrievedAt: doc?.retrievedAt ?? ctx.now, url: 'https://www.bmkg.go.id/gempabumi/' }]
     if (!doc || doc.degraded && !list.length) {
-      return { level: 'n/a', degraded: true, headline: doc?.stale ? 'Umpan BMKG gagal — menampilkan data terakhir' : 'Data gempa BMKG belum tersedia', sources }
+      return { level: 'n/a', degraded: true, headline: doc?.stale ? 'Informasi gempa belum diperbarui; data terakhir tetap ditampilkan.' : 'Informasi gempa belum tersedia.', sources }
     }
     // Hitung dampak indikatif per gempa (≤ 7 hari untuk daftar; level hanya ≤ 72 jam)
     const scored = list
@@ -120,9 +120,10 @@ export default {
         ]
       : []
     const hist = doc.history
+    const impactSummary = { rendah: 'ringan', waspada: 'perlu diwaspadai', bahaya: 'tinggi', ekstrem: 'sangat kuat' }[top?.level] ?? 'belum diketahui'
     const headline = top
-      ? `Terakhir M${top.mag}, ${top.distKm} km. ${top.impact.label}`
-      : `Tidak ada gempa relevan (≤ ${doc.radiusKm ?? 300} km) dalam umpan BMKG terkini`
+      ? `Dampak gempa diperkirakan ${impactSummary}${top.distKm != null ? `, sekitar ${top.distKm} km dari sentra` : ''}.`
+      : 'Belum ada gempa yang perlu perhatian di sekitar sentra.'
     const detail = [
       top ? `${top.impact.label}. Estimasi dari relasi atenuasi sederhana — rujuk shakemap/BMKG untuk intensitas resmi.` : 'Umpan BMKG memuat 15 gempa dirasakan + 15 gempa M ≥ 5 terakhir se-Indonesia; hanya yang relevan untuk Gayo ditampilkan.',
       landslideAfterQuake ? `Hujan 72 jam ${Math.round(ari72)} mm ≥ ${QUAKE.landslide.ari72} mm setelah M${trigger.mag} berjarak ${trigger.distKm} km → risiko longsor susulan.` : '',

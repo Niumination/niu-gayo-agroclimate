@@ -108,10 +108,10 @@ export default {
     const fmtD = (d) => `${d.slice(8, 10)}/${d.slice(5, 7)}`
     const headline =
       dominant === 'cold'
-        ? `${worstCold.cold.frost ? 'Potensi embun upas' : 'Malam dingin'} ${fmtD(worstCold.date)}: Tmin ${worstCold.cold.tminAdj} °C`
+        ? `${worstCold.cold.frost ? 'Potensi embun upas' : 'Malam lebih dingin'} diperkirakan ${fmtD(worstCold.date)}.`
         : dominant === 'heat'
-          ? `Siang panas ${fmtD(worstHeat.date)}: Tmax ${worstHeat.tmax} °C${worstHeat.heat.vpdBump ? ' + udara kering saat bunga' : ''}`
-          : `Suhu dalam kisaran aman kopi (${Math.min(...days.map((d) => d.tmin ?? 99))}–${Math.max(...days.map((d) => d.tmax ?? -99))} °C, 3 hari)`
+          ? `Cuaca panas dapat menekan tanaman kopi pada ${fmtD(worstHeat.date)}.`
+          : 'Suhu diperkirakan mendukung pertumbuhan kopi dalam tiga hari ke depan.'
     const detail = [
       days.map((d) => `${fmtD(d.date)}: ${d.tmin ?? '–'}/${d.tmax ?? '–'} °C${d.vpd != null ? ` VPD ${d.vpd}` : ''}`).join(' · '),
       ...(worstCold.cold.reasons.length ? [`Dingin: ${worstCold.cold.reasons.join(', ')}.`] : []),

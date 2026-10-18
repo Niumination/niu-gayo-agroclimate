@@ -91,4 +91,4 @@ Kalau keempat perintah di atas keluar dengan kode 0, lingkungan lokal Anda sudah
 | Port 5188 sudah dipakai | hentikan proses lama, atau `npm run dev -- --port 5199` |
 | Kartu selalu *degraded* | sumber eksternal lambat/kuota; cek `/healthz` — jangan hapus penanda *degraded* |
 | `npm ci` galat `edgesOut` | `npm install --legacy-peer-deps` sekali, lalu `npm ci` |
-| Build gagal `manualChunks is not a function` | konfigurasi lama v3; v2.1 memakai `advancedChunks.groups` (lihat `vite.config.js`) |
+| Build gagal `manualChunks is not a function` atau ada peringatan `advancedChunks` deprecated | konfigurasi lawas; v2.2.1 memakai `rolldownOptions.output.codeSplitting.groups` (lihat `vite.config.js`) |

@@ -64,3 +64,89 @@ test('createHandler: /api/alerts/run bukan POST → 405', async () => {
   await handler({ url: '/api/alerts/run', method: 'GET', headers: {} }, res)
   assert.equal(res.status, 405)
 })
+
+test('createHandler: /healthz membedakan revisi API dan frontend', async () => {
+  const handler = createHandler({
+    PKG_VERSION: '2.2.1',
+    BUILD_INFO: { revision: 'a'.repeat(40), dirty: false, frontendRevision: 'b'.repeat(40), frontendVersion: '2.2.1', frontendBuiltAt: '2026-10-18T00:00:00.000Z' },
+    cacheStats: () => ({ entries: 0, fresh: 0 }),
+    peek: () => null,
+    HAZARDS_ON: [],
+    FIRMS_MAP_KEY: '',
+    readToken: () => null,
+  })
+  const res = fakeRes()
+  await handler({ url: '/healthz', method: 'GET', headers: {} }, res)
+  const body = JSON.parse(res.body)
+  assert.equal(res.status, 200)
+  assert.equal(body.version, '2.2.1')
+  assert.equal(body.build.revision, 'a'.repeat(40))
+  assert.equal(body.build.frontendRevision, 'b'.repeat(40))
+  assert.equal(body.build.dirty, false)
+})
+
+test('createHandler: /api/weather saat upstream gagal → JSON degraded 200 dengan deret kosong', async () => {
+  const handler = createHandler({
+    VALID_LOCATIONS: new Set(['takengon']),
+    LOCATIONS: [{ id: 'takengon', name: 'Takengon Kota' }],
+    weatherGet: async () => { throw new Error('Open-Meteo timeout') },
+  })
+  const res = fakeRes()
+  await handler({ url: '/api/weather?location=takengon', method: 'GET', headers: {} }, res)
+  const body = JSON.parse(res.body)
+  assert.equal(res.status, 200)
+  assert.equal(body.location.name, 'Takengon Kota')
+  assert.equal(body.degraded, true)
+  assert.equal(body.error, 'Open-Meteo timeout')
+  assert.deepEqual(body.times, [])
+  assert.deepEqual(body.precipitation, [])
+})
+
+test('createHandler: /api/alerts saat sumber cuaca gagal → JSON parsial degraded 200, bukan 502', async () => {
+  const handler = createHandler({
+    alertsGet: async () => { throw new Error('Open-Meteo timeout') },
+    aqSummaryGet: async () => ({ retrievedAt: '2026-10-18T00:00:00.000Z', worst: null, degradedCount: 15, locations: [] }),
+    hazardsAllGet: async () => ({ retrievedAt: '2026-10-18T00:00:00.000Z', worst: 'n/a', activeByHazard: {}, locations: [] }),
+  })
+  const res = fakeRes()
+  await handler({ url: '/api/alerts', method: 'GET', headers: {} }, res)
+  const body = JSON.parse(res.body)
+  assert.equal(res.status, 200)
+  assert.equal(body.degraded, true)
+  assert.deepEqual(body.locations, [])
+  assert.equal(body.watershedRainIndex24h, null)
+  assert.equal(body.sourceErrors.alerts, 'Open-Meteo timeout')
+  assert.deepEqual(body.degradedSources, ['alerts', 'airQuality'])
+  assert.deepEqual(body.airQuality.locations, [])
+  assert.deepEqual(body.hazards.locations, [])
+})
+
+test('createHandler: /api/hotspots saat FIRMS gagal → JSON degraded 200, bukan 502', async () => {
+  const handler = createHandler({ hotspotsGet: async () => { throw new Error('FIRMS HTTP 503') } })
+  const res = fakeRes()
+  await handler({ url: '/api/hotspots', method: 'GET', headers: {} }, res)
+  const body = JSON.parse(res.body)
+  assert.equal(res.status, 200)
+  assert.equal(body.degraded, true)
+  assert.equal(body.reason, 'FIRMS HTTP 503')
+  assert.deepEqual(body.hotspots, [])
+})
+
+test('createHandler: /api/ensemble upstream gagal → JSON degraded 200, bukan 502', async () => {
+  const handler = createHandler({
+    VALID_LOCATIONS: new Set(['takengon']),
+    LOCATIONS: [{ id: 'takengon', name: 'Takengon Kota' }],
+    ensembleGet: async () => { throw new Error('fetch failed') },
+  })
+  const res = fakeRes()
+  await handler({ url: '/api/ensemble?location=takengon', method: 'GET', headers: {} }, res)
+  assert.equal(res.status, 200)
+  assert.deepEqual(JSON.parse(res.body), {
+    location: { id: 'takengon', name: 'Takengon Kota' },
+    retrievedAt: JSON.parse(res.body).retrievedAt,
+    degraded: true,
+    error: 'fetch failed',
+    data: null,
+  })
+  assert.ok(Number.isFinite(Date.parse(JSON.parse(res.body).retrievedAt)))
+})

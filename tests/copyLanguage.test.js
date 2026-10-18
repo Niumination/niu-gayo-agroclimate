@@ -81,10 +81,13 @@ test('panjang: judul ≤ 42, aksi ≤ 90, semua teks ≤ 240 karakter', () => {
 })
 
 test('informasi teknis tidak dihapus, hanya turun ke Detail', () => {
-  // Kunci Detail tetap menyebut satuan/istilah teknis bentuk ringan.
-  assert.match(M.airQualitySub, /40 km/)
-  assert.match(M.fireDangerSub, /titik panas/)
-  assert.match(M.droughtSub, /90 hari/)
+  // Subjudul tetap ramah; ketelitian/istilah teknis tersedia setelah pengguna membuka rincian.
+  assert.doesNotMatch(M.airQualitySub, /40 km/)
+  assert.doesNotMatch(M.fireDangerSub, /titik panas/)
+  assert.doesNotMatch(M.droughtSub, /90 hari/)
+  assert.match(read('src/components/AirQualityCard.jsx'), /cakupan model sekitar 40 km/)
+  assert.match(read('src/components/FireDangerCard.jsx'), /titik panas/)
+  assert.match(read('src/components/DroughtCard.jsx'), /hingga 90 hari/)
   // Panel "Tentang data & batasan" memegang istilah lengkap + sumber.
   const about = read('src/components/AboutData.jsx')
   for (const term of ['ISPU', 'CAMS', 'FWI', 'ERA5', 'HTH', 'Open-Meteo', 'BMKG', 'BPBD']) {

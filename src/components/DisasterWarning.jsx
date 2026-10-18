@@ -43,7 +43,10 @@ function Row({ label, item, children }) {
         <div className="flex items-baseline gap-2">
           <RiskBadge level={level} />
           {typeof score === 'number' && (
-            <span className="font-data text-caption text-ink-muted dark:text-mist-subtle tabular-nums">{score}/100</span>
+            <details className="text-caption text-ink-muted dark:text-mist-subtle">
+              <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Detail angka</summary>
+              <span className="block tabular-nums">Skor model {score}/100</span>
+            </details>
           )}
         </div>
       </div>
@@ -77,7 +80,7 @@ export default function DisasterWarning({ disaster, dailyRainSum, tr = (k) => k 
       {/* F1 — badge konsensus multi-model (ADR-8) */}
       {consensus && (
         <div className="mb-3 py-3 border-y border-ink/10 dark:border-mist/10 flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <span className="text-body font-medium text-ink-body dark:text-mist-muted">Kesepakatan antar-model</span>
+          <span className="text-body font-medium text-ink-body dark:text-mist-muted">Kecocokan prakiraan</span>
           <span className={`inline-flex items-center gap-1.5 text-body font-semibold ${CONSENSUS_TONE[consensus.level] || TONE.safe}`}>
             <span
               aria-hidden="true"
@@ -85,10 +88,13 @@ export default function DisasterWarning({ disaster, dailyRainSum, tr = (k) => k 
             />
             {String(consensus.level).charAt(0).toUpperCase() + String(consensus.level).slice(1)}
           </span>
-          <span className="font-data text-caption text-ink-muted dark:text-mist-subtle tabular-nums">
-            {consensus.votes} dari {consensus.sources} model sepakat hujan deras lebih dari 25 mm sehari
-            {consensus.degraded ? ' (sebagian data tertunda)' : ''}
+          <span className="text-caption text-ink-muted dark:text-mist-subtle">
+            {consensus.level === 'tinggi' ? 'Sejumlah prakiraan menunjukkan potensi hujan deras.' : 'Perkiraan hujan masih perlu dipantau.'}
           </span>
+          <details className="basis-full text-caption text-ink-muted dark:text-mist-subtle">
+            <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Lihat jumlah sumber dan ambang hujan</summary>
+            <p>{consensus.votes} dari {consensus.sources} model memperkirakan hujan deras (lebih dari 25 mm sehari).{consensus.degraded ? ' Sebagian data belum diperbarui.' : ''}</p>
+          </details>
         </div>
       )}
 
@@ -112,46 +118,49 @@ export default function DisasterWarning({ disaster, dailyRainSum, tr = (k) => k 
                     {a.description}
                   </p>
                   <p className="mt-0.5 font-data text-caption text-ink-subtle dark:text-mist-subtle tabular-nums">
-                    {a.pubDate} — <a className="min-h-11 inline-flex items-center underline" href={a.link} target="_blank" rel="noreferrer">detail CAP BMKG</a>
+                    {a.pubDate} — <a className="min-h-11 inline-flex items-center underline" href={a.link} target="_blank" rel="noreferrer">lihat peringatan BMKG</a>
                   </p>
                 </div>
               ))}
             </div>
           )}
-          <p className="mt-1.5 text-caption text-ink-subtle dark:text-mist-subtle">
-            Sumber: {bmkg.source || 'data.bmkg.go.id'} · diambil {bmkg.retrievedAt}
-          </p>
+          <details className="mt-1.5 text-caption text-ink-subtle dark:text-mist-subtle">
+            <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Sumber dan waktu pembaruan</summary>
+            <p className="mt-1">Sumber: {bmkg.source || 'BMKG'} · diperbarui {bmkg.retrievedAt}</p>
+          </details>
         </div>
       )}
 
       {confidence && (
         <div className="mb-3 py-3 border-y border-ink/10 dark:border-mist/10 flex flex-wrap items-baseline gap-x-5 gap-y-1">
-          <span className="text-body font-medium text-ink-body dark:text-mist-muted">
-            Keyakinan ensemble <span className="text-ink-muted dark:text-mist-subtle">(ECMWF 50 member)</span>
-          </span>
-          {confidence.map((c) => (
-            <span key={c.label} className="font-data text-body-sm text-ink-body dark:text-mist-body tabular-nums">
-              {c.label} <span className="font-semibold text-ink dark:text-mist">{c.prob}%</span>
-            </span>
-          ))}
+          <span className="text-body font-medium text-ink-body dark:text-mist-muted">Peluang hujan deras</span>
+          <details className="basis-full text-caption text-ink-muted dark:text-mist-subtle">
+            <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Lihat persentase dan metode prakiraan</summary>
+            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+              {confidence.map((c) => (
+                <span key={c.label} className="font-data text-body-sm text-ink-body dark:text-mist-body tabular-nums">
+                  {c.label} <span className="font-semibold text-ink dark:text-mist">{c.prob}%</span>
+                </span>
+              ))}
+              <span>Data berasal dari ensemble ECMWF (50 anggota).</span>
+            </div>
+          </details>
         </div>
       )}
 
       <div className="divide-y divide-ink/10 dark:divide-mist/10">
         <Row label="Potensi Tanah Longsor" item={disaster.landslide}>
           <p className="mt-1.5 text-caption leading-relaxed text-ink-muted dark:text-mist-muted">
-            Akumulasi hujan 24 jam <span className="font-data text-ink-body dark:text-mist-body tabular-nums">{dailyRainSum} mm</span>
-            {disaster.landslide?.detail ? ` — ${disaster.landslide.detail}` : ''}
+            Akumulasi hujan 24 jam: <span className="font-data text-ink-body dark:text-mist-body tabular-nums">{dailyRainSum} mm</span>
           </p>
-          {/* F2 — ARI 24/72 jam di panel longsor (ADR-9) */}
-          {disaster.landslide?.ari && (
-            <p className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
-              Antecedent Rainfall Index{' '}
-              <span className="font-data text-ink-body dark:text-mist-body tabular-nums">
-                24j {disaster.landslide.ari.ari24} mm / 72j {disaster.landslide.ari.ari72} mm
-              </span>{' '}
-              <span className="text-ink-subtle dark:text-mist-subtle">({disaster.landslide.ari.source})</span>
-            </p>
+          {(disaster.landslide?.detail || disaster.landslide?.ari) && (
+            <details className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
+              <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Rincian hujan dan penilaian lereng</summary>
+              {disaster.landslide?.detail && <p className="mt-1">{disaster.landslide.detail}</p>}
+              {disaster.landslide?.ari && (
+                <p className="mt-1">Hujan terkumpul sebelumnya: 24 jam {disaster.landslide.ari.ari24} mm / 72 jam {disaster.landslide.ari.ari72} mm. Metode: Antecedent Rainfall Index ({disaster.landslide.ari.source}).</p>
+              )}
+            </details>
           )}
         </Row>
 
@@ -187,13 +196,19 @@ export default function DisasterWarning({ disaster, dailyRainSum, tr = (k) => k 
           </div>
         )}
 
-        <Row label="Indeks Hujan DAS Peusangan" item={disaster.das}>
+        <Row label="Kondisi DAS Peusangan" item={disaster.das}>
           <p className="mt-1.5 text-caption leading-relaxed text-ink-muted dark:text-mist-muted">
-            {disaster.das?.detail || 'Rata-rata berbobot lokasi hulu (Bintang, Lut Tawar, Kebayakan, Silih Nara)'}
+            Pemantauan hujan di hulu dan aliran sungai untuk membantu mengantisipasi luapan.
           </p>
+          {disaster.das?.detail && (
+            <details className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
+              <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Rincian pengukuran dan perkiraan</summary>
+              <p className="mt-1">{disaster.das.detail}</p>
+            </details>
+          )}
         </Row>
 
-        <Row label="Angin (wind_gusts_10m)" item={disaster.wind}>
+        <Row label="Angin kencang" item={disaster.wind}>
           <p className="mt-1.5 text-caption leading-relaxed text-ink-muted dark:text-mist-muted">
             Waspada pohon pelindung kopi &amp; tebing jalan
           </p>

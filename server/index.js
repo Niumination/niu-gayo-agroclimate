@@ -20,8 +20,8 @@
 //   /api/flood         — H-BANJIR+ debit GloFAS 4 sel DAS Peusangan + anomali klimatologi (TTL 6 jam)
 //   /api/external-reports — laporan warga PetaBencana.id untuk Gayo (CC BY-NC, TTL 10 menit)
 import http from 'node:http'
-import fs from 'node:fs'
 import { PORT, PROXY_TTL_MIN, ENSEMBLE_TTL_MIN, ALERTS_TTL_MIN, WN2_TTL_MIN, BMKG_TTL_MIN, AQ_TTL_MIN, ARCHIVE_TTL_MIN, FIRMS_TTL_MIN, FIRMS_MAP_KEY, HAZARDS_TTL_MIN, HAZARDS_ENABLED, QUAKE_TTL_MIN, VOLCANO_TTL_MIN, CONVECTIVE_TTL_MIN, FLOOD_TTL_MIN, PETABENCANA_TTL_MIN } from './config.js'
+import { BUILD_INFO } from './buildInfo.js'
 import { cached, clearCache, cacheStats, peek } from './cache.js'
 import { getWeatherForLocation, fetchEnsemble, fetchAllAlerts, computeConsensus } from './openMeteo.js'
 import { fetchBmkgNowcast } from './bmkg.js'
@@ -79,13 +79,7 @@ const fireGet = (id) => getFireDanger(id, { archiveGet, hotspotsGet })
 const fireSummaryGet = () => cached('fire:all', PROXY_TTL_MIN * 60_000, () => getFireDangerSummary(fireGet))
 // v2 registry bahaya (ADR-12) — satu evaluasi per sentra (TTL 10 menit), ringkasan 15 sentra + arsip harian (1.10b, best-effort).
 const HAZARDS_ON = parseEnabled(HAZARDS_ENABLED)
-const PKG_VERSION = (() => {
-  try {
-    return JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
-  } catch {
-    return null
-  }
-})()
+const PKG_VERSION = BUILD_INFO.version
 // Fase 2.1 / 2.2b — gempa BMKG (TTL 2 menit) & Burni Telong MAGMA (TTL 60 menit); payload degraded tidak di-cache lama.
 const quakesAllGet = () =>
   cached('quakes:all', QUAKE_TTL_MIN * 60_000, async () => {
@@ -146,7 +140,7 @@ const handler = createHandler({
   SPI_BASELINE, computeSpi, assessDrought, seasonalInfoExtended, climateOutlook, disasterHistory,
   readFeed, runAlertCycle, toCapXml,
   validateReport, rateLimited, submitReport, recentReports,
-  PKG_VERSION, HAZARDS_ON, FIRMS_MAP_KEY, readToken,
+  PKG_VERSION, BUILD_INFO, HAZARDS_ON, FIRMS_MAP_KEY, readToken,
 })
 
 const server = http.createServer(handler)

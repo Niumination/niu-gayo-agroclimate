@@ -73,7 +73,7 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
     return !v || v === k ? fallback : v
   }
   const title = label('drought', 'Kekeringan & Air Kebun')
-  const subtitle = label('droughtSub', 'Hari Tanpa Hujan (HTH) kelas BMKG dari arsip ERA5-Land + proyeksi ECMWF')
+  const subtitle = label('droughtSub', 'Pantau hujan terkini dan kebutuhan air kebun.')
   const shell = (children) => (
     <section aria-label={title} className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3">
@@ -86,20 +86,25 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
   const a = drought.assessment
   if (!a) {
     return shell(
-      <p className="pt-3 border-t border-ink/10 dark:border-mist/10 text-body text-ink-muted dark:text-mist-muted">
-        {label('droughtUnavailable', 'Data arsip hujan belum tersedia saat ini.')}
-        {drought.error && <span className="block mt-1 text-caption text-ink-muted dark:text-mist-subtle">({drought.error})</span>}
-      </p>,
+      <div className="pt-3 border-t border-ink/10 dark:border-mist/10 text-body text-ink-muted dark:text-mist-muted">
+        <p>{label('droughtUnavailable', 'Data hujan belum tersedia saat ini.')}</p>
+        {drought.error && (
+          <details className="mt-2 text-caption">
+            <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Lihat rincian gangguan sumber</summary>
+            <p className="mt-1 break-words">{drought.error}</p>
+          </details>
+        )}
+      </div>,
     )
   }
   const h = a.hth
   const b = a.balance30
   const levelLabel = { rendah: label('low', 'Rendah'), waspada: label('alert', 'Waspada'), bahaya: label('danger', 'Bahaya'), ekstrem: 'Ekstrem' }[a.level] || a.level
   const projText = h.projected.breaksOn
-    ? `hujan ≥ 1 mm diperkirakan ${shortDate(h.projected.breaksOn)}`
+    ? `hujan diperkirakan turun pada ${shortDate(h.projected.breaksOn)}`
     : h.projected.horizonDays > 0
-      ? `tanpa hujan hingga ${num(h.projected.days)} hari pada ${shortDate(drought.archive?.today ? addDays(drought.archive.today, h.projected.horizonDays - 1) : null)}`
-      : 'prakiraan tidak tersedia'
+      ? `belum ada hujan dalam perkiraan sampai ${shortDate(drought.archive?.today ? addDays(drought.archive.today, h.projected.horizonDays - 1) : null)}`
+      : 'perkiraan belum tersedia'
 
   return shell(
     <>
@@ -122,7 +127,7 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
 
       <RainBars series={a.series} rainDayMm={a.thresholds?.rainDayMm ?? 1} />
       <p className="mt-1 text-caption text-ink-muted dark:text-mist-muted">
-        Hujan terakhir ≥ 1 mm: {h.lastRainDate ? `${shortDate(h.lastRainDate)} (${num(h.lastRainMm, 1)} mm)` : 'tidak ada dalam arsip'} · proyeksi: {projText}
+        Hujan terakhir: {h.lastRainDate ? `${shortDate(h.lastRainDate)} (${num(h.lastRainMm, 1)} mm)` : 'tidak ada dalam arsip'} · perkiraan ke depan: {projText}
       </p>
 
       <details className="group mt-4 border-t border-ink/10 pt-1 dark:border-mist/10">
@@ -145,11 +150,21 @@ export default function DroughtCard({ drought, tr = (k) => k }) {
         </ul>
       </div>
       </details>
-      <p className="mt-3 text-caption text-ink-muted dark:text-mist-subtle leading-relaxed">
-        HTH = hari berturut hujan &lt; 1 mm (definisi BMKG). Arsip model ERA5-Land ~9 km, bukan penakar hujan; tertinggal {drought.archive?.lagDays ?? '—'} hari. Rujukan:{' '}
-        <a className="min-h-11 inline-flex items-center underline" href="https://www.bmkg.go.id/iklim" target="_blank" rel="noreferrer">BMKG Iklim (Monitoring HTH dasarian)</a>
-        {drought.warnings?.length > 0 && <span className="block mt-1">Catatan: {drought.warnings.join('; ')}</span>}
-      </p>
+      {(drought.archive?.lagDays ?? 0) > 1 && (
+        <p role="status" className="mt-3 text-caption text-husk-deep dark:text-husk-soft">
+          Pembaruan data hujan tertunda. Periksa kondisi setempat dan prakiraan resmi BMKG.
+        </p>
+      )}
+      <details className="group mt-4 border-t border-ink/10 pt-1 dark:border-mist/10">
+        <summary className="mt-3 min-h-11 inline-flex cursor-pointer list-none items-center gap-2 rounded-lg border border-ink/15 px-3 text-body font-semibold text-leaf-deep dark:border-mist/15 dark:text-leaf-soft">
+          Sumber, metode, dan catatan data
+        </summary>
+        <p className="mt-2 text-caption text-ink-muted dark:text-mist-subtle leading-relaxed">
+          HTH adalah jumlah hari berturut-turut dengan hujan di bawah 1 mm (definisi BMKG). Arsip perkiraan hujan ERA5-Land mencakup hingga 90 hari, beresolusi sekitar 9 km, dan bukan pengukuran langsung di kebun; data tertinggal {drought.archive?.lagDays ?? '—'} hari. Rujukan:{' '}
+          <a className="min-h-11 inline-flex items-center underline" href="https://www.bmkg.go.id/iklim" target="_blank" rel="noreferrer">BMKG Iklim (Monitoring HTH dasarian)</a>
+          {drought.warnings?.length > 0 && <span className="block mt-1">Catatan sumber: {drought.warnings.join('; ')}</span>}
+        </p>
+      </details>
     </>,
   )
 }

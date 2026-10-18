@@ -79,9 +79,11 @@ export function evaluateAll(ctx, { enabled = null, hidden = [], interactions: wi
     let raw
     try {
       const missing = (mod.requires ?? []).filter((k) => ctx?.[k] == null)
-      raw = missing.length ? { level: 'n/a', degraded: true, headline: `Data belum tersedia (${missing.join(', ')})` } : mod.evaluate(ctx)
+      raw = missing.length
+        ? { level: 'n/a', degraded: true, headline: 'Informasi untuk bahaya ini belum tersedia.', detail: `Data teknis yang dibutuhkan: ${missing.join(', ')}.` }
+        : mod.evaluate(ctx)
     } catch (err) {
-      raw = { level: 'n/a', degraded: true, headline: `Gagal mengevaluasi: ${err.message}` }
+      raw = { level: 'n/a', degraded: true, headline: 'Informasi bahaya belum dapat diperbarui saat ini.', detail: `Rincian teknis: ${err.message}` }
     }
     results.push({ ...normalizeResult(mod, raw, ctx), order })
   })

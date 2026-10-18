@@ -3,7 +3,7 @@
  * dan panel risiko memakai skala yang sama. Tinggi → bahaya, Sedang → waspada.
  */
 import { leafWetnessRustRisk } from '../coffee.js'
-import { normalizeLevel } from './levels.js'
+import { LEVEL_LABEL, normalizeLevel } from './levels.js'
 
 export default {
   id: 'karat',
@@ -18,7 +18,7 @@ export default {
     return {
       level,
       score: r.score,
-      headline: `Risiko karat ${r.level} (${r.score}/100)`,
+      headline: `Risiko karat daun kopi ${LEVEL_LABEL[level].toLowerCase()}`,
       detail: r.description,
       metrics: [
         { key: 'wetHours48', label: 'Jam basah daun 48 jam', value: r.wetHoursInWindow, unit: 'jam' },

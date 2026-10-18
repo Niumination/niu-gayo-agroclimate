@@ -99,7 +99,7 @@ export default {
     const doc = ctx.convective
     const h = doc?.hourly
     const sources = [...(doc?.sources ?? [])].map((s) => ({ ...s, retrievedAt: doc?.retrievedAt ?? ctx.now }))
-    if (!h || !h.time?.length) return { level: 'n/a', degraded: true, headline: doc?.error ? `Indeks konvektif tidak tersedia (${doc.error})` : 'Indeks konvektif belum tersedia', sources }
+    if (!h || !h.time?.length) return { level: 'n/a', degraded: true, headline: 'Perkiraan badai belum tersedia.', detail: doc?.error ? `Gangguan sumber: ${doc.error}` : 'Belum ada data perkiraan badai.', sources }
     const nowTime = ctx.weather?.nowTime ?? h.nowTime
     const nowIdx = Math.max(0, nowTime ? h.time.indexOf(String(nowTime).slice(0, 13) + ':00') : 0)
     const bmkgActive = !!(ctx.bmkgNowcast?.active && (ctx.bmkgNowcast?.alerts ?? []).some((a) => a.isAceh !== false))

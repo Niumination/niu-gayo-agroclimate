@@ -15,7 +15,7 @@ const metric = (r, key) => r?.metrics?.find((m) => m.key === key)?.value ?? null
 export const INTERACTION_RULES = [
   {
     id: 'gempa_tanah_jenuh',
-    label: 'Gempa × tanah jenuh → longsor susulan',
+    label: 'Gempa meningkatkan risiko longsor susulan',
     when(by, ctx) {
       const q = by.gempa
       const l = by.longsor
@@ -28,13 +28,14 @@ export const INTERACTION_RULES = [
         targets: ['longsor', 'gempa'],
         bump: { id: 'longsor', max: 'bahaya' },
         severity: 'bahaya',
+        humanNote: 'Setelah guncangan kuat, jauhi lereng dan tebing jalan; pantau retakan baru dan siapkan jalur menuju tempat aman.',
         note: `Gempa M${trig?.mag ?? '≥5'} ${trig?.distKm != null ? `${trig.distKm} km` : '≤ 100 km'} dalam 72 jam + tanah jenuh (hujan 72 jam ${Math.round(ari72)} mm) → risiko longsor susulan meningkat; hindari lereng & tebing jalan 72 jam ke depan.`,
       }
     },
   },
   {
     id: 'asap_hujan_lebat',
-    label: 'Asap × hujan lebat',
+    label: 'Kabut asap bertemu hujan deras',
     when(by, ctx) {
       const a = by.asap
       if (!atLeast(a, 'waspada')) return false
@@ -44,13 +45,14 @@ export const INTERACTION_RULES = [
       return {
         targets: ['asap', 'banjir', 'longsor'],
         severity: 'waspada',
+        humanNote: 'Nyalakan lampu dan kurangi kecepatan saat jarak pandang buruk. Setelah hujan, periksa saluran air karena abu dapat terbawa aliran.',
         note: `Kabut asap (ISPU ${metric(a, 'ispu') ?? '–'}) bertemu hujan lebat (${Math.round(rain24)} mm/24 jam): jarak pandang sangat rendah di jalan & limpasan membawa abu — nyalakan lampu, kurangi kecepatan; hujan biasanya membersihkan asap dalam 6–12 jam.`,
       }
     },
   },
   {
     id: 'kekeringan_ffmc',
-    label: 'Kekeringan × FFMC tinggi → siaga karhutla',
+    label: 'Kondisi kering meningkatkan risiko kebakaran lahan',
     when(by) {
       const k = by.kekeringan
       const f = by.kebakaran
@@ -62,13 +64,14 @@ export const INTERACTION_RULES = [
         targets: ['kebakaran', 'kekeringan'],
         bump: atLeast(f, 'waspada') ? null : { id: 'kebakaran', max: 'waspada' },
         severity: 'waspada',
+        humanNote: 'Jangan membakar lahan atau sampah. Siapkan cadangan air dan jalur sekat; segera laporkan asap atau api kepada petugas.',
         note: `HTH ${hth} hari + FFMC ${ffmc} (bahan bakar halus kering) → siaga karhutla: dilarang bakar lahan/sampah; siapkan sekat bakar & air di gudang; laporkan asap ke 112 / Manggala Agni.`,
       }
     },
   },
   {
     id: 'badai_longsor',
-    label: 'Badai konvektif × lereng jenuh',
+    label: 'Badai di lereng basah dapat memicu longsor',
     when(by, ctx) {
       const b = by.badai
       const l = by.longsor
@@ -77,13 +80,14 @@ export const INTERACTION_RULES = [
       return {
         targets: ['badai', 'longsor'],
         severity: 'bahaya',
+        humanNote: 'Saat badai melintas, jauhi lembah sempit dan tebing jalan; hujan deras dapat memicu longsor dangkal atau banjir bandang.',
         note: `Badai petir diperkirakan di atas lereng yang sudah basah (hujan 72 jam ${Math.round(ari72)} mm): hujan intens singkat dapat memicu longsor dangkal/banjir bandang — jauhi lembah sempit & tebing jalan saat badai.`,
       }
     },
   },
   {
     id: 'vulkanik_hujan_lahar',
-    label: 'Abu vulkanik × hujan → lahar',
+    label: 'Hujan di sekitar gunung api dapat memicu lahar',
     when(by, ctx) {
       const v = by.vulkanik
       if (!atLeast(v, 'bahaya')) return false
@@ -92,6 +96,7 @@ export const INTERACTION_RULES = [
       return {
         targets: ['vulkanik', 'banjir'],
         severity: 'bahaya',
+        humanNote: 'Saat hujan, jauhi alur sungai dan bantaran yang berhulu di Gunung Burni Telong.',
         note: `Aktivitas Burni Telong ≥ Siaga + prakiraan hujan ${Math.round(rain24)} mm/24 jam → potensi lahar hujan di alur sungai berhulu ke puncak; jauhi bantaran sungai lereng Burni Telong saat hujan.`,
       }
     },
@@ -113,7 +118,7 @@ export function applyInteractions(results, ctx, rules = INTERACTION_RULES) {
       hit = false
     }
     if (!hit) continue
-    const entry = { id: rule.id, label: rule.label, targets: hit.targets ?? [], severity: hit.severity ?? 'waspada', note: hit.note, bumped: null }
+    const entry = { id: rule.id, label: rule.label, humanNote: hit.humanNote, targets: hit.targets ?? [], severity: hit.severity ?? 'waspada', note: hit.note, bumped: null }
     if (hit.bump && byId[hit.bump.id]) {
       const t = byId[hit.bump.id]
       const cur = LEVEL_ORDER[t.level]

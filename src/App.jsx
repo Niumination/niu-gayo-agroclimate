@@ -45,6 +45,7 @@ export default function App() {
   const [fetchedAt, setFetchedAt] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [errorDetail, setErrorDetail] = useState(null)
   // P2 — pengumuman untuk pembaca layar (WCAG 4.1.3 Status Messages)
   const [liveMsg, setLiveMsg] = useState('')
 
@@ -121,6 +122,7 @@ export default function App() {
     async (loc) => {
       setLoading(true)
       setError(null)
+      setErrorDetail(null)
       try {
         const res = await getAgroClimateData(loc)
         setData(res)
@@ -133,7 +135,8 @@ export default function App() {
             : `${tr('updated')} ${jam} WIB`
         )
       } catch (err) {
-        setError(err.message || tr('errorLoad'))
+        setError(tr('errorLoad'))
+        setErrorDetail(err?.message || null)
       } finally {
         setLoading(false)
       }
@@ -370,6 +373,12 @@ export default function App() {
           className="mx-4 mt-4 border border-cherry/30 bg-cherry/5 text-cherry-deep dark:text-cherry-soft p-4 rounded-card text-body"
         >
           <p className="font-medium">{error}</p>
+          {errorDetail && (
+            <details className="mt-2 text-caption">
+              <summary className="min-h-11 inline-flex cursor-pointer items-center underline underline-offset-2">Rincian teknis</summary>
+              <p className="mt-1 break-words">{errorDetail}</p>
+            </details>
+          )}
           <button
             type="button"
             onClick={() => loadData(selectedLocation)}
