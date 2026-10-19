@@ -23,6 +23,7 @@ const HEAD = read('StatusHeadline.jsx')
 const CARD = read('AttentionCard.jsx')
 const PANEL = read('DetailPanel.jsx')
 const INDEX = read('index.js')
+const THEME = fs.readFileSync(path.join(ROOT, 'src/styles/theme-directions.css'), 'utf8')
 
 const ALL = { 'LevelBadge.jsx': BADGE, 'StatusHeadline.jsx': HEAD, 'AttentionCard.jsx': CARD, 'DetailPanel.jsx': PANEL }
 const CODE = Object.fromEntries(Object.entries(ALL).map(([k, v]) => [k, stripComments(v)]))
@@ -105,17 +106,26 @@ test('StatusHeadline: judul adalah h2, bukan div', () => {
   assert.match(HEAD, /<h2/)
 })
 
-test('StatusHeadline: angka memakai font-data + tabular-nums', () => {
-  assert.match(HEAD, /font-data/)
+test('StatusHeadline: mendukung subjudul lokasi dan label suhu pada sisi kanan', () => {
+  assert.match(HEAD, /subtitle,/)
+  assert.match(HEAD, /className="niu-status-kicker"/)
+  assert.match(THEME, /\.niu-status-kicker/)
+})
+
+test('StatusHeadline: angka utama memakai display font arah, bukan font-data teknis', () => {
+  assert.match(HEAD, /niu-status-value/)
   assert.match(HEAD, /tabular-nums/)
+  assert.doesNotMatch(HEAD, /font-data/)
+  assert.ok(THEME.includes('.niu-status-value') && THEME.includes('font-family: var(--app-font)'))
 })
 
 test('StatusHeadline: satuan diberi spasi tak-putus agar tak terpisah dari angka', () => {
   assert.match(HEAD, /\\u00a0/)
 })
 
-test('StatusHeadline: ukuran angka memakai clamp, bukan 88px hard-code', () => {
-  assert.match(HEAD, /clamp\(3rem, 9vw, 5\.5rem\)/)
+test('StatusHeadline: skala angka utama mengikuti prototipe Tanah 88 px dan Langit 96 px', () => {
+  assert.match(THEME, /font-size: 88px !important/)
+  assert.match(THEME, /font-size: 96px !important/)
 })
 
 test('StatusHeadline: menampilkan lencana level bila level diberikan', () => {
@@ -125,6 +135,16 @@ test('StatusHeadline: menampilkan lencana level bila level diberikan', () => {
 test('StatusHeadline: warna nilai dingin/panas memakai token semantik', () => {
   assert.match(HEAD, /rain-deep dark:text-rain-soft/)
   assert.match(HEAD, /cherry-deep dark:text-cherry-soft/)
+})
+
+test('Metrik Tanah 2×2 di ponsel; Langit satu baris empat kolom di semua lebar', () => {
+  const ringkas = fs.readFileSync(path.join(ROOT, 'src/pages/RingkasMobile.jsx'), 'utf8')
+  assert.match(ringkas, /niu-metrics.*grid grid-cols-2/)
+  assert.match(THEME, /@media \(min-width: 560px\)/)
+  assert.match(THEME, /html\[data-arah='tanah'\] \.niu-metrics \{ grid-template-columns: repeat\(4, minmax\(0, 1fr\)\); \}/)
+  assert.match(THEME, /html\[data-arah='langit'\] \.niu-metrics \{ grid-template-columns: repeat\(4, minmax\(0, 1fr\)\); \}/)
+  assert.match(THEME, /html\[data-arah='langit'\] \.niu-metric:last-child \{ border-right: 0; \}/)
+  assert.doesNotMatch(THEME, /html\[data-arah='langit'\] \.niu-metric:nth-child\(-n\+2\).*border-bottom/)
 })
 
 test('StatusHeadline: permukaan mengikuti radius & kartu dua tangga', () => {

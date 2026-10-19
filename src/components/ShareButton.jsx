@@ -5,9 +5,25 @@ import { whatsappText, smsText, waShareUrl, smsShareUrl } from '../domain/share.
  * FR-X-7 — bagikan ringkasan bahaya sentra: Web Share API bila ada, lalu WhatsApp (wa.me) / SMS / salin.
  * Teks disusun oleh src/domain/share.js (murni, teruji).
  */
-export default function ShareButton({ hazards, location, compact = true, buttonClassName, tr = (k) => k }) {
-  const [open, setOpen] = useState(false)
+export default function ShareButton({
+  hazards,
+  location,
+  compact = true,
+  buttonClassName,
+  icon = null,
+  tr = (k) => k,
+  open: openProp,
+  onOpenChange,
+}) {
+  const [internalOpen, setInternalOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const isControlled = openProp !== undefined
+  const open = isControlled ? Boolean(openProp) : internalOpen
+  const setOpen = (next) => {
+    const value = typeof next === 'function' ? next(open) : next
+    if (!isControlled) setInternalOpen(value)
+    onOpenChange?.(value)
+  }
   if (!hazards?.results?.length) return null
   const url = typeof window !== 'undefined' ? window.location.href : undefined
   const wa = whatsappText(hazards, location, { url })
@@ -35,8 +51,16 @@ export default function ShareButton({ hazards, location, compact = true, buttonC
   const link = 'min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist transition duration-100 ease-out active:scale-[.97]'
   return (
     <span className="relative inline-flex items-center gap-2">
-      <button type="button" onClick={share} className={`min-h-11 ${buttonClassName || link}`} aria-expanded={open}>
-        {tr('share')}
+      <button
+        type="button"
+        onClick={share}
+        className={`min-h-11 ${buttonClassName || link}`}
+        aria-expanded={open}
+        aria-label={icon ? tr('share') : undefined}
+        title={icon ? tr('share') : undefined}
+      >
+        {icon}
+        <span className={icon ? 'sr-only' : undefined}>{tr('share')}</span>
       </button>
       {open && (
         <span role="group" aria-label={tr('shareHow')} className={`inline-flex items-center gap-3 ${compact ? '' : 'flex-col items-start'}`}>

@@ -330,8 +330,8 @@ body {
 
 /* ---------------------------------------------------------------------------
    P7.5 — papan kerja desktop (rel + kanvas + inspector)
-   Nilai mengikuti prototipe v6 yang disetujui: rel 264 px (lipat 76),
-   inspector 380 px menetap ≥ 1500 px, laci di bawahnya.
+   Nilai mengikuti prototipe v6 yang disetujui: rel 264 px (lipat 72),
+   inspector 352/412 px menetap ≥ 1440 px, melayang 1100–1439 px, inline ≤ 1099 px.
    Tidak memakai warna heks langsung — semua lewat token dua tangga.
 --------------------------------------------------------------------------- */
 @keyframes nga-fade {
@@ -346,6 +346,12 @@ body {
 }
 .desk[data-rail='buka'] {
   --desk-rail: 264px;
+}
+@media (max-width: 1099px) {
+  .desk.niu-desktop-board,
+  .desk.niu-desktop-board[data-rail='buka'] {
+    --desk-rail: 72px;
+  }
 }
 .desk {
   grid-template-columns: var(--desk-rail) minmax(0, 1fr);
@@ -362,15 +368,16 @@ body {
   scroll-margin-top: 132px;
 }
 .desk-zone-title {
-  margin: 0 0 10px;
-  font-size: 0.8125rem;
+  display: flex;
+  align-items: baseline;
+  margin: 0 0 16px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--niu-line);
+  color: var(--niu-ink);
+  font-size: 20px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-tanah-tinta-halus);
-}
-html.dark .desk-zone-title {
-  color: var(--color-langit-tinta-halus);
+  letter-spacing: -0.022em;
+  text-transform: none;
 }
 .desk-flow {
   display: flex;
@@ -389,30 +396,32 @@ html.dark .desk-zone-title {
 }
 .desk-insp-inner {
   position: sticky;
-  top: 68px;
-  max-height: calc(100vh - 84px);
+  top: 132px;
+  max-height: calc(100vh - 148px);
   overflow: auto;
   padding-bottom: 24px;
 }
 
-@media (min-width: 1500px) {
+@media (min-width: 1440px) {
   .desk[data-insp='buka'] {
-    grid-template-columns: var(--desk-rail) minmax(0, 1fr) 380px;
-    gap: 24px;
+    grid-template-columns: var(--desk-rail) minmax(0, 1fr) var(--desk-insp-width);
+    column-gap: 22px;
+    row-gap: 0;
   }
   .desk[data-insp='buka'] .desk-insp {
     display: block;
   }
 }
 
-@media (max-width: 1499px) {
+@media (max-width: 1439px) {
   .desk[data-insp='buka'] .desk-insp {
     position: fixed;
-    top: 112px;
-    right: 0;
-    bottom: 0;
+    top: var(--desk-overlay-top);
+    right: 26px;
+    bottom: auto;
     z-index: 45;
     width: min(400px, 92vw);
+    max-height: calc(100vh - var(--desk-overlay-top) - 18px);
     overflow: auto;
     padding: 14px;
     background: var(--color-tanah-permukaan);
@@ -431,7 +440,7 @@ html.dark .desk-zone-title {
   }
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 1099px) {
   .desk[data-insp='buka'] .desk-insp {
     top: 12px;
     left: 12px;

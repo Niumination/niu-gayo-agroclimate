@@ -41,7 +41,8 @@ export default function AttentionCard({
     <article
       id={id}
       data-level={key}
-      className={`rounded-tanah-kartu border border-tanah-garis border-l-4 bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu ${EDGE[key]}`}
+      data-niu-card="attention"
+      className={`niu-attention-row rounded-tanah-kartu border border-tanah-garis border-l-4 bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu ${EDGE[key]}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
         <div className="flex min-w-0 items-start gap-2.5">

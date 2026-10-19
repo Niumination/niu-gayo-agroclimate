@@ -18,7 +18,7 @@ export function useMediaQuery(query) {
   return matches
 }
 
-/** Desktop = >=768px (selaras breakpoint md Tailwind). */
+/** Desktop workbench = >=1024px, sesuai breakpoint papan v6; tablet tetap memakai alur mobile. */
 export function useBreakpoint() {
-  return useMediaQuery('(min-width: 768px)')
+  return useMediaQuery('(min-width: 1024px)')
 }

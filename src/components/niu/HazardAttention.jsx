@@ -34,6 +34,7 @@ export default function HazardAttention({
     return (
       <section
         aria-labelledby="attn-title"
+        data-niu-card="attention-empty"
         className="rounded-tanah-kartu border border-tanah-garis bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu"
       >
         <h2 id="attn-title" className="text-body font-semibold text-tanah-tinta dark:text-langit-tinta">
@@ -58,7 +59,7 @@ export default function HazardAttention({
         <p className="text-caption text-tanah-tinta-redup dark:text-langit-tinta-redup">{sub}</p>
       </div>
 
-      <ul className="mt-2 space-y-3">
+      <ul className="niu-attention-list mt-2 space-y-3">
         {shown.map((r) => {
           const name = r.label?.id || r.id
           const open = openId === r.id

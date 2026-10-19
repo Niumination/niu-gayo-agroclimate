@@ -1,0 +1,696 @@
+/*
+ * Arah visual Niu: Tanah terang dan Langit gelap.
+ *
+ * Prototipe acuan: prototipe/niul4-mobile.html (ponsel) dan
+ * prototipe/niul6-desktop.html (papan kerja). Kelas Tailwind lama tetap
+ * dipertahankan untuk fungsi/kontras; atribut data-niu-card memberi aturan
+ * struktur lintas semua kartu React agar kedua arah benar-benar berbeda.
+ */
+
+html[data-arah='tanah'] {
+  color-scheme: light;
+  --niu-bg: #F1E7D8;
+  --niu-surface: #FBF6EC;
+  --niu-sunken: #EFE4D2;
+  --niu-ink: #241E17;
+  --niu-ink-body: #4E4435;
+  --niu-ink-muted: #6A5C4B;
+  --niu-line: #E0D3BD;
+  --niu-line-strong: #A6957C;
+  --niu-accent: #2F4A38;
+  --niu-accent-ink: #F7F2E7;
+  --niu-card-shadow: 0 10px 26px rgb(80 60 35 / 0.10), 0 1px 0 #fff inset;
+  --niu-control-radius: 14px;
+  --niu-card-radius: 26px;
+}
+
+html[data-arah='langit'] {
+  color-scheme: dark;
+  --niu-bg: #16273B;
+  --niu-surface: rgb(255 255 255 / 0.07);
+  --niu-sunken: rgb(255 255 255 / 0.05);
+  --niu-ink: #F7FAFC;
+  --niu-ink-body: #E1E8EF;
+  --niu-ink-muted: rgb(247 250 252 / 0.72);
+  --niu-line: rgb(255 255 255 / 0.14);
+  --niu-line-strong: rgb(255 255 255 / 0.28);
+  --niu-accent: #FFD2A1;
+  --niu-accent-ink: #1B2A3A;
+  --niu-card-shadow: none;
+  --niu-control-radius: 12px;
+  --niu-card-radius: 20px;
+}
+
+html[data-arah='tanah'] body {
+  background-color: #F1E7D8;
+  background-image: radial-gradient(rgb(42 37 30 / 0.075) 0.7px, transparent 0.7px);
+  background-size: 4px 4px;
+  background-attachment: fixed;
+  color: #241E17;
+}
+
+html[data-arah='langit'] body {
+  background-color: #16273B;
+  background-image:
+    radial-gradient(120% 58% at 80% -4%, rgb(255 190 120 / 0.22), transparent 60%),
+    radial-gradient(85% 42% at 6% 16%, rgb(120 190 255 / 0.20), transparent 62%),
+    linear-gradient(180deg, #101C28 0%, #16273B 26%, #243A4E 52%, #2C4358 74%, #33475C 100%);
+  background-attachment: fixed;
+  color: #F7FAFC;
+}
+
+html[data-arah='tanah'] :focus-visible { outline-color: #2F4A38; }
+html[data-arah='langit'] :focus-visible { outline-color: #FFD2A1; }
+
+/* ------------------------------- header --------------------------------- */
+.niu-header {
+  color: var(--niu-ink);
+  border-bottom: 1px solid var(--niu-line);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+html[data-arah='tanah'] .niu-header {
+  background: rgb(241 231 216 / 0.96);
+  border-bottom: 0;
+  box-shadow: 0 8px 18px -14px rgb(80 60 35 / 0.45);
+}
+html[data-arah='langit'] .niu-header {
+  background: linear-gradient(180deg, rgb(16 28 40 / 0.98), rgb(19 33 47 / 0.96));
+  border-bottom: 1px solid rgb(255 255 255 / 0.10);
+  box-shadow: 0 10px 24px -18px rgb(0 0 0 / 0.8);
+}
+
+.niu-header-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 18px 4px;
+}
+.niu-header-inner {
+  width: min(100%, 1600px);
+  min-height: 64px;
+  margin-inline: auto;
+  padding: 8px 24px;
+}
+.niu-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: max-content;
+  color: var(--niu-ink);
+}
+.niu-mark {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  padding: 8px;
+  border-radius: 12px;
+  background: #2F4A38;
+  color: #F7F2E7;
+}
+.niu-mark svg { display: block; width: 100%; height: 100%; }
+.niu-mark-drop { fill: currentColor; }
+.niu-mark-contour { fill: none; stroke: #2F4A38; stroke-width: 12; stroke-linecap: round; }
+.niu-mark-sun { fill: #FFD2A1; }
+html[data-arah='langit'] .niu-mark {
+  width: 30px;
+  height: 30px;
+  padding: 7px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #FFF3E0, #FFC98A);
+  color: #1B2A3A;
+}
+html[data-arah='langit'] .niu-mark-contour { stroke: #1B2A3A; }
+
+.niu-brand-copy { display: flex; min-width: 0; flex-direction: column; line-height: 1.05; }
+.niu-brand-copy strong { font-size: 19px; font-weight: 650; letter-spacing: -0.035em; }
+.niu-brand-copy small {
+  margin-top: 4px;
+  color: #6A5C4B;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+html[data-arah='langit'] .niu-brand-copy strong { font-size: 18px; letter-spacing: -0.01em; }
+html[data-arah='langit'] .niu-brand-copy small { color: rgb(247 250 252 / 0.66); }
+
+.niu-age {
+  display: inline-flex;
+  min-height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #5E5446;
+  background: #E7D9C6;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.niu-age.is-stale { color: #6F4B00; background: #F6EAC6; border-color: rgb(138 78 0 / 0.24); }
+.niu-age-dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: currentColor; }
+html[data-arah='langit'] .niu-age {
+  color: #EAF1F5;
+  background: rgb(255 255 255 / 0.13);
+  border-color: rgb(255 255 255 / 0.18);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+html[data-arah='langit'] .niu-age.is-stale { color: #FFE6BE; background: rgb(255 205 120 / 0.18); border-color: rgb(255 205 120 / 0.38); }
+
+.niu-header-actions { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; margin-left: auto; }
+.niu-icon-control {
+  display: inline-grid;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--niu-control-radius);
+  background: transparent;
+  color: var(--niu-ink-muted);
+  cursor: pointer;
+  transition: background-color 120ms ease-out, color 120ms ease-out, transform 90ms ease-out;
+}
+.niu-icon-control svg { width: 20px; height: 20px; stroke-width: 1.8; }
+.niu-icon-control:hover { background: rgb(47 74 56 / 0.08); color: var(--niu-ink); }
+.niu-icon-control:active { transform: scale(0.97); }
+.niu-icon-control:disabled { cursor: wait; opacity: 0.45; }
+html[data-arah='langit'] .niu-icon-control { color: rgb(247 250 252 / 0.88); border-radius: 999px; }
+html[data-arah='langit'] .niu-icon-control:hover { background: rgb(255 255 255 / 0.12); color: #fff; }
+html[data-arah='langit'] .niu-icon-control:focus-visible { outline-color: #FFD2A1; }
+.niu-header-actions > .relative [role='group'] {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  min-width: 180px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  border: 1px solid var(--niu-line);
+  border-radius: var(--niu-control-radius);
+  background: var(--niu-surface);
+  box-shadow: var(--niu-card-shadow);
+}
+
+.niu-location-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 2px 18px 10px;
+}
+.niu-location-icon { width: 18px; height: 18px; flex: 0 0 auto; color: var(--niu-ink-muted); }
+.niu-location-select {
+  min-width: 0;
+  min-height: 44px;
+  flex: 1 1 auto;
+  padding: 8px 38px 8px 12px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 18px;
+  outline-offset: 2px;
+  appearance: none;
+  background-color: #FBF6EC;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235E5446' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  color: #2A251E;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 12px rgb(80 60 35 / 0.08);
+}
+.niu-location-select option { color: #241E17; background: #FBF6EC; }
+.niu-location-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background-image: none;
+  cursor: pointer;
+}
+.niu-location-trigger-copy { display: flex; flex-direction: column; gap: 2px; }
+.niu-location-trigger-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.niu-location-trigger-copy small { overflow: hidden; color: #6A5C4B; font-size: 11px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.niu-location-chevron { width: 16px; height: 16px; flex: 0 0 auto; }
+.niu-location-button {
+  display: flex;
+  min-height: 44px;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 18px;
+  color: #2A251E;
+  background: #FBF6EC;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgb(80 60 35 / 0.08);
+}
+.niu-location-copy { display: flex; flex: 1 1 auto; flex-direction: column; gap: 2px; }
+.niu-location-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.niu-location-copy > span { overflow: hidden; color: #6A5C4B; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.niu-location-chevron { width: 16px; height: 16px; flex: 0 0 auto; color: #6A5C4B; }
+html[data-arah='langit'] .niu-location-button {
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 999px;
+  color: #F7FAFC;
+  background: rgb(255 255 255 / 0.10);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  backdrop-filter: blur(16px) saturate(1.3);
+  box-shadow: none;
+}
+html[data-arah='langit'] .niu-location-button .niu-location-copy > span,
+html[data-arah='langit'] .niu-location-button .niu-location-chevron { color: rgb(247 250 252 / 0.72); }
+html[data-arah='langit'] .niu-location-icon { color: rgb(247 250 252 / 0.76); }
+html[data-arah='langit'] .niu-location-select {
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 999px;
+  background-color: rgb(255 255 255 / 0.10);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23EAF1F5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  color: #F7FAFC;
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  backdrop-filter: blur(16px) saturate(1.3);
+  box-shadow: none;
+}
+html[data-arah='langit'] .niu-location-select option { color: #F7FAFC; background: #16273B; }
+html[data-arah='langit'] .niu-location-trigger { background-image: none; }
+html[data-arah='langit'] .niu-location-trigger-copy small { color: rgb(247 250 252 / 0.72); }
+.niu-updated { flex: 0 0 auto; color: var(--niu-ink-muted); font-size: 12px; white-space: nowrap; }
+
+.niu-header-desktop .niu-header-main { gap: 14px; }
+.niu-desktop-location { min-width: 220px; max-width: 420px; flex: 1 1 300px; }
+.niu-header-desktop .niu-location-select { width: 100%; }
+.niu-header-desktop .niu-updated { font-variant-numeric: tabular-nums; }
+@media (min-width: 761px) {
+  .niu-header-desktop { height: 64px; min-height: 64px; box-sizing: border-box; }
+  .niu-header-desktop .niu-header-inner { width: min(100%, 1720px); height: 64px; min-height: 64px; box-sizing: border-box; padding-block: 8px; }
+}
+
+@media (max-width: 760px) {
+  .niu-header-desktop .niu-brand-copy small { display: none; }
+  .niu-header-desktop .niu-header-inner { gap: 8px; padding-inline: 12px; }
+  .niu-header-desktop .niu-age { display: none; }
+  .niu-header-desktop .niu-updated { display: none; }
+}
+@media (max-width: 420px) {
+  .niu-header-main { gap: 8px; padding-inline: 14px; }
+  .niu-mark { width: 32px; height: 32px; }
+  .niu-brand { gap: 7px; }
+  .niu-brand-copy strong { font-size: 17px; }
+  .niu-brand-copy small { font-size: 8px; letter-spacing: 0.11em; }
+  .niu-age { min-height: 30px; gap: 6px; padding-inline: 8px; font-size: 11px; }
+  .niu-icon-control { width: 44px; min-width: 44px; height: 44px; min-height: 44px; }
+  .niu-location-row { padding-inline: 14px; }
+  .niu-location-select { font-size: 13px; }
+  .niu-updated { font-size: 11px; }
+}
+@media (max-width: 360px) {
+  .niu-header-main { gap: 6px; padding-inline: 10px; }
+  .niu-brand-copy small { display: none; }
+  .niu-header-actions { gap: 0; }
+  .niu-age { gap: 5px; padding-inline: 7px; font-size: 10px; }
+  .niu-updated { display: none; }
+  .niu-location-row { padding-inline: 10px; }
+}
+
+/* ----------------------- surfaces & component system -------------------- */
+[data-niu-card] {
+  color: var(--niu-ink);
+  background: var(--niu-surface);
+  border: 0;
+  border-radius: var(--niu-card-radius);
+  box-shadow: var(--niu-card-shadow);
+}
+html[data-arah='langit'] [data-niu-card] {
+  padding-block: 16px;
+  padding-inline: 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--niu-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+.niu-status-card { container-type: inline-size; container-name: niu-status; }
+html[data-arah='langit'] .niu-status-card { border-top: 0; padding-top: 4px; }
+html[data-arah='tanah'] .niu-status-card { padding: 18px; }
+.niu-status-kicker {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--niu-sunken);
+  color: var(--niu-ink-muted);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+html[data-arah='langit'] .niu-status-kicker { padding-inline: 0; background: transparent; }
+@media (max-width: 430px) {
+  .niu-status-heading { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .niu-status-heading-aside { grid-column: 1; grid-row: 1; justify-self: end; }
+  .niu-status-heading-main { grid-column: 1; grid-row: 2; margin-top: 2px; }
+  .niu-status-kicker { min-height: 28px; padding-inline: 8px; }
+  html[data-arah='langit'] .niu-metric { padding-inline: 4px; }
+  html[data-arah='langit'] .niu-status-card .niu-metric { padding-inline: 4px; }
+}
+@media (max-width: 430px) {
+  html[data-arah='langit'] .niu-metric-label-full {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+  html[data-arah='langit'] .niu-metric-label-compact { display: inline-block; }
+  html[data-arah='langit'] .niu-metric-unit { overflow-wrap: anywhere; }
+}
+@media (min-width: 560px) {
+  @container niu-status (max-width: 430px) {
+    html[data-arah='tanah'] .niu-metric-label-full,
+    html[data-arah='langit'] .niu-metric-label-full {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      clip-path: inset(50%) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    html[data-arah='tanah'] .niu-metric-label-compact,
+    html[data-arah='langit'] .niu-metric-label-compact { display: inline-block; }
+    html[data-arah='tanah'] .niu-status-card .niu-metric,
+    html[data-arah='langit'] .niu-status-card .niu-metric { padding-inline: 4px; }
+    html[data-arah='tanah'] .niu-metric-unit,
+    html[data-arah='langit'] .niu-metric-unit { overflow-wrap: anywhere; }
+  }
+}
+@media (max-width: 360px) {
+  html[data-arah='tanah'] .niu-ringkas-mobile .niu-metrics { margin-top: 8px; }
+  html[data-arah='tanah'] .niu-ringkas-mobile .niu-metric { padding-block: 4px; }
+  html[data-arah='tanah'] .niu-instrument-detail { margin-top: 8px; padding-top: 8px; }
+}
+
+/* Semua kartu bertingkat menjadi satu alur bergaris di Langit, bukan panel gelap berulang. */
+html[data-arah='langit'] .space-y-4 > :not([hidden]) ~ :not([hidden]),
+html[data-arah='langit'] .space-y-3 > :not([hidden]) ~ :not([hidden]),
+html[data-arah='langit'] .space-y-5 > :not([hidden]) ~ :not([hidden]) {
+  margin-block-start: 0;
+}
+html[data-arah='langit'] [data-niu-page] { padding-top: 4px; }
+html[data-arah='langit'] [data-niu-page] > .space-y-4 { gap: 0; }
+html[data-arah='langit'] [data-niu-page] > .space-y-4 > [data-niu-card]:first-child,
+html[data-arah='langit'] [data-niu-page] > [data-niu-card]:first-child { border-top: 0; }
+
+/* Metrik utama: display font di kedua arah; angka teknis pada Detail tetap JetBrains Mono. */
+.niu-status-value,
+.niu-metric-value,
+.niu-hour .font-data {
+  font-family: var(--app-font);
+  font-variant-numeric: tabular-nums;
+}
+.niu-status-value {
+  font-size: 88px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.06em;
+}
+.niu-status-value > span {
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+html[data-arah='langit'] .niu-status-value {
+  font-size: 96px !important;
+  font-weight: 300 !important;
+  letter-spacing: -0.05em;
+}
+html[data-arah='langit'] .niu-status-value > span { font-size: 26px; font-weight: 400; }
+
+.niu-metrics {
+  border-top-color: var(--niu-line) !important;
+}
+html[data-arah='tanah'] .niu-metrics {
+  gap: 8px;
+  border-top: 0;
+  padding-top: 0;
+}
+html[data-arah='tanah'] .niu-metric {
+  min-height: 64px;
+  padding: 8px 11px;
+  border-radius: 15px;
+  background: #F3EADA;
+  text-align: center;
+}
+.niu-metric-label {
+  color: var(--niu-ink-muted) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.07em;
+  line-height: 1.3 !important;
+  text-transform: uppercase;
+}
+.niu-metric-label-compact { display: none; }
+.niu-metric-value {
+  margin-top: 3px;
+  font-size: 1rem !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.02em;
+}
+.niu-metric-unit { color: var(--niu-ink-muted) !important; font-size: 0.66rem !important; font-weight: 500; }
+html[data-arah='langit'] .niu-metrics {
+  gap: 0;
+  border-top: 1px solid var(--niu-line) !important;
+  border-bottom: 1px solid var(--niu-line);
+  padding-top: 0;
+}
+html[data-arah='langit'] .niu-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+html[data-arah='langit'] .niu-metric {
+  min-height: 72px;
+  padding: 11px 8px 12px;
+  border-right: 1px solid var(--niu-line);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+}
+html[data-arah='langit'] .niu-metric:last-child { border-right: 0; }
+html[data-arah='langit'] .niu-metric-label { color: rgb(247 250 252 / 0.68) !important; letter-spacing: 0.03em; }
+html[data-arah='langit'] .niu-metric-value { color: #F7FAFC !important; font-size: 1.08rem !important; }
+html[data-arah='langit'] .niu-metric-unit { color: rgb(247 250 252 / 0.70) !important; }
+@media (min-width: 560px) {
+  html[data-arah='tanah'] .niu-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* Sorotan bahaya: kartu berlapis di Tanah, baris dengan garis rambut di Langit. */
+html[data-arah='langit'] .niu-attention-list { margin-top: 8px; }
+html[data-arah='langit'] .niu-attention-row {
+  padding: 14px 0;
+  border: 0;
+  border-top: 1px solid var(--niu-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html[data-arah='langit'] .niu-attention-row:first-child { border-top: 0; }
+html[data-arah='langit'] .niu-attention-row > div:first-child { gap: 10px; }
+html[data-arah='langit'] .niu-attention-row button { color: #FFD2A1; }
+
+/* Strip mobile v4 dan strip interaktif desktop v6: satu baris yang dapat diseret. */
+.niu-hour-list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(56px, 1fr);
+  grid-template-columns: none;
+  gap: 2px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+.niu-hour { display: flex; min-width: 0; min-height: 104px; flex-direction: column; align-items: center; gap: 2px; scroll-snap-align: start; }
+.niu-hour-button { border: 1px solid transparent; color: inherit; background: transparent; font: inherit; cursor: pointer; }
+.niu-hour-button:hover { background: #EFE4D2; }
+.niu-hour-button[aria-pressed='true'] { border-color: #CBB99B; background: #E7D9C6; }
+.niu-hour-time { color: #6A5C4B; font-size: 10.5px; }
+.niu-hour-temp { color: #2A251E; font-size: 14px; font-weight: 650; }
+.niu-hour-rainbar { display: flex; width: 34px; height: 34px; align-items: flex-end; justify-content: center; }
+.niu-hour-rainbar-fill { display: block; width: 9px; max-height: 34px; border-radius: 3px; background: var(--color-rain); }
+.niu-hour-rain { color: #4C443A; font-size: 11px; }
+.niu-hour-gust { color: #837767; font-size: 10px; }
+.niu-hour-strip-interactive { --niu-hour-min: 56px; }
+.niu-hour-scrubber { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(0, 1.7fr); align-items: center; gap: 14px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--niu-line); }
+.niu-hour-scrubber input[type='range'] { width: 100%; min-width: 140px; min-height: 44px; accent-color: #2F4A38; cursor: pointer; }
+.niu-hour-readout { max-width: 60ch; color: #6A5C4B; font-size: 12px; line-height: 1.45; }
+.niu-hour-readout strong { color: #2A251E; font-weight: 700; }
+.niu-hour-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 8px; color: #6A5C4B; font-size: 11px; }
+.niu-hour-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.niu-hour-legend i { width: 9px; height: 9px; flex: 0 0 auto; border-radius: 2px; }
+.niu-legend-rain { background: var(--color-rain); }
+.niu-legend-sun { background: #D79838; }
+.niu-legend-wind { background: #5B8B6D; }
+html[data-arah='tanah'] .niu-hour { border-radius: 14px; background: #F3EADA; }
+html[data-arah='tanah'] .niu-hour:first-child { background: #E7D9C6; }
+html[data-arah='tanah'] .niu-hour-button:hover { background: #EFE4D2; }
+html[data-arah='tanah'] .niu-hour-button[aria-pressed='true'] { border-color: #BDAA8A; background: #E7D9C6; }
+html[data-arah='langit'] .niu-hour-strip { border-top-color: var(--niu-line); }
+html[data-arah='langit'] .niu-hour-list { grid-auto-columns: minmax(56px, 1fr); gap: 0; padding-bottom: 8px; }
+html[data-arah='langit'] .niu-hour { border-right: 1px solid var(--niu-line); border-radius: 0; background: transparent !important; }
+html[data-arah='langit'] .niu-hour:last-child { border-right: 0; }
+html[data-arah='langit'] .niu-hour:first-child { background: rgb(255 255 255 / 0.08) !important; }
+html[data-arah='langit'] .niu-hour-time,
+html[data-arah='langit'] .niu-hour-rain { color: rgb(247 250 252 / 0.72); }
+html[data-arah='langit'] .niu-hour-temp { color: #F7FAFC; font-family: var(--app-font); font-weight: 500; }
+html[data-arah='langit'] .niu-hour-gust { color: rgb(247 250 252 / 0.54); }
+html[data-arah='langit'] .niu-hour-rainbar-fill { background: #BEE1FF; }
+html[data-arah='langit'] .niu-hour-button:hover { background: rgb(255 255 255 / 0.08) !important; }
+html[data-arah='langit'] .niu-hour-button[aria-pressed='true'] { border-color: rgb(255 255 255 / 0.24); background: rgb(255 255 255 / 0.10) !important; }
+html[data-arah='langit'] .niu-hour-scrubber { border-top-color: var(--niu-line); }
+html[data-arah='langit'] .niu-hour-scrubber input[type='range'] { accent-color: #FFD2A1; }
+html[data-arah='langit'] .niu-hour-readout { color: rgb(247 250 252 / 0.72); }
+html[data-arah='langit'] .niu-hour-readout strong { color: #F7FAFC; }
+html[data-arah='langit'] .niu-hour-legend { color: rgb(247 250 252 / 0.72); }
+@media (min-width: 1024px) {
+  .niu-hour-list-interactive { grid-auto-columns: minmax(56px, 1fr); }
+  .niu-hour-list-mobile { grid-auto-columns: minmax(56px, 1fr); }
+}
+@media (max-width: 760px) {
+  .niu-hour-scrubber { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .niu-hour-readout { max-width: none; }
+}
+
+/* ---------------------------- navigation -------------------------------- */
+.niu-bottom-nav {
+  left: 12px !important;
+  right: 12px !important;
+  bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 24px;
+  padding: 6px;
+  background: #FBF6EC !important;
+  box-shadow: 0 14px 32px rgb(80 60 35 / 0.16), 0 1px 0 #fff inset;
+}
+html[data-arah='langit'] .niu-bottom-nav {
+  border: 1px solid rgb(255 255 255 / 0.18) !important;
+  border-radius: 24px;
+  background: rgb(8 14 20 / 0.82) !important;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 16px 38px rgb(0 0 0 / 0.28);
+}
+.niu-bottom-nav [role='tablist'] { gap: 2px; }
+.niu-bottom-nav [role='tab'] {
+  min-height: 52px;
+  gap: 2px;
+  border-radius: 17px;
+  color: #6A5C4B;
+  font-size: 11px;
+  font-weight: 650;
+}
+.niu-bottom-nav [role='tab'][aria-selected='true'] { background: #EADFCB; color: #2F4A38; }
+.niu-bottom-nav [role='tab'] > span[aria-hidden='true'] { display: none; }
+html[data-arah='langit'] .niu-bottom-nav [role='tab'] { color: rgb(247 250 252 / 0.70); font-weight: 500; }
+html[data-arah='langit'] .niu-bottom-nav [role='tab'][aria-selected='true'] { background: rgb(255 255 255 / 0.12); color: #fff; }
+
+/* ------------------------- desktop workbench ----------------------------- */
+.niu-desktop-board { color: var(--niu-ink); }
+.niu-desktop-board .desk-rail {
+  border-color: var(--niu-line) !important;
+  color: var(--niu-ink);
+}
+.niu-desktop-board .desk-zone-title { color: var(--niu-ink); }
+.niu-desktop-board .desk-zones {
+  border-color: var(--niu-line) !important;
+  background: rgb(241 231 216 / 0.94) !important;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+html[data-arah='langit'] .niu-desktop-board .desk-zones {
+  background: rgb(16 28 40 / 0.92) !important;
+  border-color: var(--niu-line) !important;
+}
+.niu-desktop-board .desk-insp--big {
+  border-radius: 26px;
+  background: #FBF6EC;
+}
+html[data-arah='langit'] .niu-desktop-board .desk-insp--big {
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 20px;
+  background: #1B2C3F;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+html[data-arah='langit'] .niu-desktop-board .desk-insp {
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.07);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+html[data-arah='langit'] .niu-inline-inspector [role='region'] {
+  border: 0;
+  border-top: 1px solid var(--niu-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* ----------------------- notices, banners, dialogs ----------------------- */
+html[data-arah='tanah'] [data-niu-banner='seasonal'],
+html[data-arah='tanah'] [data-niu-banner='climate'] { border-radius: 18px; }
+html[data-arah='langit'] [data-niu-banner='seasonal'],
+html[data-arah='langit'] [data-niu-banner='climate'] {
+  border-color: rgb(255 255 255 / 0.16) !important;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.07) !important;
+  color: #F7FAFC !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+html[data-arah='langit'] [data-niu-banner='seasonal'] .text-caption,
+html[data-arah='langit'] [data-niu-banner='climate'] .text-caption { color: rgb(247 250 252 / 0.78) !important; }
+
+html[data-arah='tanah'] .niu-modal-surface { background: #FBF6EC; border-color: var(--niu-line); border-radius: 26px; }
+html[data-arah='langit'] .niu-modal-surface {
+  background: rgb(24 42 60 / 0.96);
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 20px;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+html[data-arah='langit'] .niu-modal-surface > :first-child { border-color: var(--niu-line) !important; }
+
+@media (max-width: 520px) {
+  html[data-arah='tanah'] [data-niu-card] { border-radius: 24px; }
+  html[data-arah='langit'] .niu-hour-list { grid-auto-columns: minmax(56px, 1fr); }
+  .niu-updated { white-space: normal; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .niu-icon-control { transition: none; }
+}

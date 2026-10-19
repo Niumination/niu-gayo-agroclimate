@@ -20,7 +20,7 @@ const STORM_METRIC_LABEL = { capeEcmwf: 'Energi badai maks', li: 'Instabilitas m
 
 function Shell({ title, subtitle, level, children, footer, ariaLabel }) {
   return (
-    <section aria-label={ariaLabel || title} className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
+    <section aria-label={ariaLabel || title} data-niu-card="hazard-focus" className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">{title}</h2>

@@ -20,7 +20,7 @@ export default function DisasterHistoryCard({ history, location, tr = (k) => k }
   const events = (history.lastEvents ?? []).filter((e) => !filter || (e.hazard ?? e.type) === filter)
   const chips = Object.entries(history.byHazard ?? {}).sort((a, b) => b[1] - a[1])
   return (
-    <section aria-label="Riwayat kejadian bencana" className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
+    <section aria-label="Riwayat kejadian bencana" data-niu-card="history" className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3">
         <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">Riwayat kejadian {location?.name ? `— ${location.name}` : ''}</h2>
         <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{history.count} kejadian terdokumentasi publik (BNPB/BPBD/media) · bukan daftar lengkap</p>

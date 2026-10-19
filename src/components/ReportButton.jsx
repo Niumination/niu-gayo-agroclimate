@@ -1,4 +1,4 @@
-import {  useEffect, useRef, useState  } from 'react'
+import {  useCallback, useEffect, useRef, useState  } from 'react'
 
 // F8 — tombol 'Lapor kejadian' + modal form (bukan PII).
 // Aksesibilitas: focus trap sederhana, Esc menutup, label eksplisit, fokus awal di select.
@@ -60,8 +60,15 @@ const PLACEHOLDER = {
   gempa: 'cth: terasa ±5 detik pukul 03.10, piring bergetar, tidak ada kerusakan',
 }
 
-export default function ReportButton({ location, onSubmitted, className = '' }) {
-  const [open, setOpen] = useState(false)
+export default function ReportButton({ location, onSubmitted, className = '', open: openProp, onOpenChange }) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = openProp !== undefined
+  const open = isControlled ? Boolean(openProp) : internalOpen
+  const setOpen = useCallback((next) => {
+    const value = typeof next === 'function' ? next(open) : next
+    if (!isControlled) setInternalOpen(value)
+    onOpenChange?.(value)
+  }, [isControlled, onOpenChange, open])
   const [type, setType] = useState('longsor')
   const [note, setNote] = useState('')
   const [visibility, setVisibility] = useState('1-5km')
@@ -95,7 +102,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
     document.addEventListener('keydown', onKey)
     dialogRef.current?.querySelector('select')?.focus()
     return () => document.removeEventListener('keydown', onKey)
-  }, [open])
+  }, [open, setOpen])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -132,6 +139,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
     <>
       <button
         type="button"
+        title="Lapor kejadian"
         onClick={() => { setStatus(null); setOpen(true) }}
         className={`inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-card border border-ink/15 dark:border-mist/15 text-body font-medium text-ink dark:text-mist hover:bg-ink/5 dark:hover:bg-mist/10 transition-colors duration-100 ease-out active:scale-[.97] ${className}`}
       >
@@ -152,7 +160,7 @@ export default function ReportButton({ location, onSubmitted, className = '' }) 
             role="dialog"
             aria-modal="true"
             aria-labelledby="report-title"
-            className="relative w-full max-w-md bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
+            className="niu-modal-surface relative w-full max-w-md bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
           >
             <h2 id="report-title" className="text-body font-semibold text-ink dark:text-mist">
               Lapor kejadian — {location.name}

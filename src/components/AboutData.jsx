@@ -42,7 +42,7 @@ export default function AboutData({ open, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="about-title"
-        className="relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-t-card sm:rounded-card p-5 text-ink dark:text-mist"
+        className="niu-modal-surface relative w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-t-card sm:rounded-card p-5 text-ink dark:text-mist"
       >
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-ink/10 dark:border-mist/10">
           <div>

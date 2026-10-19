@@ -31,6 +31,45 @@ const pushRecent = (id) => {
   }
 }
 
+const normalize = (value) => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+const editDistance = (left, right) => {
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index)
+  for (let i = 1; i <= left.length; i += 1) {
+    let diagonal = previous[0]
+    previous[0] = i
+    for (let j = 1; j <= right.length; j += 1) {
+      const above = previous[j]
+      previous[j] = Math.min(previous[j] + 1, previous[j - 1] + 1, diagonal + (left[i - 1] === right[j - 1] ? 0 : 1))
+      diagonal = above
+    }
+  }
+  return previous[right.length]
+}
+const fuzzyScore = (item, query) => {
+  const label = normalize(item.label)
+  const text = normalize(`${item.label} ${item.sub || ''}`)
+  const exactAt = text.indexOf(query)
+  if (exactAt >= 0) return (label.startsWith(query) ? 0 : 1000) + exactAt
+  const words = text.split(/[^a-z0-9]+/).filter(Boolean)
+  const tokens = query.split(/\s+/).filter(Boolean)
+  let score = 0
+  for (const token of tokens) {
+    let best = Infinity
+    for (const word of words) {
+      const at = word.indexOf(token)
+      if (at >= 0) best = Math.min(best, 20 + at)
+      else if (token.length >= 3) {
+        const limit = token.length >= 7 ? 2 : 1
+        const distance = editDistance(token, word)
+        if (distance <= limit) best = Math.min(best, 100 + distance * 10 + Math.abs(word.length - token.length))
+      }
+    }
+    if (!Number.isFinite(best)) return null
+    score += best
+  }
+  return 2000 + score
+}
+
 export default function CommandPalette({ open, onClose, items = [], placeholder = 'Cari sentra, bahaya, bagian, atau aksi…' }) {
   const [q, setQ] = useState('')
   const [idx, setIdx] = useState(0)
@@ -55,7 +94,7 @@ export default function CommandPalette({ open, onClose, items = [], placeholder 
 
   const groups = useMemo(() => {
     const byId = new Map(items.map((it) => [it.id, it]))
-    const query = q.trim().toLowerCase()
+    const query = normalize(q.trim())
     if (!query) {
       const rec = recent.map((id) => byId.get(id)).filter(Boolean)
       const rest = items.filter((it) => !recent.includes(it.id))
@@ -68,13 +107,12 @@ export default function CommandPalette({ open, onClose, items = [], placeholder 
     }
     const scored = items
       .map((it) => {
-        const label = `${it.label} ${it.sub || ''}`.toLowerCase()
-        const pos = label.indexOf(query)
-        return pos < 0 ? null : { it, score: (it.label.toLowerCase().startsWith(query) ? 0 : 1) * 1000 + pos }
+        const score = fuzzyScore(it, query)
+        return score == null ? null : { it, score }
       })
       .filter(Boolean)
       .sort((a, b) => a.score - b.score)
-      .map((x) => x.it)
+      .map((result) => result.it)
     if (!scored.length) return []
     const out = []
     for (const g of [...new Set(scored.map((it) => it.group))]) {
@@ -95,6 +133,11 @@ export default function CommandPalette({ open, onClose, items = [], placeholder 
   }
 
   const onKeyDown = (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      inputRef.current?.focus()
+      return
+    }
     if (e.key === 'Escape') {
       e.preventDefault()
       onClose?.()
@@ -135,7 +178,7 @@ export default function CommandPalette({ open, onClose, items = [], placeholder 
         role="dialog"
         aria-modal="true"
         aria-label="Palet perintah"
-        className="w-full max-w-[620px] overflow-hidden rounded-tanah-kartu border border-tanah-garis bg-tanah-kartu shadow-2xl dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu"
+        className="niu-modal-surface w-full max-w-[620px] overflow-hidden rounded-tanah-kartu border border-tanah-garis bg-tanah-kartu shadow-2xl dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu"
       >
         <div className="flex items-center gap-2 border-b border-tanah-garis px-3 dark:border-langit-garis">
           <svg

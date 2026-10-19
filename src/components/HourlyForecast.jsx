@@ -14,7 +14,7 @@ export default function HourlyForecast({ hourly, tr, variant = 'mobile' }) {
   }
 
   return (
-    <section aria-label={tr('hourlyTrend')} className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
+    <section aria-label={tr('hourlyTrend')} data-niu-card="hourly-forecast" className="niu-hourly-forecast bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3">
         <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">{tr('hourlyTrend')}</h2>
         <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{tr('hourlySub')}</p>

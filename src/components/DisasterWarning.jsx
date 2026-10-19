@@ -66,6 +66,7 @@ export default function DisasterWarning({ disaster, dailyRainSum, tr = (k) => k 
   return (
     <section
       aria-label="Peringatan dini cuaca dan bencana"
+      data-niu-card="warning"
       className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
     >
       <div className="pb-3">

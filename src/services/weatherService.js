@@ -195,7 +195,18 @@ export async function getAgroClimateData(location) {
 
   return {
     timestamp: apiTimestamp(data) ?? new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-    current: { temp, rh, rain, wind, gust, solarRad },
+    current: {
+      temp,
+      rh,
+      rain,
+      wind,
+      gust,
+      solarRad,
+      time: curr.time,
+      windDirection: curr.wind_direction_10m,
+      weatherCode: curr.weather_code,
+    },
+    modelElevation: data.elevation,
     daily: {
       minTemp: daily.temperature_2m_min[0],
       maxTemp: daily.temperature_2m_max[0],

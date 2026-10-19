@@ -1,23 +1,25 @@
-import { useEffect, useMemo, useState } from 'react'
-import DetailPanel from '../components/niu/DetailPanel.jsx'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import CommandPalette from '../components/niu/CommandPalette.jsx'
+import DesktopHazardInspector from '../components/niu/DesktopHazardInspector.jsx'
 import ReportButton from '../components/ReportButton'
 import ShareButton from '../components/ShareButton'
+import { PanelLeftClose, PanelLeftOpen, Share2 } from 'lucide-react'
 import LocationRail from '../components/LocationRail'
-import { hazardPanels, HAZARD_TABS } from '../components/niu/HazardDetail.jsx'
-import { LEVEL_LABEL } from '../domain/hazards/levels.js'
 import { LOCATIONS } from '../data/locations'
+import { LEVEL_LABEL } from '../domain/hazards/levels.js'
 
 /**
  * P7.5 — papan kerja desktop: rel kiri + kanvas + inspector kanan.
  *
  * Sama seperti prototipe v6 yang disetujui:
- * - Rel 264 px bisa dilipat jadi 76 px (`[`), isi tersisa inisial sentra.
+ * - Rel 264 px bisa dilipat jadi rail 72 px; default lipat pada < 1100 px dan
+ *   ≥ 1440 px saat inspector berdampingan. Semua sentra tetap dapat dipilih lewat inisial.
  * - Inspector menampilkan satu bahaya; master–detail terjadi lewat klik baris
  *   di zona Risiko (lewat prop `onSelect` dari HazardPanel).
  * - ⌘K membuka palet (zona, sentra, bahaya, aksi).
  * - `D` kepadatan, `F` mode fokus, `1–5` pindah zona; pilihan disimpan lokal.
- * - Di layar < 1500 px inspector menjadi laci kanan; ≥ 1500 px menetap.
+ * - Inspector menetap pada grid mulai 1440 px, melayang di 1100–1439 px,
+ *   dan rincian tampil inline pada layar < 1100 px.
  *
  * Semua kartu lama tetap dirender: komponen ini hanya membingkai lima zona.
  */
@@ -36,28 +38,69 @@ const store = (k, v) => {
     /* mode privat */
   }
 }
+const readPreference = (key, legacyKey, fallback) => read(key, null) ?? read(legacyKey, fallback)
+const normalizeInspector = (value) => {
+  if (value === 'buka' || value === 'open') return 'buka'
+  if (value === 'tutup' || value === 'closed') return 'tutup'
+  return null
+}
+const LOCATION_LEVEL_COLOR = {
+  ekstrem: 'var(--color-level-ekstrem)',
+  bahaya: 'var(--color-level-bahaya)',
+  waspada: 'var(--color-level-waspada)',
+  rendah: 'var(--color-level-rendah)',
+  'n/a': 'var(--color-line-strong)',
+}
 
 export default function DesktopBoard({
   hazards,
+  hazardsAll,
   location,
+  highlightedLocationId,
+  onHighlightLocation,
   onSelectLocation,
+  onOpenLocationPicker,
+  inspectorOpen,
+  onInspectorOpenChange,
+  onOpenReport,
+  reportOpen,
+  onReportOpenChange,
+  onOpenShare,
+  onRefresh,
+  onToggleTheme,
+  onAbout,
   tr = (k) => k,
   sections = {},
   selectedHazardId,
   onSelectHazard,
 }) {
-  const [rail, setRail] = useState(() => read('niu.desk.rail', 'buka'))
-  const [dens, setDens] = useState(() => read('niu.desk.dens', 'nyaman'))
-  const [focus, setFocus] = useState(() => read('niu.desk.focus', 'off'))
-  const [insp, setInsp] = useState(() => {
-    const saved = read('niu.desk.insp', null)
-    if (saved) return saved
-    return typeof window !== 'undefined' && window.innerWidth < 1200 ? 'tutup' : 'buka'
+  const [rail, setRail] = useState(() => {
+    const width = typeof window !== 'undefined' ? window.innerWidth : 1280
+    const initial = width < 1600 ? 'lipat' : 'buka'
+    return readPreference('niu.rail', 'niu.desk.rail', initial)
   })
+  const [dens, setDens] = useState(() => readPreference('niu.dens', 'niu.desk.dens', 'nyaman'))
+  const [focus, setFocus] = useState(() => readPreference('niu.focus', 'niu.desk.focus', 'off'))
+  const [localInsp, setLocalInsp] = useState(() => {
+    const saved = normalizeInspector(readPreference('niu.insp', 'niu.desk.insp', null))
+    if (saved) return saved
+    return 'buka'
+  })
+  const insp = inspectorOpen === undefined ? localInsp : inspectorOpen ? 'buka' : 'tutup'
+  const setInsp = useCallback((next) => {
+    const value = typeof next === 'function' ? next(insp) : next
+    if (onInspectorOpenChange) onInspectorOpenChange(value === 'buka')
+    else setLocalInsp(value)
+  }, [insp, onInspectorOpenChange])
   const [big, setBig] = useState(false)
   const [pal, setPal] = useState(false)
+  const [activeZone, setActiveZone] = useState('ringkas')
+  const railBeforeInspectorRef = useRef(null)
+  const previousInspectorRef = useRef(insp)
+  const layoutInitializedRef = useRef(false)
 
   const locations = useMemo(() => [...LOCATIONS].sort((a, b) => b.elevation - a.elevation), [])
+  const locationLevels = useMemo(() => Object.fromEntries((hazardsAll?.locations ?? []).map((item) => [item.id, item])), [hazardsAll])
   const results = useMemo(() => hazards?.results ?? [], [hazards])
   const selected = useMemo(() => {
     const byId = results.find((r) => r.id === selectedHazardId)
@@ -76,16 +119,52 @@ export default function DesktopBoard({
     []
   )
 
-  const goZone = (id) => {
-    document.getElementById(`zona-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  const goZone = useCallback((id) => {
+    const target = document.getElementById(`zona-${id}`)
+    if (!target) return
+    setActiveZone(id)
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.requestAnimationFrame(() => target.focus({ preventScroll: true }))
+  }, [])
 
   useEffect(() => {
-    store('niu.desk.rail', rail)
-    store('niu.desk.dens', dens)
-    store('niu.desk.focus', focus)
-    store('niu.desk.insp', insp)
+    store('niu.rail', rail)
+    store('niu.dens', dens)
+    store('niu.focus', focus)
+    store('niu.insp', insp === 'buka' ? 'open' : 'closed')
   }, [rail, dens, focus, insp])
+
+  useEffect(() => {
+    const foldRailWithInspector = window.innerWidth < 1600
+    const previousInspector = previousInspectorRef.current
+
+    if (!layoutInitializedRef.current) {
+      layoutInitializedRef.current = true
+      if (foldRailWithInspector && insp === 'buka' && rail === 'buka') {
+        railBeforeInspectorRef.current = 'buka'
+        setRail('lipat')
+      }
+    } else if (previousInspector === 'tutup' && insp === 'buka' && foldRailWithInspector && rail === 'buka') {
+      railBeforeInspectorRef.current = 'buka'
+      setRail('lipat')
+    } else if (previousInspector === 'buka' && insp === 'tutup' && railBeforeInspectorRef.current === 'buka' && foldRailWithInspector) {
+      railBeforeInspectorRef.current = null
+      setRail('buka')
+    }
+
+    previousInspectorRef.current = insp
+  }, [insp, rail])
+
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) return undefined
+    const targets = zones.map((zone) => document.getElementById(`zona-${zone.id}`)).filter(Boolean)
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)
+      if (visible[0]) setActiveZone(visible[0].target.id.replace('zona-', ''))
+    }, { rootMargin: '-22% 0px -62% 0px', threshold: [0, 0.1, 0.25, 0.5] })
+    targets.forEach((target) => observer.observe(target))
+    return () => observer.disconnect()
+  }, [zones])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -95,10 +174,11 @@ export default function DesktopBoard({
       const t = setTimeout(() => goZone(zona), 350)
       return () => clearTimeout(t)
     }
-  }, [])
+  }, [goZone, zones])
 
   useEffect(() => {
     const onKey = (e) => {
+      if (e.defaultPrevented || pal) return
       const inField = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')
       if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault()
@@ -119,9 +199,14 @@ export default function DesktopBoard({
         if (big) {
           e.preventDefault()
           setBig(false)
-        } else if (window.innerWidth < 1500 && insp === 'buka') {
+        } else if (window.innerWidth < 1440 && insp === 'buka') {
           e.preventDefault()
           setInsp('tutup')
+          window.requestAnimationFrame(() => {
+            const rows = [...document.querySelectorAll('[data-hazard-row]')]
+            const selectedRow = rows.find((row) => row.getAttribute('data-hazard-row') === selected?.id)
+            ;(selectedRow || document.getElementById('zona-risiko'))?.focus()
+          })
         }
       } else if (/^[1-5]$/.test(e.key)) {
         const z = zones[Number(e.key) - 1]
@@ -133,202 +218,230 @@ export default function DesktopBoard({
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [zones, big, insp])
+  }, [zones, big, insp, pal, goZone, setInsp, selected?.id])
 
   const paletteItems = useMemo(() => {
-    const out = [
-      ...zones.map((z, i) => ({
-        id: `zona-${z.id}`,
-        label: `${i + 1}. ${z.label}`,
-        sub: 'Pindah bagian',
-        group: 'Bagian',
-        run: () => goZone(z.id),
-      })),
-      ...results.map((r) => ({
-        id: `bahaya-${r.id}`,
-        label: r.label?.id || r.id,
-        sub: r.headline,
-        group: 'Bahaya',
-        run: () => {
-          onSelectHazard?.(r.id)
-          setInsp('buka')
-          goZone('risiko')
-        },
-      })),
-    ]
     const locs = locations.map((loc) => ({
       id: `sentra-${loc.id}`,
       label: loc.name,
-      sub: `${loc.elevation} m · pilih sentra`,
+      sub: `${loc.elevation.toLocaleString('id-ID')} m · pilih sentra`,
       group: 'Sentra',
       run: () => {
         onSelectLocation?.(loc)
         goZone('sentra')
       },
     }))
-    return out.concat(locs)
-  }, [zones, results, onSelectHazard, locations, onSelectLocation])
+    const hazardItems = results.map((hazard) => ({
+      id: `bahaya-${hazard.id}`,
+      label: hazard.label?.id || hazard.id,
+      sub: hazard.headline,
+      group: 'Bahaya',
+      run: () => {
+        onSelectHazard?.(hazard.id)
+        setInsp('buka')
+        goZone('risiko')
+      },
+    }))
+    const sectionItems = zones.map((zone, index) => ({
+      id: `zona-${zone.id}`,
+      label: `${index + 1}. ${zone.label}`,
+      sub: 'Pindah bagian',
+      group: 'Bagian',
+      run: () => goZone(zone.id),
+    }))
+    const actionItems = [
+      { id: 'aksi-lapor', label: 'Lapor kejadian', sub: 'Laporkan kondisi di sekitar sentra', run: onOpenReport },
+      { id: 'aksi-bagikan', label: 'Bagikan ringkasan', sub: 'WhatsApp, SMS, atau salin', run: onOpenShare },
+      { id: 'aksi-muat-ulang', label: 'Muat ulang data', sub: 'Ambil pembaruan terbaru', run: onRefresh },
+      { id: 'aksi-arah', label: 'Ganti arah desain', sub: 'Beralih antara Tanah dan Langit', run: onToggleTheme },
+      { id: 'aksi-kepadatan', label: `Kepadatan: ${dens === 'padat' ? 'Padat' : 'Nyaman'}`, sub: 'Ubah jarak antar-kartu', run: () => setDens((value) => (value === 'padat' ? 'nyaman' : 'padat')) },
+      { id: 'aksi-fokus', label: `Mode fokus: ${focus === 'on' ? 'Aktif' : 'Nonaktif'}`, sub: 'Sempitkan kanvas dan sembunyikan rel', run: () => setFocus((value) => (value === 'on' ? 'off' : 'on')) },
+      { id: 'aksi-rincian', label: `Rincian bahaya: ${insp === 'buka' ? 'Terbuka' : 'Tertutup'}`, sub: 'Tampilkan atau sembunyikan panel rincian', run: () => setInsp((value) => (value === 'buka' ? 'tutup' : 'buka')) },
+      { id: 'aksi-tentang', label: 'Tentang data & batasan', sub: 'Sumber, ambang, dan keterbatasan', run: onAbout },
+      { id: 'aksi-pilih-sentra', label: 'Pilih sentra…', sub: 'Buka daftar seluruh sentra', run: onOpenLocationPicker },
+    ].map((item) => ({ ...item, group: 'Aksi' }))
+    return [...locs, ...hazardItems, ...sectionItems, ...actionItems]
+  }, [
+    locations,
+    results,
+    zones,
+    onSelectLocation,
+    onSelectHazard,
+    onOpenReport,
+    onOpenShare,
+    onRefresh,
+    onToggleTheme,
+    onAbout,
+    onOpenLocationPicker,
+    goZone,
+    setInsp,
+    dens,
+    focus,
+    insp,
+  ])
 
   return (
     <div
-      className="desk mx-auto grid min-h-[70vh] max-w-shell grid-cols-[76px_minmax(0,1fr)] gap-0 px-4 xl:px-6"
+      data-niu-desktop
+      className="desk niu-desktop-board mx-auto grid min-h-[70vh] max-w-[1720px] grid-cols-[72px_minmax(0,1fr)] gap-0 px-[26px]"
       data-rail={rail}
       data-dens={dens}
       data-focus={focus}
       data-insp={insp}
     >
-      <aside className="desk-rail min-w-0 border-r border-tanah-garis py-4 pr-3 dark:border-langit-garis" aria-label="Rel aksi dan sentra">
-        <div className="flex items-center justify-between gap-2 px-1">
-          {rail !== 'lipat' && (
-            <p className="text-caption uppercase tracking-wide text-tanah-tinta-halus dark:text-langit-tinta-halus">
-              Aksi & sentra
-            </p>
-          )}
+      <nav aria-label="Bagian halaman" className="desk-zones">
+        {zones.map((z, i) => (
           <button
+            key={z.id}
             type="button"
-            onClick={() => setRail(rail === 'lipat' ? 'buka' : 'lipat')}
-            aria-pressed={rail === 'lipat'}
-            aria-label={rail === 'lipat' ? 'Buka rel' : 'Lipat rel'}
-            title="Lipat rel ([)"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-tanah-kendali text-tanah-tinta-redup hover:bg-tanah-terbenam dark:rounded-langit-kendali dark:text-langit-tinta-redup dark:hover:bg-langit-terbenam"
+            onClick={() => goZone(z.id)}
+            aria-current={activeZone === z.id ? 'location' : undefined}
+            className={`desk-zone-link min-h-11 ${activeZone === z.id ? 'is-active' : ''}`}
           >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <rect x="3" y="4" width="18" height="16" rx="2" />
-              <path d="M9 4v16" />
-            </svg>
+            <span className="desk-zone-pill">
+              <span className="desk-zone-number">{i + 1}</span> {z.label}
+            </span>
           </button>
-        </div>
+        ))}
+        <span className="desk-zone-spacer" aria-hidden="true" />
+        <button
+          type="button"
+          onClick={() => setPal(true)}
+          aria-haspopup="dialog"
+          aria-label="Buka palet perintah (⌘K)"
+          title="Cari sentra, bahaya, atau aksi"
+          className="desk-shortcuts desk-shortcuts-trigger min-h-11"
+        >
+          <span className="desk-shortcuts-full">⌘K cari · 1–5 pindah · [ rel · D padat · F fokus</span>
+          <span className="desk-shortcuts-compact">⌘K cari</span>
+        </button>
+      </nav>
 
-        <div className={`mt-3 ${rail === 'lipat' ? 'flex flex-col items-center gap-2' : 'space-y-2'}`}>
-          <ReportButton location={location} className={rail === 'lipat' ? '!px-2' : 'w-full'} />
-          <ShareButton
-            hazards={hazards}
-            location={location}
-            tr={tr}
-            compact
-            buttonClassName="inline-flex min-h-11 w-full items-center justify-center rounded-pil border border-tanah-garis-kuat px-3 text-body-sm font-semibold text-tanah-aksen hover:bg-tanah-terbenam dark:border-langit-garis-kuat dark:text-langit-aksen dark:hover:bg-langit-terbenam"
-          />
-        </div>
+      <aside className="desk-rail min-w-0" aria-label="Rel aksi dan sentra">
+        <section data-niu-card aria-label="Aksi cepat" className={`desk-rail-actions min-w-0 ${rail === 'lipat' ? 'px-2 py-2' : 'p-3'}`}>
+          <div className={`desk-rail-heading ${rail === 'lipat' ? 'is-folded' : ''}`}>
+            {rail !== 'lipat' && (
+              <h2 className="text-body-sm font-semibold text-tanah-tinta dark:text-langit-tinta">Aksi cepat</h2>
+            )}
+            <button
+              type="button"
+              onClick={() => setRail((value) => (value === 'lipat' ? 'buka' : 'lipat'))}
+              aria-label={rail === 'lipat' ? 'Buka rel sentra' : 'Lipat rel sentra'}
+              aria-expanded={rail !== 'lipat'}
+              aria-pressed={rail === 'lipat'}
+              title={rail === 'lipat' ? 'Buka rel sentra ([)' : 'Lipat rel sentra ([)'}
+              className="desk-rail-toggle min-h-11 min-w-11"
+            >
+              {rail === 'lipat'
+                ? <PanelLeftOpen aria-hidden="true" />
+                : <PanelLeftClose aria-hidden="true" />}
+            </button>
+          </div>
+          <div className={rail === 'lipat' ? 'mt-1 flex flex-col items-center gap-2' : 'mt-2 flex flex-col gap-2'}>
+            <ReportButton
+              location={location}
+              open={reportOpen}
+              onOpenChange={onReportOpenChange}
+              className={rail === 'lipat' ? 'niu-rail-report-button' : 'w-full'}
+            />
+            <ShareButton
+              hazards={hazards}
+              location={location}
+              tr={tr}
+              compact
+              icon={rail === 'lipat' ? <Share2 aria-hidden="true" className="h-4 w-4 shrink-0" /> : null}
+              buttonClassName={rail === 'lipat'
+                ? 'niu-rail-share-button'
+                : 'inline-flex min-h-11 w-full items-center justify-center rounded-pil border border-tanah-garis-kuat px-3 text-body-sm font-semibold text-tanah-aksen hover:bg-tanah-terbenam dark:border-langit-garis-kuat dark:text-langit-aksen dark:hover:bg-langit-terbenam'}
+            />
+          </div>
+        </section>
 
-        <div className="mt-5">
+        <section data-niu-card aria-label="Sentra" className={`desk-rail-locations min-w-0 ${rail === 'lipat' ? 'mt-3 px-1 py-2' : 'mt-3 p-3'}`}>
           {rail === 'lipat' ? (
-            <nav aria-label={tr('pickRegion')} className="flex flex-col items-center gap-1">
-              {locations.map((loc) => {
-                const active = loc.id === location?.id
-                const initials = loc.name
-                  .replace(/\(.*?\)/g, '')
-                  .trim()
-                  .split(/\s+/)
-                  .slice(0, 2)
-                  .map((w) => w[0])
-                  .join('')
-                  .toUpperCase()
-                return (
-                  <button
-                    key={loc.id}
-                    type="button"
-                    onClick={() => onSelectLocation?.(loc)}
-                    aria-current={active ? 'true' : undefined}
-                    aria-label={loc.name}
-                    title={`${loc.name} · ${loc.elevation} m`}
-                    className={`grid h-11 w-11 place-items-center rounded-tanah-kendali font-data text-caption font-semibold ${
-                      active
-                        ? 'bg-tanah-aksen text-tanah-aksen-tinta dark:bg-langit-aksen dark:text-langit-aksen-tinta'
-                        : 'text-tanah-tinta-redup hover:bg-tanah-terbenam dark:text-langit-tinta-redup dark:hover:bg-langit-terbenam'
-                    }`}
-                  >
-                    {initials}
-                  </button>
-                )
-              })}
-            </nav>
+            <>
+              <h2 className="sr-only">{tr('pickRegion')}</h2>
+              <nav aria-label={tr('pickRegion')} className="flex flex-col items-center gap-1">
+                {locations.map((loc) => {
+                  const active = loc.id === location?.id
+                  const highlighted = loc.id === highlightedLocationId
+                  const level = locationLevels[loc.id]?.worst ?? 'n/a'
+                  const initials = loc.name
+                    .replace(/\(.*?\)/g, '')
+                    .trim()
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((w) => w[0])
+                    .join('')
+                    .toUpperCase()
+                  return (
+                    <button
+                      key={loc.id}
+                      type="button"
+                      onClick={() => onSelectLocation?.(loc)}
+                      onMouseEnter={() => onHighlightLocation?.(loc.id)}
+                      onMouseLeave={() => onHighlightLocation?.(null)}
+                      onFocus={() => onHighlightLocation?.(loc.id)}
+                      onBlur={() => onHighlightLocation?.(null)}
+                      aria-current={active ? 'true' : undefined}
+                      aria-label={`${loc.name}, ${loc.elevation.toLocaleString('id-ID')} m, ${LEVEL_LABEL[level] ?? 'status tidak tersedia'}`}
+                      title={`${loc.name} · ${loc.elevation.toLocaleString('id-ID')} m · ${LEVEL_LABEL[level] ?? 'Tidak tersedia'}`}
+                      data-highlighted={highlighted ? 'true' : undefined}
+                      className={`relative grid h-11 w-11 place-items-center rounded-tanah-kendali font-data text-caption font-semibold ${
+                        active
+                          ? 'bg-tanah-aksen text-tanah-aksen-tinta dark:bg-langit-aksen dark:text-langit-aksen-tinta'
+                          : 'text-tanah-tinta-redup hover:bg-tanah-terbenam dark:text-langit-tinta-redup dark:hover:bg-langit-terbenam'
+                      } ${highlighted ? 'ring-2 ring-offset-1 ring-tanah-aksen dark:ring-langit-aksen' : ''}`}
+                    >
+                      {initials}
+                      <span aria-hidden="true" className="absolute right-1 top-1 h-2 w-2 rounded-full border border-tanah-kartu dark:border-langit-kartu" style={{ background: LOCATION_LEVEL_COLOR[level] ?? LOCATION_LEVEL_COLOR['n/a'] }} />
+                    </button>
+                  )
+                })}
+              </nav>
+            </>
           ) : (
-            <LocationRail selectedLocation={location} onSelectLocation={onSelectLocation} tr={tr} />
+            <LocationRail
+              selectedLocation={location}
+              onSelectLocation={onSelectLocation}
+              highlightedLocationId={highlightedLocationId}
+              onHighlightLocation={onHighlightLocation}
+              hazardsAll={hazardsAll}
+              tr={tr}
+            />
           )}
-        </div>
+        </section>
       </aside>
 
       <div className="desk-canvas min-w-0">
-        <div className="desk-bar sticky top-16 z-30 -mx-4 flex flex-wrap items-center gap-2 border-b border-tanah-garis bg-tanah-permukaan/95 px-4 py-2 backdrop-blur dark:border-langit-garis dark:bg-langit-malam/95 xl:-mx-6 xl:px-6">
-          <button
-            type="button"
-            onClick={() => setPal(true)}
-            aria-haspopup="dialog"
-            className="inline-flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-tanah-kendali border border-tanah-garis bg-tanah-kartu px-3 text-body-sm text-tanah-tinta-redup hover:border-tanah-garis-kuat dark:rounded-langit-kendali dark:border-langit-garis dark:bg-langit-kartu dark:text-langit-tinta-redup dark:hover:border-langit-garis-kuat"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3.2-3.2" />
-            </svg>
-            <span className="min-w-0 break-words">Cari sentra, bahaya, atau aksi…</span>
-            <kbd className="ml-auto hidden shrink-0 rounded border border-tanah-garis px-1.5 py-0.5 font-data text-caption sm:block dark:border-langit-garis">⌘K</kbd>
-          </button>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setDens(dens === 'padat' ? 'nyaman' : 'padat')}
-              aria-pressed={dens === 'padat'}
-              title="Kepadatan (D)"
-              className="min-h-10 rounded-tanah-kendali px-2.5 text-caption font-semibold text-tanah-tinta-redup hover:bg-tanah-terbenam dark:rounded-langit-kendali dark:text-langit-tinta-redup dark:hover:bg-langit-terbenam"
-            >
-              Kepadatan
-            </button>
-            <button
-              type="button"
-              onClick={() => setFocus(focus === 'on' ? 'off' : 'on')}
-              aria-pressed={focus === 'on'}
-              title="Mode fokus (F)"
-              className="min-h-10 rounded-tanah-kendali px-2.5 text-caption font-semibold text-tanah-tinta-redup hover:bg-tanah-terbenam dark:rounded-langit-kendali dark:text-langit-tinta-redup dark:hover:bg-langit-terbenam"
-            >
-              Fokus
-            </button>
-          </div>
-        </div>
-
-        <nav aria-label="Bagian halaman" className="desk-zones sticky top-[104px] z-20 -mx-4 flex flex-wrap items-center gap-1 border-b border-tanah-garis bg-tanah-permukaan/95 px-4 py-1.5 backdrop-blur dark:border-langit-garis dark:bg-langit-malam/95 xl:-mx-6 xl:px-6">
-          {zones.map((z, i) => (
-            <button
-              key={z.id}
-              type="button"
-              onClick={() => goZone(z.id)}
-              className="min-h-9 rounded-pil px-2.5 text-caption font-semibold text-tanah-tinta-redup hover:bg-tanah-terbenam dark:text-langit-tinta-redup dark:hover:bg-langit-terbenam"
-            >
-              <span className="font-data tabular-nums">{i + 1}</span> {z.label}
-            </button>
-          ))}
-          <span className="ml-auto hidden text-caption text-tanah-tinta-halus md:block dark:text-langit-tinta-halus">
-            ⌘K cari · [ rel · D padat · F fokus
-          </span>
-        </nav>
-
-        <div className="desk-flow px-0 py-5">
-          <section id="zona-ringkas" aria-labelledby="z-ringkas" className="desk-zone">
+        <div className="desk-flow px-0 py-0">
+          <section id="zona-ringkas" aria-labelledby="z-ringkas" tabIndex={-1} className="desk-zone">
             <h2 id="z-ringkas" className="desk-zone-title">
-              1 · Ringkas
+              Ringkas
             </h2>
             {sections.ringkas}
           </section>
-          <section id="zona-ramalan" aria-labelledby="z-ramalan" className="desk-zone">
+          <section id="zona-ramalan" aria-labelledby="z-ramalan" tabIndex={-1} className="desk-zone">
             <h2 id="z-ramalan" className="desk-zone-title">
-              2 · Ramalan
+              Ramalan
             </h2>
             {sections.ramalan}
           </section>
-          <section id="zona-risiko" aria-labelledby="z-risiko" className="desk-zone">
+          <section id="zona-risiko" aria-labelledby="z-risiko" tabIndex={-1} className="desk-zone">
             <h2 id="z-risiko" className="desk-zone-title">
-              3 · Risiko
+              Risiko
             </h2>
             {sections.risiko}
           </section>
-          <section id="zona-sentra" aria-labelledby="z-sentra" className="desk-zone">
+          <section id="zona-sentra" aria-labelledby="z-sentra" tabIndex={-1} className="desk-zone">
             <h2 id="z-sentra" className="desk-zone-title">
-              4 · Sentra
+              Sentra
             </h2>
             {sections.sentra}
           </section>
-          <section id="zona-arsip" aria-labelledby="z-arsip" className="desk-zone">
+          <section id="zona-arsip" aria-labelledby="z-arsip" tabIndex={-1} className="desk-zone">
             <h2 id="z-arsip" className="desk-zone-title">
-              5 · Arsip
+              Arsip
             </h2>
             {sections.arsip}
           </section>
@@ -336,56 +449,24 @@ export default function DesktopBoard({
       </div>
 
       {insp === 'buka' && selected && (
-        <aside
-          className={`desk-insp min-w-0 ${big ? 'desk-insp--big' : ''}`}
-          aria-label="Rincian bahaya terpilih"
-        >
-          <div className="desk-insp-inner">
-            <DetailPanel
-              id="desk-insp-panel"
-              title={selected.label?.id || selected.id}
-              subtitle={`${location?.name ?? ''} · ${LEVEL_LABEL[selected.level]} · dinilai ${selected.score == null ? '—' : Math.round(selected.score)}/100`}
-              level={selected.level}
-              levelLabel={selected.levelLabel}
-              tabs={HAZARD_TABS}
-              panels={hazardPanels(selected)}
-              onClose={() => setInsp('tutup')}
-              closeLabel="Tutup panel rincian"
-              aside={
-                <button
-                  type="button"
-                  onClick={() => setBig((b) => !b)}
-                  aria-pressed={big}
-                  aria-label={big ? 'Perkecil panel rincian' : 'Perbesar panel rincian'}
-                  title="Perbesar / perkecil panel"
-                  className="grid h-11 w-11 place-items-center rounded-tanah-kendali text-tanah-tinta-redup hover:bg-tanah-terbenam dark:rounded-langit-kendali dark:text-langit-tinta-redup dark:hover:bg-langit-terbenam"
-                >
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                    <path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4" />
-                  </svg>
-                </button>
-              }
-            />
-            <p className="mt-3 px-1 text-caption leading-relaxed text-tanah-tinta-halus dark:text-langit-tinta-halus">
-              Pilih baris lain di bagian Risiko untuk mengganti rincian. Tekan Esc atau tombol tutup untuk menyembunyikan panel.
-            </p>
-          </div>
-        </aside>
+        <DesktopHazardInspector
+          selected={selected}
+          location={location}
+          onClose={() => {
+            setBig(false)
+            setInsp('tutup')
+            window.requestAnimationFrame(() => {
+              const rows = [...document.querySelectorAll('[data-hazard-row]')]
+              const selectedRow = rows.find((row) => row.getAttribute('data-hazard-row') === selected.id)
+              ;(selectedRow || document.getElementById('zona-risiko'))?.focus()
+            })
+          }}
+          big={big}
+          onToggleBig={setBig}
+        />
       )}
 
-      {insp !== 'buka' && selected && (
-        <button
-          type="button"
-          onClick={() => setInsp('buka')}
-          aria-haspopup="dialog"
-          className="fixed bottom-6 right-6 z-30 inline-flex min-h-11 items-center gap-2 rounded-pil border border-tanah-garis-kuat bg-tanah-kartu px-4 text-body-sm font-semibold text-tanah-aksen shadow-lg hover:bg-tanah-terbenam dark:border-langit-garis-kuat dark:bg-langit-kartu dark:text-langit-aksen dark:hover:bg-langit-terbenam"
-        >
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M4 6h16M4 12h10M4 18h16" />
-          </svg>
-          Buka rincian
-        </button>
-      )}
+
 
       <CommandPalette open={pal} onClose={() => setPal(false)} items={paletteItems} />
     </div>

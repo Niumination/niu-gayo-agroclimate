@@ -3,9 +3,9 @@ import LevelBadge from './LevelBadge.jsx'
 /**
  * P7.3 — kepala status: satu angka besar + satu kalimat, lalu lencana tingkat.
  *
- * Dipakai di Ringkas (mobile) dan papan kerja (desktop). Angka memakai
- * `font-data` (JetBrains Mono) supaya digit tidak "menari" saat nilai berubah;
- * ukuran memakai clamp agar 88 px di ponsel dan 72 px di kartu sempit.
+ * Dipakai di Ringkas (mobile) dan papan kerja (desktop). Angka utama memakai
+ * font display sesuai arah (Bricolage di Tanah, Instrument Sans di Langit);
+ * JetBrains Mono disimpan untuk angka teknis di panel Detail.
  *
  * Semantik: <section aria-labelledby> → h2 adalah judul yang dibaca pembaca layar;
  * angka besar diberi `aria-hidden`? Tidak — angka adalah isi, jadi dibiarkan
@@ -16,6 +16,7 @@ export default function StatusHeadline({
   id = 'status',
   kicker,
   title,
+  subtitle,
   value,
   unit,
   note,
@@ -37,33 +38,38 @@ export default function StatusHeadline({
   return (
     <section
       aria-labelledby={titleId}
-      className={
+      data-niu-card="status"
+      className={`niu-status-card ${
         framed
           ? 'rounded-tanah-kartu bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:bg-langit-kartu sm:p-5'
           : ''
-      }
+      }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          {kicker && (
-            <p className="text-caption uppercase tracking-wide text-tanah-tinta-redup dark:text-langit-tinta-redup">
-              {kicker}
-            </p>
-          )}
+      <div className="niu-status-heading flex items-start justify-between gap-3">
+        <div className="niu-status-heading-main min-w-0">
           <h2
             id={titleId}
             className="text-body font-semibold leading-snug break-words text-tanah-tinta dark:text-langit-tinta"
           >
             {title}
           </h2>
+          {subtitle && (
+            <p className="mt-0.5 text-body-sm leading-snug break-words text-tanah-tinta-redup dark:text-langit-tinta-redup">
+              {subtitle}
+            </p>
+          )}
         </div>
-        {aside && <div className="shrink-0">{aside}</div>}
+        {(kicker || aside) && (
+          <div className="niu-status-heading-aside flex shrink-0 flex-col items-end gap-1">
+            {kicker && <span className="niu-status-kicker">{kicker}</span>}
+            {aside && <div>{aside}</div>}
+          </div>
+        )}
       </div>
 
       {value != null && value !== '' && (
         <p
-          className={`mt-2 font-data font-medium leading-none tabular-nums ${toneClass}`}
-          style={{ fontSize: 'clamp(3rem, 9vw, 5.5rem)' }}
+          className={`niu-status-value mt-2 font-medium leading-none tabular-nums ${toneClass}`}
         >
           {value}
           {unit && (

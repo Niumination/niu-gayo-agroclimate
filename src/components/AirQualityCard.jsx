@@ -73,7 +73,7 @@ export default function AirQualityCard({ airQuality, tr = (k) => k }) {
 
   // Fungsi biasa (bukan komponen lokal) agar subtree tidak di-remount tiap render.
   const shell = (children) => (
-    <section aria-label={title} className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
+    <section aria-label={title} data-niu-card="air-quality" className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3">
         <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">{title}</h2>
         <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">{subtitle}</p>

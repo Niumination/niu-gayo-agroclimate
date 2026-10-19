@@ -1,6 +1,6 @@
 import {  useState  } from 'react'
 import { GROUP_LABEL } from '../domain/hazards/index.js'
-import { LEVEL_LABEL } from '../domain/hazards/levels.js'
+import { LEVEL_LABEL, LEVEL_ORDER } from '../domain/hazards/levels.js'
 import { InteractionsList } from './HazardFocusCards.jsx'
 import { prefs } from '../lib/prefs.js'
 import ShareButton from './ShareButton.jsx'
@@ -55,9 +55,10 @@ function AdviceList({ advice }) {
   )
 }
 
-function HazardRow({ r, open, onToggle, onSelect }) {
+function HazardRow({ r, open, onToggle, onSelect, inlineDetail }) {
   const label = r.label?.id || r.id
   const metrics = (r.metrics || []).filter((m) => m.value != null).slice(0, 4)
+  const score = Number.isFinite(r.score) ? Math.max(0, Math.min(100, Math.round(r.score))) : null
   return (
     <li className="py-3 first:pt-0 last:pb-0">
       <button
@@ -65,6 +66,7 @@ function HazardRow({ r, open, onToggle, onSelect }) {
         onClick={() => (onSelect ? onSelect(r.id) : onToggle())}
         aria-expanded={onSelect ? undefined : open}
         aria-current={onSelect && open ? 'true' : undefined}
+        data-hazard-row={r.id}
         className="min-h-11 inline-flex items-center w-full text-left flex items-start justify-between gap-3 transition duration-100 ease-out active:scale-[.97]"
       >
         <div className="min-w-0">
@@ -74,11 +76,31 @@ function HazardRow({ r, open, onToggle, onSelect }) {
           </p>
           <p className={`text-caption leading-snug mt-0.5 ${r.level === 'n/a' ? 'text-ink-muted dark:text-mist-subtle' : 'text-ink-body dark:text-mist-muted'}`}>{r.headline}</p>
         </div>
-        <div className="shrink-0 flex items-baseline gap-2">
+        <div className="shrink-0 flex items-center gap-2">
           <LevelBadge level={r.level} />
+          {onSelect && (
+            score == null ? (
+              <span className="font-data text-caption tabular-nums text-ink-muted dark:text-mist-muted" aria-label="Skor belum tersedia">—</span>
+            ) : (
+              <span
+                className="niu-hazard-score"
+                role="meter"
+                aria-label={`Skor ${score} dari 100`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={score}
+              >
+                <span className="niu-hazard-score-track" aria-hidden="true">
+                  <span className="niu-hazard-score-fill" data-level={r.level} style={{ width: `${score}%` }} />
+                </span>
+                <b className="font-data tabular-nums">{score}</b>
+              </span>
+            )
+          )}
           <span aria-hidden="true" className="text-caption text-ink-subtle dark:text-mist-subtle">{open ? '▴' : '▾'}</span>
         </div>
       </button>
+      {open && onSelect && inlineDetail}
       {open && !onSelect && (
         <div className="mt-2 pl-0.5">
           {r.detail && (
@@ -116,15 +138,24 @@ function HazardRow({ r, open, onToggle, onSelect }) {
   )
 }
 
-export default function HazardPanel({ hazards, location, onAbout, onToggleHidden, onSelect, selectedId, tr = (k) => k }) {
+export default function HazardPanel({ hazards, location, onAbout, onToggleHidden, onSelect, selectedId, inlineDetail, tr = (k) => k }) {
   const [openId, setOpenId] = useState(null)
   const [showAll, setShowAll] = useState(false)
+  const [hazardFilter, setHazardFilter] = useState('semua')
   if (!hazards?.results?.length) {
     return <EmptyState title={tr('emptyData')} hint={tr('emptyHint')} />
   }
   const { results, worst, active, counts, interactions = [] } = hazards
   const hidden = prefs.getHiddenHazards()
-  const visible = showAll ? results : results.filter((r) => r.level !== 'n/a' || active.length === 0)
+  const attentionCount = results.filter((r) => LEVEL_ORDER[r.level] >= LEVEL_ORDER.waspada).length
+  const safeCount = results.filter((r) => r.level === 'rendah').length
+  const visible = onSelect
+    ? results.filter((r) => {
+        if (hazardFilter === 'perhatian') return LEVEL_ORDER[r.level] >= LEVEL_ORDER.waspada
+        if (hazardFilter === 'aman') return r.level === 'rendah'
+        return true
+      })
+    : showAll ? results : results.filter((r) => r.level !== 'n/a' || active.length === 0)
   const asOf = clock(results[0]?.evaluatedAt)
   const headline =
     active.length === 0
@@ -142,7 +173,8 @@ export default function HazardPanel({ hazards, location, onAbout, onToggleHidden
   return (
     <section
       aria-label="Daftar bahaya di sekitar"
-      className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
+      data-niu-card="hazard-list"
+      className="niu-hazard-list bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
     >
       <div className="pb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -166,7 +198,24 @@ export default function HazardPanel({ hazards, location, onAbout, onToggleHidden
         {interactions.length > 0 && <div className="mt-2"><InteractionsList interactions={interactions} /></div>}
       </div>
 
-      <ul className="divide-y divide-ink/10 dark:divide-mist/10 pt-3">
+      {onSelect && (
+        <div className="niu-hazard-filter-group" role="group" aria-label="Saring bahaya">
+          <button type="button" onClick={() => setHazardFilter('semua')} aria-pressed={hazardFilter === 'semua'} className="min-h-11 active:scale-[.97]">
+            <span>Semua</span><span className="niu-hazard-filter-count">{results.length}</span>
+          </button>
+          <button type="button" onClick={() => setHazardFilter('perhatian')} aria-pressed={hazardFilter === 'perhatian'} className="min-h-11 active:scale-[.97]">
+            <span>Perlu perhatian</span><span className="niu-hazard-filter-count">{attentionCount}</span>
+          </button>
+          <button type="button" onClick={() => setHazardFilter('aman')} aria-pressed={hazardFilter === 'aman'} className="min-h-11 active:scale-[.97]">
+            <span>Aman</span><span className="niu-hazard-filter-count">{safeCount}</span>
+          </button>
+        </div>
+      )}
+
+      <ul className="divide-y divide-ink/10 dark:divide-mist/10 pt-3" aria-live={onSelect ? 'polite' : undefined}>
+        {visible.length === 0 && (
+          <li className="py-4 text-body-sm text-ink-muted dark:text-mist-muted">Tidak ada bahaya pada saringan ini.</li>
+        )}
         {visible.map((r) => (
           <HazardRow
             key={r.id}
@@ -174,18 +223,20 @@ export default function HazardPanel({ hazards, location, onAbout, onToggleHidden
             open={selectedId ? selectedId === r.id : openId === r.id}
             onToggle={() => setOpenId(openId === r.id ? null : r.id)}
             onSelect={onSelect}
+            inlineDetail={r.id === selectedId ? inlineDetail : null}
           />
         ))}
       </ul>
+      {onSelect && inlineDetail && !visible.some((r) => r.id === selectedId) && inlineDetail}
 
       <div className="mt-3 pt-3 border-t border-ink/10 dark:border-mist/10 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-caption text-ink-muted dark:text-mist-subtle">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          {visible.length < results.length && (
+          {!onSelect && visible.length < results.length && (
             <button type="button" onClick={() => setShowAll(true)} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist transition duration-100 ease-out active:scale-[.97]">
               {tr('showAll')} ({results.length})
             </button>
           )}
-          {showAll && visible.length === results.length && results.some((r) => r.level === 'n/a') && (
+          {!onSelect && showAll && visible.length === results.length && results.some((r) => r.level === 'n/a') && (
             <button type="button" onClick={() => setShowAll(false)} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist transition duration-100 ease-out active:scale-[.97]">
               {tr('hideNoData')}
             </button>

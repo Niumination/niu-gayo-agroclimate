@@ -190,6 +190,14 @@ test('service worker: memuat offline.html sebagai cadangan navigasi', () => {
   assert.ok(fs.existsSync(path.join(ROOT, 'dist', 'offline.html')))
 })
 
+test('service worker: navigation preload aktif dan mode auto-update dipertahankan', () => {
+  const config = read('vite.config.js')
+  assert.ok(config.includes('navigationPreload: true'))
+  assert.ok(config.includes("registerType: 'autoUpdate'"))
+  assert.ok(config.includes('skipWaiting: true'))
+  assert.ok(config.includes('clientsClaim: true'))
+})
+
 test('offline.html: dua arah warna, tombol ≥44 px, rujukan resmi', () => {
   const html = read('public/offline.html')
   assert.match(html, /prefers-color-scheme/)

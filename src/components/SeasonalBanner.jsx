@@ -14,6 +14,7 @@ export default function SeasonalBanner({ seasonal, tr = (k) => k }) {
   return (
     <div
       role="status"
+      data-niu-banner="seasonal"
       className={`flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border rounded-card px-4 py-3 text-body ${PHASE_STYLE[seasonal.phase] || PHASE_STYLE.rendah}`}
     >
       <span className="font-semibold">Musim risiko longsor: {seasonal.label} ({seasonal.peakMonths})</span>

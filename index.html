@@ -1,13 +1,34 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-arah="tanah" class="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Niu — Cuaca &amp; Peringatan Dini Tanah Gayo</title>
     <meta name="description" content="Cuaca, risiko kebun kopi, dan peringatan dini bencana untuk Tanah Gayo, Aceh Tengah. Dibuat ringkas agar terbaca saat sinyal lemah." />
     <meta name="color-scheme" content="light dark" />
-    <!-- theme-color tunggal; nilainya diperbarui App.jsx mengikuti tema terpilih (bukan hanya prefers-color-scheme) -->
+    <!-- Warna mode Tanah; skrip kecil di bawah menyelaraskan pilihan tersimpan sebelum CSS tampil. -->
     <meta name="theme-color" content="#F1E7D8" />
+    <script>
+      (() => {
+        let theme = 'light'
+        try {
+          const saved = localStorage.getItem('nga.theme')
+          const direction = localStorage.getItem('niu.arah') || localStorage.getItem('niu.theme')
+          const legacyTheme = direction === 'langit' || direction === 'dark'
+            ? 'dark'
+            : direction === 'tanah' || direction === 'light' ? 'light' : null
+          theme = saved === 'light' || saved === 'dark'
+            ? saved
+            : (legacyTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'))
+        } catch { /* Tanah tetap jadi bawaan bila storage tidak tersedia. */ }
+        const root = document.documentElement
+        root.classList.toggle('dark', theme === 'dark')
+        root.classList.toggle('light', theme === 'light')
+        root.dataset.arah = theme === 'dark' ? 'langit' : 'tanah'
+        root.style.colorScheme = theme
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#16273B' : '#F1E7D8')
+      })()
+    </script>
     <link rel="preload" href="/fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

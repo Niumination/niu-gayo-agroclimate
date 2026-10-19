@@ -14,6 +14,7 @@ export default function InstrumentPanel({ current, daily, location, tr, classNam
   return (
     <section
       aria-label={tr('appName')}
+      data-niu-card="instrument"
       className={`bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5 sm:p-6 ${className}`}
     >
       <div className="flex items-start justify-between gap-4">

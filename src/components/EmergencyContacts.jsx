@@ -12,7 +12,7 @@ export default function EmergencyContacts({ location, hazard = '*' }) {
   const seen = new Set()
   const unique = list.filter((c) => (seen.has(c.phone + c.name) ? false : (seen.add(c.phone + c.name), true)))
   return (
-    <section aria-label="Kontak darurat" className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
+    <section aria-label="Kontak darurat" data-niu-card="contacts" className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5">
       <div className="pb-3">
         <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">Kontak darurat</h2>
         <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">Hubungi 112 untuk semua keadaan darurat; nomor lain untuk koordinasi & informasi.</p>

@@ -9,6 +9,7 @@ export default function MobileTabShell({ active, children }) {
     <div
       key={active}
       id={`panel-${active}`}
+      data-niu-page={active}
       role="tabpanel"
       aria-labelledby={`tab-${active}`}
       tabIndex={0}

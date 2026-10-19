@@ -1,7 +1,7 @@
 // Uji kontrak P7.4 — beranda mobile "Ringkas".
 // Fokus: susunan baru memakai komponen P7.3, tidak menghapus kartu lama,
-// tidak memunculkan istilah teknis di lapisan Ringkas, dan bilah 12 jam
-// tidak menimbulkan gulir mendatar.
+// tidak memunculkan istilah teknis di lapisan Ringkas, dan strip mobile
+// mempertahankan gulir mendatar v4; desktop menambah scrubber interaktif v6.
 import test from 'node:test'
 import assert from 'node:assert'
 import fs from 'node:fs'
@@ -19,6 +19,10 @@ const stripComments = (text) =>
 
 const PAGE = read('src/pages/RingkasMobile.jsx')
 const PAGE_CODE = stripComments(PAGE)
+const TECHNICAL = stripComments(read('src/components/niu/InstrumentTechnicalDetail.jsx'))
+const METRIC = stripComments(read('src/components/MetricChip.jsx'))
+const THEME = read('src/styles/theme-directions.css')
+const WEATHER = stripComments(read('src/services/weatherService.js'))
 const STRIP = stripComments(read('src/components/niu/HourStrip.jsx'))
 const ATTN = stripComments(read('src/components/niu/HazardAttention.jsx'))
 const DETAIL = stripComments(read('src/components/niu/HazardDetail.jsx'))
@@ -44,10 +48,46 @@ test('P7.4: catatan min/maks memakai istilah Indonesia dari messages', () => {
   assert.match(PAGE, /tr\('max'\)/)
 })
 
+test('P7.4: instrumen mengikuti kepala prototipe dengan lokasi, konteks, dan arah suhu', () => {
+  assert.match(PAGE, /tr\('nowAt'\)/)
+  assert.match(PAGE, /subtitle=\{locationSubtitle\}/)
+  assert.match(PAGE, /tr\('elevationLine'\)/)
+  assert.match(PAGE, /tr\('humidContext'\)/)
+  assert.match(PAGE, /tr\('weakWindContext'\)/)
+  assert.match(PAGE, /kicker=\{tr\('airTemp'\)\}/)
+})
+
+test('P7.4: rincian teknis cuaca tetap ada di DOM dan terbuka lewat disclosure berlabel', () => {
+  assert.match(PAGE, /aria-expanded=\{technicalOpen\}/)
+  assert.match(PAGE, /aria-controls=\{technicalId\}/)
+  assert.match(PAGE, /<InstrumentTechnicalDetail/)
+  assert.match(TECHNICAL, /hidden=\{!open\}/)
+  for (const row of ['Titik', 'Ketinggian model', 'Hembusan angin', 'Arah angin', 'Kode cuaca WMO', 'Kemiringan lahan']) {
+    assert.ok(TECHNICAL.includes(row), `rincian ${row} hilang`)
+  }
+  assert.match(TECHNICAL, /Sumber: Open-Meteo ECMWF IFS/)
+  assert.match(WEATHER, /windDirection: curr\.wind_direction_10m/)
+  assert.match(WEATHER, /modelElevation: data\.elevation/)
+  assert.match(APP, /modelElevation=\{data\.modelElevation\}/)
+})
+
 test('P7.4: empat metrik pendukung tetap ada (RH, hujan, peluang, angin)', () => {
   for (const key of ['humidity', 'rainNow', 'rainProb', 'windSpeed']) {
     assert.match(PAGE, new RegExp(`tr\\('${key}'\\)`), `metrik ${key} hilang`)
   }
+})
+
+test('P7.4: label metrik sempit dipadatkan tanpa kehilangan label aksesibel', () => {
+  for (const key of ['humidityCompact', 'rainNowCompact', 'rainProbCompact', 'windSpeedCompact']) {
+    assert.match(PAGE, new RegExp(`compactLabel=\\{tr\\('${key}'\\)\\}`), `label ringkas ${key} hilang`)
+  }
+  assert.match(METRIC, /niu-metric-label-full">\{label\}<\/span>/)
+  assert.match(METRIC, /niu-metric-label-compact/)
+  assert.match(METRIC, /aria-hidden="true"/)
+  assert.match(METRIC, /flex-wrap/)
+  assert.match(THEME, /@media \(max-width: 430px\)/)
+  assert.match(THEME, /@container niu-status \(max-width: 430px\)/)
+  assert.match(THEME, /container-type: inline-size/)
 })
 
 test('P7.4: lencana tingkat memakai label resmi, bukan teks bebas', () => {
@@ -82,19 +122,37 @@ test('P7.4: desktop juga memakai RingkasMobile (satu sumber kepala status)', () 
   assert.ok(fs.existsSync(path.join(ROOT, 'src/components/InstrumentPanel.jsx')))
 })
 
-test('P7.4: HourStrip 12 jam memakai grid, bukan gulir mendatar', () => {
-  assert.match(STRIP, /grid-cols-4/)
-  assert.match(STRIP, /min-\[380px\]:grid-cols-6/)
-  assert.ok(!STRIP.includes('overflow-x-auto'), 'HourStrip masih menggulir mendatar')
+test('P7.4: strip mobile mengikuti v4, satu baris horizontal dengan scroll-snap dan minimum 56 px', () => {
+  assert.match(STRIP, /niu-hour-list-mobile/)
+  assert.match(read('src/styles/theme-directions.css'), /grid-auto-flow: column/)
+  assert.match(read('src/styles/theme-directions.css'), /grid-auto-columns: minmax\(56px, 1fr\)/)
+  assert.match(read('src/styles/theme-directions.css'), /overflow-x: auto/)
+  assert.match(read('src/styles/theme-directions.css'), /scroll-snap-type: x proximity/)
 })
 
-test('P7.4: HourStrip menandai jam pertama sebagai "Kini"', () => {
-  assert.match(STRIP, /now \? 'Kini' : h\.time/)
+test('P7.4: strip menampilkan jam data yang sebenarnya (bukan mengganti jam pertama dengan "Kini")', () => {
+  assert.match(STRIP, /timeLabel\(hour\.time\)/)
+  assert.match(STRIP, /const timeLabel =/)
+  assert.doesNotMatch(STRIP, /now \? 'Kini'/)
 })
 
-test('P7.4: batang hujan dekoratif, bukan satu-satunya penyampai nilai', () => {
+test('P7.4: batang hujan dekoratif dan nilai hujan tetap tampil/terbaca', () => {
+  assert.match(STRIP, /niu-hour-rainbar/)
   assert.match(STRIP, /aria-hidden="true"/)
-  assert.match(STRIP, /rain > 0 \?/)
+  assert.match(STRIP, /r1\(hour\.rain\)/)
+  assert.match(STRIP, /aria-label=\{hourText\(hour\)\}/)
+})
+
+test('P7.6: desktop menyediakan tombol jam, panah, scrubber, pembacaan hidup, solar dan hembusan', () => {
+  assert.match(STRIP, /interactive = false/)
+  assert.match(STRIP, /role="group" aria-label="Prakiraan 12 jam"/)
+  assert.match(STRIP, /aria-pressed=\{index === selectedIndex\}/)
+  assert.match(STRIP, /type="range"/)
+  assert.match(STRIP, /aria-live="polite"/)
+  assert.match(STRIP, /selected\.solar/)
+  assert.match(STRIP, /selected\.gusts/)
+  assert.match(STRIP, /ArrowRight/)
+  assert.match(STRIP, /ArrowLeft/)
 })
 
 test('P7.4: HourStrip aman saat data kosong', () => {

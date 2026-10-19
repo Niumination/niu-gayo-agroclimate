@@ -23,13 +23,23 @@ function safeSet(key, value) {
 
 export const prefs = {
   getTheme() {
-    return safeGet(KEYS.theme) // null → ikut prefers-color-scheme
+    const stored = safeGet(KEYS.theme)
+    if (stored === 'light' || stored === 'dark') return stored
+    // Terima preferensi dari prototipe dua arah bila browser menyimpan kunci lama.
+    const direction = safeGet('niu.arah') || safeGet('niu.theme')
+    if (direction === 'langit' || direction === 'dark') return 'dark'
+    if (direction === 'tanah' || direction === 'light') return 'light'
+    return null // ikut prefers-color-scheme
   },
   setTheme(v) {
-    if (v === 'light' || v === 'dark') safeSet(KEYS.theme, v)
-    else {
+    if (v === 'light' || v === 'dark') {
+      safeSet(KEYS.theme, v)
+      safeSet('niu.arah', v === 'dark' ? 'langit' : 'tanah')
+    } else {
       try {
         window.localStorage.removeItem(KEYS.theme)
+        window.localStorage.removeItem('niu.arah')
+        window.localStorage.removeItem('niu.theme')
       } catch {}
     }
   },
@@ -54,16 +64,18 @@ export function getHiddenHazards() {
   return raw ? raw.split(',').map((x) => x.trim()).filter(Boolean) : []
 }
 
-/** Terapkan tema ke <html>: dark/light + media query bila ikut sistem. */
+/**
+ * Terapkan satu dari dua ARAH desain penuh ke <html>.
+ * `dark` tetap dipertahankan untuk utilitas lama; `data-arah` adalah sumber
+ * kebenaran visual baru: terang = Tanah, gelap = Langit.
+ */
 export function applyTheme(theme) {
   const root = document.documentElement
-  root.classList.remove('light', 'dark')
-  if (theme === 'light' || theme === 'dark') {
-    root.classList.add(theme)
-    root.style.colorScheme = theme
-  } else {
-    root.style.colorScheme = ''
-  }
+  const resolved = theme === 'dark' ? 'dark' : 'light'
+  root.classList.toggle('dark', resolved === 'dark')
+  root.classList.toggle('light', resolved === 'light')
+  root.dataset.arah = resolved === 'dark' ? 'langit' : 'tanah'
+  root.style.colorScheme = resolved
 }
 
 /** Tema efektif saat ini (ikut sistem bila tidak ada preferensi eksplisit). */

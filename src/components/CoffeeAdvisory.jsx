@@ -14,6 +14,7 @@ export default function CoffeeAdvisory({ coffee, tr = (k, f) => defaultTr(k, f) 
   return (
     <section
       aria-label="Panduan Agro-Klimat Kopi Arabika Gayo"
+      data-niu-card="coffee"
       className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
     >
       <div className="pb-3">

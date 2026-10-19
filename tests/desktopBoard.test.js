@@ -19,8 +19,9 @@ const strip = (text) =>
 const BOARD = strip(read('src/pages/DesktopBoard.jsx'))
 const PAL = strip(read('src/components/niu/CommandPalette.jsx'))
 const PANEL = strip(read('src/components/HazardPanel.jsx'))
+const INSPECTOR = strip(read('src/components/niu/DesktopHazardInspector.jsx'))
 const APP = strip(read('src/App.jsx'))
-const CSS = strip(read('src/index.css'))
+const CSS = strip(read('src/index.css') + read('src/styles/desktop-layout.css'))
 
 test('P7.5: papan kerja ada dan dipakai App untuk desktop', () => {
   assert.match(APP, /<DesktopBoard/)
@@ -38,21 +39,35 @@ test('P7.5: navigasi zona memakai tombol, bukan tautan kosong', () => {
   assert.match(BOARD, /scrollIntoView/)
 })
 
-test('P7.5: rel 264 px bisa dilipat ke 76 px', () => {
+test('P7.5: rel 264 px bisa dilipat ke 76 px, dan 72 px di bawah 1100 px', () => {
   assert.match(CSS, /--desk-rail: 76px/)
+  assert.match(CSS, /--desk-rail: 72px/)
   assert.match(CSS, /--desk-rail: 264px/)
-  assert.match(BOARD, /setRail\(rail === 'lipat' \? 'buka' : 'lipat'\)/)
+  assert.match(BOARD, /setRail\(\(value\) => \(value === 'lipat' \? 'buka' : 'lipat'\)\)/)
 })
 
 test('P7.5: rel terlipat menampilkan inisial sentra, bukan menghilangkan fitur', () => {
   assert.match(BOARD, /initials/)
-  assert.match(BOARD, /aria-label=\{loc\.name\}/)
+  assert.match(BOARD, /aria-label=\{`\$\{loc\.name\}/)
+  assert.match(BOARD, /LOCATION_LEVEL_COLOR/)
   assert.match(BOARD, /LOCATIONS/)
 })
 
-test('P7.5: pilihan rel/kepadatan/fokus/inspector disimpan lokal', () => {
-  for (const key of ['niu.desk.rail', 'niu.desk.dens', 'niu.desk.focus', 'niu.desk.insp']) {
+test('P7.6: aksi rel terlipat memakai tombol ikon 44 px dan tidak meluber ke kanvas', () => {
+  assert.match(BOARD, /className=\{rail === 'lipat' \? 'niu-rail-report-button'/)
+  assert.match(BOARD, /niu-rail-share-button/)
+  assert.match(BOARD, /<Share2 aria-hidden="true"/)
+  assert.match(CSS, /\.desk-rail \.niu-rail-report-button/)
+  assert.match(CSS, /max-width: 44px/)
+  assert.match(CSS, /font-size: 0/)
+})
+
+test('P7.5: pilihan rel/kepadatan/fokus/inspector memakai kunci v6 dan memigrasikan pilihan lama', () => {
+  for (const key of ['niu.rail', 'niu.dens', 'niu.focus', 'niu.insp']) {
     assert.ok(BOARD.includes(key), `${key} tidak disimpan`)
+  }
+  for (const key of ['niu.desk.rail', 'niu.desk.dens', 'niu.desk.focus', 'niu.desk.insp']) {
+    assert.ok(BOARD.includes(key), `${key} lama tidak dimigrasikan`)
   }
 })
 
@@ -63,46 +78,125 @@ test('P7.5: pintasan [ D F dan 1–5 terpasang', () => {
   assert.match(BOARD, /\^\[1-5\]\$/)
 })
 
-test('P7.5: toggle punya aria-pressed, bukan hanya warna', () => {
+test('P7.5: keadaan rel diumumkan, sedangkan kepadatan/fokus tetap dapat diubah lewat palet', () => {
   assert.match(BOARD, /aria-pressed=\{rail === 'lipat'\}/)
-  assert.match(BOARD, /aria-pressed=\{dens === 'padat'\}/)
-  assert.match(BOARD, /aria-pressed=\{focus === 'on'\}/)
+  assert.match(BOARD, /Kepadatan: \$\{dens === 'padat'/)
+  assert.match(BOARD, /Mode fokus: \$\{focus === 'on'/)
+  assert.match(BOARD, /setDens\(\(value\) =>/)
+  assert.match(BOARD, /setFocus\(\(value\) =>/)
 })
 
 test('P7.5: inspector memakai DetailPanel dengan tiga tab', () => {
-  assert.match(BOARD, /<DetailPanel/)
-  assert.match(BOARD, /tabs=\{HAZARD_TABS\}/)
-  assert.match(BOARD, /panels=\{hazardPanels\(selected\)\}/)
+  assert.match(BOARD, /<DesktopHazardInspector/)
+  assert.match(INSPECTOR, /<DetailPanel/)
+  assert.match(INSPECTOR, /tabs=\{HAZARD_TABS\}/)
+  assert.match(INSPECTOR, /panels=\{hazardPanels\(selected\)\}/)
 })
 
 test('P7.5: inspector punya tombol tutup & perbesar berlabel', () => {
-  assert.match(BOARD, /closeLabel="Tutup panel rincian"/)
-  assert.match(BOARD, /aria-label=\{big \? 'Perkecil panel rincian' : 'Perbesar panel rincian'\}/)
+  assert.match(INSPECTOR, /closeLabel="Tutup panel rincian"/)
+  assert.match(INSPECTOR, /aria-label=\{big \? 'Perkecil panel rincian' : 'Perbesar panel rincian'\}/)
 })
 
-test('P7.5: inspector menetap ≥1500 px, menjadi laci di bawahnya', () => {
-  assert.match(CSS, /@media \(min-width: 1500px\)/)
-  assert.match(CSS, /minmax\(0, 1fr\) 380px/)
-  assert.match(CSS, /@media \(max-width: 1499px\)/)
-  assert.match(CSS, /position: fixed;\s*\n\s*top: 112px;/)
+test('P7.6: inspector besar adalah dialog modal, mengunci fokus, dan pulih ke pemicu', () => {
+  assert.ok(INSPECTOR.includes("role={big ? 'dialog' : undefined}"))
+  assert.ok(INSPECTOR.includes("aria-modal={big ? 'true' : undefined}"))
+  assert.ok(INSPECTOR.includes('sibling.inert = true'))
+  assert.ok(INSPECTOR.includes("event.key === 'Escape'"))
+  assert.ok(INSPECTOR.includes("event.key !== 'Tab'"))
+  assert.ok(INSPECTOR.includes('desk-insp-scrim'))
+  assert.ok(INSPECTOR.includes('previousFocus.focus()'))
 })
 
-test('P7.5: di bawah 1200 px inspector menjadi dialog yang tak memenuhi layar kosong', () => {
-  assert.match(CSS, /@media \(max-width: 1199px\)/)
-  assert.match(CSS, /max-height: calc\(100vh - 24px\)/)
+test('P7.6: inspector menetap mulai 1440 px, melayang 1100–1439 px, lalu inline ≤1099 px', () => {
+  assert.match(CSS, /@media \(min-width: 1440px\)/)
+  assert.match(CSS, /minmax\(0, 1fr\) var\(--desk-insp-width\)/)
+  assert.match(CSS, /@media \(max-width: 1439px\)/)
+  assert.match(CSS, /position: fixed;\s*\n\s*top: var\(--desk-overlay-top\);/)
+  assert.match(CSS, /@media \(max-width: 1099px\)/)
+  assert.match(CSS, /grid-column: 1 \/ -1/)
 })
 
-test('P7.5: mode fokus menyembunyikan rel', () => {
-  assert.match(CSS, /\.desk\[data-focus='on'\] \.desk-rail \{\s*\n\s*display: none;/)
+test('P7.6: pada ≤1099 px rincian terpasang tepat di bawah bahaya terpilih', () => {
+  assert.ok(APP.includes('onInspectorOpenChange={setInspectorOpen}'))
+  assert.ok(APP.includes('setInspectorOpen(true)'))
+  assert.ok(APP.includes('inlineDetail={inlineHazardInspector}'))
+  assert.ok(PANEL.includes('{open && onSelect && inlineDetail}'))
+  assert.ok(INSPECTOR.includes('niu-inline-inspector'))
+  assert.ok(CSS.includes('.niu-inline-inspector { display: block'))
+  assert.ok(CSS.includes(".desk[data-insp='buka'] > .desk-insp { display: none; }"))
+})
+
+test('P7.6: kartu risiko satu kolom ≤1099 px, 2 kolom sampai 1599 px, dan 4 mulai 1600 px', () => {
+  assert.ok(CSS.includes('.niu-risk-focus-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));'))
+  assert.ok(CSS.includes('@media (min-width: 1600px)'))
+  assert.ok(CSS.includes('@media (max-width: 1099px)'))
+  assert.ok(CSS.includes('.niu-risk-focus-grid { grid-template-columns: minmax(0, 1fr); }'))
+  assert.ok(CSS.includes('.niu-risk-focus-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }'))
+})
+
+test('P7.6: mode fokus menang atas inspector, menyembunyikan chrome dan membatasi kanvas 1120 px', () => {
+  assert.match(CSS, /\.desk\[data-focus='on'\] \.desk-rail/)
+  assert.match(CSS, /\.desk\[data-focus='on'\] \.desk-insp/)
+  assert.match(CSS, /max-width: 1120px !important/)
+})
+
+
+test('V6 desktop: satu bar navigasi sticky tanpa toolbar pencarian yang menambah baris', () => {
+  assert.doesNotMatch(BOARD, /className="desk-bar"/)
+  assert.match(BOARD, /className="desk-zones"/)
+  assert.match(BOARD, /desk-shortcuts-trigger/)
+  assert.match(BOARD, /onClick=\{\(\) => setPal\(true\)\}/)
+  assert.ok(CSS.includes('.desk-zones {\n  grid-column: 1 / -1;\n  position: sticky;'))
+  assert.ok(CSS.includes('top: var(--desk-header-height);'))
+  assert.match(CSS, /--desk-header-height: 62px/)
+  assert.match(CSS, /--desk-zones-height: 56px/)
+  assert.ok(CSS.includes('.desk-zones {\n  grid-column: 1 / -1;\n  position: sticky;'))
+  assert.match(CSS, /\.desk-zone-link \{[\s\S]*?min-height: 44px/)
+  assert.match(CSS, /\.desk-zone-pill \{[\s\S]*?min-height: 38px/)
+  assert.match(CSS, /margin-block: -4px -2px;/)
+  assert.match(CSS, /margin-top: 0;/)
+  assert.ok(CSS.includes('.desk-rail {\n  position: sticky;'))
+})
+
+test('V6 desktop: app bar 62 px dan selektor sentra proporsional, perubahan header dibatasi desktop', () => {
+  assert.match(CSS, /@media \(min-width: 761px\)[\s\S]*?\.niu-header-desktop \{ height: 62px; min-height: 62px; \}/)
+  assert.match(CSS, /@media \(min-width: 1280px\)[\s\S]*?\.niu-header-desktop \.niu-header-inner \{ padding-inline: 18px; \}/)
+  assert.match(CSS, /\.niu-desktop-location \{ min-width: 280px; max-width: 340px; flex: 0 0 340px; \}/)
+  assert.match(CSS, /\.niu-header-desktop \.niu-location-trigger \{ padding-block: 4px; \}/)
+})
+
+test('V6 desktop: rel terlipat di bawah 1600 px dan terbuka otomatis mulai 1600 px', () => {
+  assert.match(BOARD, /width < 1600 \? 'lipat' : 'buka'/)
+  assert.match(BOARD, /window\.innerWidth < 1600/)
+  assert.match(BOARD, /className="desk-rail-toggle[^"]*"/)
+  assert.match(BOARD, /aria-label=\{rail === 'lipat' \? 'Buka rel sentra' : 'Lipat rel sentra'\}/)
+})
+
+test('V6 desktop: lebar shell 1720 px dan inspector 352/412 px mengikuti breakpoint', () => {
+  assert.match(CSS, /max-width: 1720px/)
+  assert.match(CSS, /--desk-insp-width: 412px/)
+  assert.match(CSS, /--desk-overlay-top: calc\(/)
+  assert.match(CSS, /--desk-insp-width: 352px/)
+  assert.match(CSS, /@media \(min-width: 1440px\) and \(max-width: 1699px\)/)
+})
+
+test('V6 desktop: semua kontrol papan tetap tersedia tanpa baris toolbar tambahan', () => {
+  assert.match(BOARD, /className="desk-rail-toggle[^"]*"/)
+  assert.match(BOARD, /id: 'aksi-kepadatan'/)
+  assert.match(BOARD, /id: 'aksi-fokus'/)
+  assert.match(BOARD, /id: 'aksi-rincian'/)
+  assert.doesNotMatch(BOARD, /fixed bottom-6 right-6/)
 })
 
 test('P7.5: kepadatan mengurangi jarak antar-zona', () => {
   assert.match(CSS, /\.desk\[data-dens='padat'\] \.desk-flow \{\s*\n\s*gap: 20px;/)
 })
 
-test('P7.5: master–detail — baris bahaya memilih inspector, bukan membuka panel inline', () => {
+test('P7.5: master–detail desktop memilih bahaya; rincian tetap tersedia di saringan mobile', () => {
   assert.match(PANEL, /aria-current=\{onSelect && open \? 'true' : undefined\}/)
   assert.match(PANEL, /\{open && !onSelect && \(/)
+  assert.match(PANEL, /\{open && onSelect && inlineDetail\}/)
   assert.match(PANEL, /onSelect \? onSelect\(r\.id\) : onToggle\(\)/)
 })
 
@@ -143,9 +237,25 @@ test('P7.5: palet memuat zona, bahaya, dan sentra', () => {
   assert.match(BOARD, /group: 'Sentra'/)
 })
 
+test('P7.6: palet memuat delapan aksi v6 plus kontrol inspector tanpa menghilangkan aksi yang ada', () => {
+  assert.equal((BOARD.match(/id: 'aksi-/g) ?? []).length, 9)
+  assert.match(BOARD, /id: 'aksi-rincian'/)
+  for (const action of ['onOpenReport', 'onOpenShare', 'onRefresh', 'onToggleTheme', 'setDens', 'setFocus', 'setInsp', 'onAbout', 'onOpenLocationPicker']) {
+    assert.ok(BOARD.includes(action), `${action} tidak terhubung ke palet`)
+  }
+  assert.match(PAL, /fuzzyScore/)
+  assert.match(PAL, /e\.key === 'Tab'/)
+})
+
 test('P7.5: ⌘K / Ctrl+K membuka palet di papan kerja', () => {
   assert.match(BOARD, /e\.metaKey \|\| e\.ctrlKey/)
   assert.match(BOARD, /setPal\(true\)/)
+})
+
+test('P7.6: Escape pada palet tidak menutup inspector yang berada di belakangnya', () => {
+  assert.ok(BOARD.includes('if (e.defaultPrevented || pal) return'))
+  assert.ok(PAL.includes("if (e.key === 'Escape')"))
+  assert.ok(PAL.includes('onClose?.()'))
 })
 
 test('P7.5: semua kartu lama tetap dirender di lima zona', () => {

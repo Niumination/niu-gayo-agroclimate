@@ -1,11 +1,23 @@
-import { Moon, RefreshCw, Sun } from 'lucide-react'
+import { ChevronDown, MapPin, Moon, RefreshCw, Sun } from 'lucide-react'
+import DistrictSelector from './DistrictSelector.jsx'
+import NiuMark from './niu/NiuMark.jsx'
 
-/**
- * Header ringkas mobile: nama sentra + elevasi + badge umur data,
- * tombol tema dan refresh (target sentuh >= 44px).
- */
+const updatedTime = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return String(value)
+  return date.toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Jakarta',
+  })
+}
+
+/** Kepala ponsel mengikuti prototipe v4: arah, sentra dalam modal, dan muat ulang. */
 export default function AppBar({
   selectedLocation,
+  onSelectLocation,
+  lastUpdated,
   onRefresh,
   loading,
   theme,
@@ -14,60 +26,100 @@ export default function AppBar({
   onResetTheme,
   age,
   tr,
+  locationPickerOpen = false,
+  onOpenLocationPicker,
+  onCloseLocationPicker,
 }) {
-  const ageTone = age?.stale
-    ? 'text-husk-deep dark:text-husk-soft border-husk/40 bg-husk/10'
-    : 'text-leaf-deep dark:text-leaf-soft border-leaf/40 bg-leaf/10'
+  const ageTone = age?.stale ? 'is-stale' : 'is-fresh'
+  const currentDirection = theme === 'dark' ? 'Langit' : 'Tanah'
+  const nextDirection = theme === 'dark' ? 'Tanah' : 'Langit'
+  const locationLabel = selectedLocation?.name ?? 'Pilih sentra'
+  const elevation = selectedLocation?.elevation?.toLocaleString('id-ID')
 
   return (
-    <header className="sticky top-0 z-40 bg-surface/90 dark:bg-soil/90 backdrop-blur-md border-b border-ink/10 dark:border-mist/10 pt-[env(safe-area-inset-top)]">
-      <div className="px-4 pt-3 pb-2 flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h1 className="text-base font-semibold tracking-tight text-ink dark:text-mist break-words leading-tight">
-            {selectedLocation?.name}
-          </h1>
-          <p className="text-body text-ink-muted dark:text-mist-muted leading-tight">
-            <span className="font-data tabular-nums">{selectedLocation?.elevation}</span> {tr('mdpl')}
-          </p>
+    <>
+      <header className="niu-header niu-header-mobile sticky top-0 z-40 pt-[env(safe-area-inset-top)]" data-niu-header="mobile">
+        <div className="niu-header-main min-w-0">
+          <div className="niu-brand" aria-label="Niu · Tanah Gayo">
+            <NiuMark />
+            <span className="niu-brand-copy">
+              <strong>Niu</strong>
+              <small>Gayo</small>
+            </span>
+          </div>
+
+          {age && (
+            <span className={`niu-age ${ageTone}`} aria-live="polite">
+              <span aria-hidden="true" className="niu-age-dot" />
+              {age.label}
+            </span>
+          )}
+
+          <div className="niu-header-actions">
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              onDoubleClick={isAuto ? undefined : onResetTheme}
+              aria-label={`Ganti ke mode ${nextDirection}`}
+              title={`Mode ${currentDirection} aktif · ketuk untuk ${nextDirection}`}
+              className="niu-icon-control min-h-11 min-w-11 active:scale-[.97]"
+            >
+              {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+            </button>
+            <button
+              type="button"
+              onClick={onOpenLocationPicker}
+              aria-label={`Pilih sentra; saat ini ${locationLabel}`}
+              title="Pilih sentra"
+              aria-haspopup="dialog"
+              className="niu-icon-control min-h-11 min-w-11 active:scale-[.97]"
+            >
+              <MapPin aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              aria-label={loading ? tr('refreshing') : tr('refresh')}
+              title={loading ? tr('refreshing') : tr('refresh')}
+              className="niu-icon-control min-h-11 min-w-11 active:scale-[.97]"
+            >
+              <RefreshCw aria-hidden="true" className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
-        {age && (
-          <span
-            className={`shrink-0 mt-0.5 inline-flex items-center gap-1.5 text-caption font-medium px-2.5 py-1 rounded-full border ${ageTone}`}
-          >
-            <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${age.stale ? 'bg-husk' : 'bg-leaf'}`} />
-            {age.label}
-          </span>
-        )}
-      </div>
-      <div className="px-2 pb-2 flex items-center justify-between gap-1">
-        <span className="pl-2 text-caption text-ink-subtle dark:text-mist-subtle break-words">
-          Niu · Tanah Gayo
-        </span>
-        <div className="flex items-center">
+
+        <div className="niu-location-row">
           <button
             type="button"
-            onClick={onToggleTheme}
-            onDoubleClick={isAuto ? undefined : onResetTheme}
-            aria-label={theme === 'dark' ? tr('themeLight') : tr('themeDark')}
-            className="h-11 w-11 grid place-items-center rounded-lg text-lg text-ink-body dark:text-mist-body transition duration-100 ease-out active:scale-[.97]"
+            onClick={onOpenLocationPicker}
+            aria-haspopup="dialog"
+            aria-label={`Pilih sentra. ${locationLabel}, ${elevation ?? ''} ${tr('mdpl')}, ${selectedLocation?.type ?? ''}`}
+            className="niu-location-button min-h-11 min-w-0 active:scale-[.97]"
           >
-            {theme === 'dark' ? (
-              <Sun aria-hidden="true" className="h-5 w-5" strokeWidth={1.7} />
-            ) : (
-              <Moon aria-hidden="true" className="h-5 w-5" strokeWidth={1.7} />
-            )}
+            <MapPin className="niu-location-icon" aria-hidden="true" />
+            <span className="niu-location-copy min-w-0">
+              <strong>{locationLabel}</strong>
+              {selectedLocation && (
+                <span>{elevation} {tr('mdpl')} · {selectedLocation.type}</span>
+              )}
+            </span>
+            <ChevronDown className="niu-location-chevron" aria-hidden="true" />
           </button>
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            aria-label={loading ? tr('refreshing') : tr('refresh')}
-            className="h-11 w-11 grid place-items-center rounded-lg text-ink-body dark:text-mist-body disabled:opacity-40 transition duration-100 ease-out active:scale-[.97]"
-          >
-            <RefreshCw size={20} aria-hidden="true" className={loading ? 'animate-spin' : ''} />
-          </button>
+          {lastUpdated && (
+            <span className="niu-updated">
+              Diperbarui {updatedTime(lastUpdated)} WIB
+            </span>
+          )}
         </div>
-      </div>
-    </header>
+      </header>
+      <DistrictSelector
+        open={locationPickerOpen}
+        onClose={onCloseLocationPicker}
+        selectedLocation={selectedLocation}
+        onSelectLocation={onSelectLocation}
+        tr={tr}
+      />
+    </>
   )
 }

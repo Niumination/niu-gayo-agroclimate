@@ -15,6 +15,7 @@ export function SkeletonCard({ lines = 3, className = '' }) {
   return (
     <section
       aria-hidden="true"
+      data-niu-card="skeleton"
       className={`bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5 ${className}`}
     >
       <SkeletonBlock className="h-5 w-2/5" />

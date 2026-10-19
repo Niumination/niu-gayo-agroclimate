@@ -1,0 +1,450 @@
+/* Desktop v6 workbench composition: same feature inventory, responsive grid. */
+/* Match the V6 app bar proportions on wide desktops without touching the mobile header. */
+@media (min-width: 761px) {
+  .niu-header-desktop { height: 62px; min-height: 62px; }
+  .niu-header-desktop .niu-header-inner { height: 62px; min-height: 62px; }
+}
+@media (min-width: 1280px) {
+  .niu-header-desktop .niu-header-inner { padding-inline: 18px; }
+  .niu-header-desktop .niu-header-main { gap: 12px; }
+  .niu-header-desktop .niu-brand { min-width: 188px; gap: 9px; }
+  .niu-header-desktop .niu-mark { width: 34px; height: 34px; padding: 7px; }
+  .niu-header-desktop .niu-brand-copy strong { font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+  .niu-header-desktop .niu-brand-copy small { font-size: 10.5px; letter-spacing: .12em; }
+  .niu-desktop-location { min-width: 280px; max-width: 340px; flex: 0 0 340px; }
+  .niu-header-desktop .niu-location-trigger { padding-block: 4px; }
+  .niu-header-desktop .niu-location-trigger-copy { gap: 1px; }
+  .niu-header-desktop .niu-location-trigger-copy strong { font-size: 13.5px; line-height: 1.2; }
+  .niu-header-desktop .niu-location-trigger-copy small { font-size: 11px; line-height: 1.2; }
+  .niu-header-desktop .niu-updated { margin-left: 10px; }
+}
+
+/* Desktop shell: prototype V6 has one header row, one sticky zone row, then the workbench grid. */
+.desk.niu-desktop-board {
+  --desk-header-height: 62px;
+  --desk-zones-height: 56px;
+  --desk-insp-width: 412px;
+  --desk-overlay-top: calc(var(--desk-header-height) + var(--desk-zones-height) + 14px);
+  box-sizing: border-box;
+  max-width: 1720px;
+  padding-inline: 26px;
+  grid-template-columns: var(--desk-rail) minmax(0, 1fr);
+  column-gap: 26px;
+  row-gap: 0;
+}
+
+.desk-zones {
+  grid-column: 1 / -1;
+  position: sticky;
+  top: var(--desk-header-height);
+  z-index: 38;
+  display: flex;
+  min-width: 0;
+  min-height: var(--desk-zones-height);
+  align-items: center;
+  gap: 4px;
+  margin-top: 0;
+  padding: 8px 0 9px;
+  border-bottom: 1px solid var(--niu-line);
+  background: color-mix(in srgb, var(--niu-bg) 94%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.desk-zone-link {
+  display: inline-flex;
+  min-height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  margin-block: -4px -2px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--niu-ink-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.desk-zone-pill {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  border-radius: 999px;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
+}
+.desk-zone-number { font-size: 10.5px; font-variant-numeric: tabular-nums; opacity: .58; }
+.desk-zone-link:hover .desk-zone-pill { background: var(--niu-sunken); color: var(--niu-ink); }
+.desk-zone-link.is-active .desk-zone-pill { background: var(--niu-accent); color: var(--niu-accent-ink); }
+html[data-arah='langit'] .desk-zone-link.is-active .desk-zone-pill {
+  background: rgb(255 210 161 / .20);
+  color: #FFE2C0;
+  box-shadow: inset 0 0 0 1px rgb(255 210 161 / .34);
+}
+.desk-zone-spacer { min-width: 0; flex: 1; }
+.desk-shortcuts { color: var(--niu-ink-muted); font-size: 11.5px; white-space: nowrap; }
+.desk-shortcuts-trigger {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-block: -3px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: inherit;
+  text-align: right;
+  cursor: pointer;
+}
+.desk-shortcuts-trigger:hover { color: var(--niu-ink); }
+.desk-shortcuts-compact { display: none; }
+
+.desk-rail,
+.desk-canvas { min-width: 0; margin-top: 14px; }
+.desk-rail {
+  position: sticky;
+  top: calc(var(--desk-header-height) + var(--desk-zones-height));
+  align-self: start;
+  max-height: calc(100vh - var(--desk-header-height) - var(--desk-zones-height) - 20px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.desk-rail::-webkit-scrollbar { width: 8px; }
+.desk-rail::-webkit-scrollbar-thumb { border-radius: 8px; background: var(--niu-line-strong); }
+.desk-rail-actions { display: flex; flex-direction: column; }
+.desk-rail-heading { display: flex; min-width: 0; min-height: 44px; align-items: center; justify-content: space-between; gap: 8px; }
+.desk-rail-heading h2 { min-width: 0; margin: 0; }
+.desk-rail-heading.is-folded { justify-content: center; }
+.desk-rail-toggle {
+  display: inline-grid;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--niu-line);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--niu-ink-muted);
+  cursor: pointer;
+}
+.desk-rail-toggle:hover { border-color: var(--niu-line-strong); background: var(--niu-sunken); color: var(--niu-ink); }
+.desk-rail-toggle svg { width: 18px; height: 18px; }
+.desk-rail-locations { min-width: 0; }
+.desk-canvas { animation: nga-fade 200ms var(--ease-enter) both; }
+.niu-desktop-board .desk-zone-title {
+  margin: 0 0 16px;
+  padding-top: 3px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--niu-line);
+  color: var(--niu-ink);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -.022em;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+@media (min-width: 1440px) and (max-width: 1699px) {
+  .desk.niu-desktop-board { --desk-insp-width: 352px; }
+}
+@media (min-width: 1440px) {
+  .desk[data-insp='buka'] {
+    grid-template-columns: var(--desk-rail) minmax(0, 1fr) var(--desk-insp-width);
+    column-gap: 22px;
+    row-gap: 0;
+  }
+  .desk[data-insp='buka'] .desk-insp {
+    position: static;
+    display: block;
+    width: auto;
+    margin-top: 14px;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  html[data-arah='langit'] .desk[data-insp='buka'] .desk-insp {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .desk[data-insp='buka'] .desk-insp-inner {
+    position: sticky;
+    top: calc(var(--desk-header-height) + var(--desk-zones-height) + 14px);
+    max-height: calc(100vh - var(--desk-header-height) - var(--desk-zones-height) - 36px);
+    overflow: auto;
+  }
+}
+@media (max-width: 1099px) {
+  .desk-shortcuts { font-size: 11px; }
+  .desk-shortcuts-full { display: none; }
+  .desk-shortcuts-compact { display: inline; }
+}
+
+.niu-desktop-summarybar {
+  display: grid;
+  grid-template-columns: auto minmax(220px, 1fr) minmax(220px, auto) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 10px 16px;
+  border: 1px solid #E5D9C4;
+  border-radius: 18px;
+  background: #FBF6EC;
+  color: #2A251E;
+  box-shadow: 0 10px 26px rgb(80 60 35 / 0.10), 0 1px 0 #fff inset;
+}
+.niu-summary-dot { width: 8px; height: 8px; border-radius: 50%; background: #9C4221; }
+.niu-summary-copy { display: flex; min-width: 0; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.niu-summary-copy strong { font-size: 14px; font-weight: 700; }
+.niu-summary-copy span { color: #6A5C4B; font-size: 12px; }
+.niu-summary-chips { display: flex; min-width: 0; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.niu-summary-chips button {
+  min-height: 44px;
+  max-width: 180px;
+  padding: 5px 10px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #F3EADA;
+  color: #6A5C4B;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.niu-summary-chips button[data-level='waspada'] { color: #6F4B00; background: #F6EAC6; }
+.niu-summary-chips button[data-level='bahaya'] { color: #8E3517; background: #F6DFD3; }
+.niu-summary-chips button[data-level='ekstrem'] { color: #7A1F2A; background: #F4DADD; }
+.niu-summary-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: #2F4A38;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.niu-summary-link svg { width: 15px; height: 15px; }
+
+html[data-arah='langit'] .niu-desktop-summarybar {
+  border-color: rgb(255 255 255 / 0.14);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.07);
+  color: #F7FAFC;
+  box-shadow: none;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+html[data-arah='langit'] .niu-summary-dot { background: #F0A184; }
+html[data-arah='langit'] .niu-summary-copy span { color: rgb(247 250 252 / 0.72); }
+html[data-arah='langit'] .niu-summary-chips button {
+  border-color: rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.08);
+  color: #EAF1F5;
+}
+html[data-arah='langit'] .niu-summary-chips button[data-level='waspada'] { color: #FFE6BE; background: rgb(255 205 120 / 0.18); }
+html[data-arah='langit'] .niu-summary-chips button[data-level='bahaya'] { color: #FFD9CE; background: rgb(255 138 110 / 0.22); }
+html[data-arah='langit'] .niu-summary-chips button[data-level='ekstrem'] { color: #FFC9D2; background: rgb(255 120 140 / 0.20); }
+html[data-arah='langit'] .niu-summary-link { color: #FFD2A1; }
+
+.niu-desktop-summary,
+.niu-desktop-forecast,
+.niu-desktop-risk,
+.niu-desktop-locations { display: grid; gap: 18px; min-width: 0; }
+.niu-desktop-hourstrip { min-width: 0; }
+.niu-desktop-summary-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr);
+  align-items: start;
+  gap: 22px;
+}
+.niu-desktop-weather { display: contents; }
+.niu-desktop-summary-extras { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; }
+.niu-desktop-summary-extras > * { grid-column: span 12; }
+.niu-desktop-forecast-top { display: grid; grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr); align-items: start; gap: 22px; }
+.niu-desktop-climate-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.niu-desktop-risk { gap: 20px; }
+.niu-risk-focus-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (min-width: 1600px) {
+  .niu-risk-focus-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.niu-desktop-locations { grid-template-columns: minmax(0, 7fr) minmax(300px, 5fr); align-items: start; gap: 22px; }
+.niu-desktop-archive { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.niu-hazard-filter-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 6px; }
+.niu-hazard-filter-group button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 1px solid #E5D9C4;
+  border-radius: 999px;
+  color: #6A5C4B;
+  background: #F3EADA;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.niu-hazard-filter-group button[aria-pressed='true'] { border-color: #2F4A38; color: #F7F2E7; background: #2F4A38; }
+.niu-hazard-filter-count { font-size: 11px; font-variant-numeric: tabular-nums; opacity: .8; }
+.niu-hazard-score { display: inline-flex; min-width: 72px; align-items: center; gap: 6px; color: var(--niu-ink-muted); font-size: 11px; }
+.niu-hazard-score-track { display: block; width: 42px; height: 4px; flex: 0 0 auto; overflow: hidden; border-radius: 999px; background: #E5D9C4; }
+.niu-hazard-score-fill { display: block; height: 100%; border-radius: inherit; background: #6C815C; }
+.niu-hazard-score-fill[data-level='waspada'] { background: #A97917; }
+.niu-hazard-score-fill[data-level='bahaya'] { background: #B34F29; }
+.niu-hazard-score-fill[data-level='ekstrem'] { background: #993A48; }
+html[data-arah='langit'] .niu-hazard-filter-group button { border-color: rgb(255 255 255 / .18); color: #EAF1F5; background: rgb(255 255 255 / .07); }
+html[data-arah='langit'] .niu-hazard-filter-group button[aria-pressed='true'] { border-color: rgb(255 210 161 / .34); color: #FFE2C0; background: rgb(255 210 161 / .20); }
+html[data-arah='langit'] .niu-hazard-score { color: rgb(247 250 252 / .72); }
+html[data-arah='langit'] .niu-hazard-score-track { background: rgb(255 255 255 / .16); }
+html[data-arah='langit'] .niu-hazard-score-fill { background: #AFC49D; }
+html[data-arah='langit'] .niu-hazard-score-fill[data-level='waspada'] { background: #FFD38C; }
+html[data-arah='langit'] .niu-hazard-score-fill[data-level='bahaya'] { background: #FFAA8F; }
+html[data-arah='langit'] .niu-hazard-score-fill[data-level='ekstrem'] { background: #FF9FAE; }
+.niu-map-wrap { position: relative; min-width: 0; }
+.niu-map-wrap--interactive { cursor: grab; touch-action: none; user-select: none; }
+.niu-map-wrap--interactive:active { cursor: grabbing; }
+.niu-map-svg { display: block; overflow: hidden; }
+.niu-map-controls { position: absolute; top: 10px; right: 10px; z-index: 2; display: flex; flex-direction: column; gap: 4px; }
+.niu-map-controls button {
+  display: grid;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  place-items: center;
+  border: 1px solid #E5D9C4;
+  border-radius: 10px;
+  color: #4D4438;
+  background: #FBF6EC;
+  box-shadow: 0 2px 8px rgb(30 25 18 / .12);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.niu-map-controls button:hover { background: #EFE4D2; }
+html[data-arah='langit'] .niu-map-controls button {
+  border-color: rgb(255 255 255 / .2);
+  color: #EAF1F5;
+  background: rgb(22 39 59 / .9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+html[data-arah='langit'] .niu-map-controls button:hover { background: rgb(255 255 255 / .16); }
+
+.niu-inline-inspector { display: none; }
+
+/* Aksi rel terlipat tetap berupa tombol ikon 44×44, bukan label yang meluber ke kanvas. */
+.desk-rail .niu-rail-report-button,
+.desk-rail .niu-rail-share-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  border-radius: 14px;
+}
+.desk-rail .niu-rail-report-button { font-size: 0; }
+.desk-rail .niu-rail-report-button > span { font-size: 16px; }
+.desk-rail .niu-rail-share-button { margin-inline: auto; }
+.desk-rail .niu-rail-share-button svg { width: 18px; height: 18px; }
+
+.desk-insp-scrim { 
+  position: fixed;
+  inset: 0;
+  z-index: 69;
+  background: rgb(10 14 20 / 0.34);
+  cursor: pointer;
+}
+
+/* Pada ≤1099 px, rincian tetap dipasang inline di bawah baris bahaya terpilih. */
+@media (max-width: 1099px) {
+  .desk[data-insp='buka'] > .desk-insp { display: none; }
+  .niu-inline-inspector { display: block; margin-top: 12px; }
+  .niu-inline-inspector [role='region'] { width: 100%; }
+  .niu-inline-inspector button { max-width: 100%; }
+  .desk[data-insp='buka'] .desk-insp {
+    position: relative;
+    z-index: auto;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    grid-column: 1 / -1;
+    grid-row: auto;
+    width: auto;
+    max-height: none;
+    margin: 0 0 20px;
+    padding: 12px 0 0;
+    overflow: visible;
+    border: 0;
+    border-top: 1px solid var(--niu-line);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .desk[data-insp='buka'] .desk-insp-inner { position: static; max-height: none; overflow: visible; }
+  .niu-desktop-summary-grid,
+  .niu-desktop-forecast-top,
+  .niu-desktop-locations { grid-template-columns: minmax(0, 1fr); }
+  .niu-risk-focus-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.desk[data-dens='padat'] .niu-desktop-summary,
+.desk[data-dens='padat'] .niu-desktop-forecast,
+.desk[data-dens='padat'] .niu-desktop-risk,
+.desk[data-dens='padat'] .niu-desktop-locations { gap: 12px; }
+.desk[data-dens='padat'] .niu-risk-focus-grid { gap: 12px; }
+.desk[data-dens='padat'] .niu-hazard-list li { padding-block: 5px; }
+.desk[data-dens='padat'] .niu-hazard-list li > button { min-height: 46px; }
+.desk[data-dens='padat'] .niu-hazard-list li > button > div:first-child > p:nth-child(2) { display: none; }
+.desk[data-dens='padat'] .niu-hour { min-height: 88px; padding-block: 4px; }
+html[data-arah='tanah'] .desk[data-dens='padat'] [data-niu-card] { padding-block: 12px !important; }
+
+/* Fokus menang atas inspector pada semua breakpoint; rel dan rincian tersembunyi. */
+.desk[data-focus='on'] .desk-rail,
+.desk[data-focus='on'] .desk-insp,
+.desk[data-focus='on'] .niu-inline-inspector { display: none !important; }
+.desk[data-focus='on'] {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+  max-width: 1120px !important;
+}
+.desk[data-focus='on'] .desk-canvas { width: 100%; max-width: 1120px; min-width: 0; margin-inline: auto; }
+
+@media (max-width: 760px) {
+  .niu-desktop-summarybar { grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
+  .niu-summary-chips { grid-column: 2; justify-content: flex-start; }
+  .niu-summary-link { grid-column: 2; justify-self: start; }
+  .niu-desktop-climate-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .niu-risk-focus-grid { grid-template-columns: minmax(0, 1fr); }
+}

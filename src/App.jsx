@@ -1,10 +1,13 @@
-import {  useState, useEffect, useMemo, useCallback  } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import AppBar from './components/AppBar'
 import DesktopHeader from './components/DesktopHeader'
 import BottomNav from './components/BottomNav'
 import MobileTabShell from './components/MobileTabShell'
 import LocationRail from './components/LocationRail'
 import RingkasMobile from './pages/RingkasMobile.jsx'
+import DesktopSummaryBar from './components/niu/DesktopSummaryBar.jsx'
+import DesktopHazardInspector from './components/niu/DesktopHazardInspector.jsx'
+import HourStrip from './components/niu/HourStrip.jsx'
 import DesktopBoard from './pages/DesktopBoard.jsx'
 import InstallHint from './pwa/InstallHint.jsx'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
@@ -33,6 +36,21 @@ import AppSkeleton, { useDelayedVisible } from './components/Skeleton'
 import EmptyState from './components/EmptyState'
 import Notice from './components/Notice'
 
+const DESKTOP_LAYOUT_PREF_VERSION = 'v6-layout-20261019c'
+
+function migrateDesktopLayoutPreferences() {
+  try {
+    if (localStorage.getItem('niu.desktop.layout-version') === DESKTOP_LAYOUT_PREF_VERSION) return false
+    for (const key of ['niu.rail', 'niu.desk.rail', 'niu.insp', 'niu.desk.insp']) {
+      localStorage.removeItem(key)
+    }
+    localStorage.setItem('niu.desktop.layout-version', DESKTOP_LAYOUT_PREF_VERSION)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export default function App() {
   const isDesktop = useBreakpoint()
 
@@ -41,6 +59,7 @@ export default function App() {
     const savedId = prefs.getLocationId()
     return LOCATIONS.find((l) => l.id === savedId) || LOCATIONS[0]
   })
+  const [highlightedLocationId, setHighlightedLocationId] = useState(null)
   const [data, setData] = useState(null)
   const [fetchedAt, setFetchedAt] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -51,6 +70,14 @@ export default function App() {
 
   // i18n
   const [aboutOpen, setAboutOpen] = useState(false) // FR-X-9 modal "Tentang data & batasan"
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false)
+  const [reportDialogOpen, setReportDialogOpen] = useState(false)
+  const [shareOptionsOpen, setShareOptionsOpen] = useState(false)
+  const openLocationPicker = useCallback(() => setLocationPickerOpen(true), [])
+  const closeLocationPicker = useCallback(() => setLocationPickerOpen(false), [])
+  const openReportDialog = useCallback(() => setReportDialogOpen(true), [])
+  const openShareOptions = useCallback(() => setShareOptionsOpen(true), [])
+  const openAbout = useCallback(() => setAboutOpen(true), [])
   const tr = useMemo(() => (key) => t('id', key), [])
 
   // Tema: light/dark/auto (prefers-color-scheme)
@@ -58,12 +85,12 @@ export default function App() {
   const isAuto = prefs.getTheme() == null
   useEffect(() => {
     applyTheme(theme)
-    // meta theme-color dinamis mengikuti tema
+    // Samakan bilah sistem Android dengan permukaan atas tiap arah prototipe.
     const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#1A1512' : '#FAF7F2')
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#16273B' : '#F1E7D8')
   }, [theme])
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: light)')
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const onChange = () => {
       if (prefs.getTheme() == null) setTheme(effectiveTheme())
     }
@@ -106,6 +133,20 @@ export default function App() {
   // Tab mobile (state, bukan anchor)
   const [tab, setTab] = useState('now')
   const [selHaz, setSelHaz] = useState(null)
+  const [inspectorOpen, setInspectorOpen] = useState(() => {
+    const desktopViewport = typeof window !== 'undefined' && window.innerWidth >= 1024
+    if (desktopViewport) migrateDesktopLayoutPreferences()
+    try {
+      const saved = localStorage.getItem('niu.insp') ?? localStorage.getItem('niu.desk.insp')
+      if (saved === 'open' || saved === 'buka') return true
+      if (saved === 'closed' || saved === 'tutup') return false
+    } catch { /* mode privat */ }
+    return desktopViewport
+  })
+
+  useEffect(() => {
+    if (isDesktop && migrateDesktopLayoutPreferences()) setInspectorOpen(true)
+  }, [isDesktop])
 
   useEffect(() => {
     const zona = new URLSearchParams(window.location.search).get('zona')
@@ -148,11 +189,11 @@ export default function App() {
     loadData(selectedLocation)
   }, [selectedLocation, loadData])
 
-  const onSelectLocation = (loc) => {
+  const onSelectLocation = useCallback((loc) => {
     prefs.setLocationId(loc.id)
     setSelectedLocation(loc)
     if (!isDesktop) setTab('now')
-  }
+  }, [isDesktop])
 
   // Data grafik hujan 24 jam (mm/jam)
   const rainSeries = useMemo(() => {
@@ -162,6 +203,15 @@ export default function App() {
 
   const headerProps = {
     lastUpdated: data?.timestamp,
+    selectedLocation,
+    onSelectLocation,
+    hazards: data?.hazards,
+    onAbout: openAbout,
+    onOpenLocationPicker: openLocationPicker,
+    onCloseLocationPicker: closeLocationPicker,
+    locationPickerOpen,
+    shareOpen: shareOptionsOpen,
+    onShareOpenChange: setShareOptionsOpen,
     onRefresh: () => loadData(selectedLocation),
     loading,
     theme,
@@ -175,6 +225,7 @@ export default function App() {
   const rainPanel = data && (
     <section
       aria-label={tr('rainChart')}
+      data-niu-card="rain-chart"
       className="bg-surface dark:bg-soil border border-ink/10 dark:border-mist/10 rounded-card p-5"
     >
       <div className="pb-3">
@@ -198,6 +249,7 @@ export default function App() {
         current={data.current}
         daily={data.daily}
         location={selectedLocation}
+        modelElevation={data.modelElevation}
         hazards={data.hazards}
         hourly={data.hourly}
         tr={tr}
@@ -258,57 +310,105 @@ export default function App() {
   }
 
   const dRingkas = data && (
-    <div className="space-y-4">
-      <RingkasMobile
-        current={data.current}
-        daily={data.daily}
-        location={selectedLocation}
+    <div className="niu-desktop-summary">
+      <DesktopSummaryBar
         hazards={data.hazards}
-        hourly={data.hourly}
-        tr={tr}
         onOpenRisk={() => goZone('risiko')}
+        onSelectHazard={(id) => {
+          setSelHaz(id)
+          setInspectorOpen(true)
+        }}
       />
-      <CoffeeAdvisory coffee={data.coffee} tr={tr} />
-      <AirQualityCard airQuality={data.airQuality} tr={tr} />
-      <SeasonalBanner seasonal={data.disaster?.seasonal} tr={tr} />
-      <ClimateBanner drought={data.drought} tr={tr} />
+      <HourStrip hours={data.hourly?.slice(0, 12) ?? []} interactive className="niu-desktop-hourstrip" />
+      <div className="niu-desktop-summary-grid">
+        <RingkasMobile
+          current={data.current}
+          daily={data.daily}
+          location={selectedLocation}
+          modelElevation={data.modelElevation}
+          hazards={data.hazards}
+          hourly={data.hourly}
+          tr={tr}
+          showAttention={false}
+          showHours={false}
+          className="niu-desktop-weather"
+        />
+        <AirQualityCard airQuality={data.airQuality} tr={tr} />
+      </div>
+      <div className="niu-desktop-summary-extras">
+        <CoffeeAdvisory coffee={data.coffee} tr={tr} />
+      </div>
     </div>
   )
 
   const dRamalan = data && (
-    <div className="space-y-4">
-      {rainPanel}
+    <div className="niu-desktop-forecast">
+      <div className="niu-desktop-forecast-top">
+        {rainPanel}
+        <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
+      </div>
+      <div className="niu-desktop-climate-grid">
+        <SeasonalBanner seasonal={data.disaster?.seasonal} tr={tr} />
+        <ClimateBanner drought={data.drought} tr={tr} />
+      </div>
       <HourlyForecast hourly={data.hourly} tr={tr} variant="desktop" />
-      <DroughtCard drought={data.drought} tr={tr} />
     </div>
   )
 
+  const desktopSelectedHazard = data?.hazards?.results?.find((hazard) => hazard.id === selHaz)
+    ?? data?.hazards?.results?.find((hazard) => hazard.level === data?.hazards?.worst)
+    ?? data?.hazards?.results?.[0]
+    ?? null
+  const inlineHazardInspector = inspectorOpen && desktopSelectedHazard ? (
+    <DesktopHazardInspector
+      selected={desktopSelectedHazard}
+      location={selectedLocation}
+      onClose={() => {
+        setInspectorOpen(false)
+        window.requestAnimationFrame(() => {
+          const rows = [...document.querySelectorAll('[data-hazard-row]')]
+          const selectedRow = rows.find((row) => row.getAttribute('data-hazard-row') === desktopSelectedHazard.id)
+          ;(selectedRow || document.getElementById('zona-risiko'))?.focus()
+        })
+      }}
+      inline
+    />
+  ) : null
+
   const dRisiko = data && (
-    <div className="space-y-4">
+    <div className="niu-desktop-risk">
       <HazardPanel
         hazards={data.hazards}
         location={selectedLocation}
         tr={tr}
-        onAbout={() => setAboutOpen(true)}
-        onSelect={(id) => setSelHaz(id)}
-        selectedId={selHaz ?? data.hazards?.worst}
+        onAbout={openAbout}
+        onSelect={(id) => {
+          setSelHaz(id)
+          setInspectorOpen(true)
+        }}
+        selectedId={selHaz ?? data.hazards?.worst ?? desktopSelectedHazard?.id}
+        inlineDetail={inlineHazardInspector}
       />
-      <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
-      <StormCard hazards={data.hazards} />
-      <FloodCard hazards={data.hazards} flood={data.flood} />
-      <TemperatureCard hazards={data.hazards} />
-      <QuakeCard hazards={data.hazards} />
-      <VolcanoCard hazards={data.hazards} volcano={data.volcano} />
-      <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
-      <ExternalReportsCard externalReports={data.externalReports} />
+      <div className="niu-risk-focus-grid">
+        <DroughtCard drought={data.drought} tr={tr} />
+        <StormCard hazards={data.hazards} />
+        <FloodCard hazards={data.hazards} flood={data.flood} />
+        <TemperatureCard hazards={data.hazards} />
+        <QuakeCard hazards={data.hazards} />
+        <VolcanoCard hazards={data.hazards} volcano={data.volcano} />
+        <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
+        <ExternalReportsCard externalReports={data.externalReports} />
+      </div>
     </div>
   )
 
   const dSentra = data && (
-    <div className="space-y-4">
+    <div className="niu-desktop-locations">
       <SchematicMap
         hazardsAll={data.hazardsAll}
         selectedLocation={selectedLocation}
+        highlightedLocationId={highlightedLocationId}
+        onHighlightLocation={setHighlightedLocationId}
         onSelectLocation={onSelectLocation}
         hotspots={data.fireDanger?.hotspots?.nearest ?? []}
       />
@@ -317,9 +417,9 @@ export default function App() {
   )
 
   const dArsip = data && (
-    <div className="space-y-4">
+    <div className="niu-desktop-archive space-y-4">
       <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} tr={tr} />
-      <section className="rounded-tanah-kartu border border-tanah-garis bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu">
+      <section data-niu-card="about-guide" className="rounded-tanah-kartu border border-tanah-garis bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu">
         <h2 className="text-body font-semibold text-tanah-tinta dark:text-langit-tinta">Tentang data &amp; batasan</h2>
         <p className="mt-1 text-body-sm leading-relaxed text-tanah-tinta-isi dark:text-langit-tinta-isi">
           Ambang, sumber, dan catatan keterbatasan tiap bahaya dijelaskan di panel ini. Niu adalah
@@ -339,8 +439,21 @@ export default function App() {
   const desktopLayout = data && (
     <DesktopBoard
       hazards={data.hazards}
+      hazardsAll={data.hazardsAll}
       location={selectedLocation}
+      highlightedLocationId={highlightedLocationId}
+      onHighlightLocation={setHighlightedLocationId}
       onSelectLocation={onSelectLocation}
+      onOpenLocationPicker={openLocationPicker}
+      inspectorOpen={inspectorOpen}
+      onInspectorOpenChange={setInspectorOpen}
+      onOpenReport={openReportDialog}
+      reportOpen={reportDialogOpen}
+      onReportOpenChange={setReportDialogOpen}
+      onOpenShare={openShareOptions}
+      onRefresh={() => loadData(selectedLocation)}
+      onToggleTheme={cycleTheme}
+      onAbout={openAbout}
       tr={tr}
       selectedHazardId={selHaz}
       onSelectHazard={setSelHaz}
