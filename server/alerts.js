@@ -52,21 +52,57 @@ export function readFeed({ hours = 24, now = new Date().toISOString(), location 
   return out
 }
 
-/** Kirim teks ke Telegram (topik cron). Tidak throw. */
+/** Kirim teks ke Telegram (topik cron). Tidak throw.
+ * Ketahanan (fix 20 Okt 2026):
+ * - Pesan >4096 karakter dipecah jadi beberapa pesan (batas API Telegram) — pesan gabungan 15 sentra bisa melampaui batas.
+ * - Kirim Markdown dulu; bila ditolak 400 (parse error karakter `_`/`*` tak seimbang), ulang sekali sebagai teks polos
+ *   agar peringatan tetap sampai (teks polos tanpa parse_mode tidak pernah gagal parse).
+ */
 export async function sendTelegram(text, { fetchImpl = fetch, token = readToken('TELEGRAM_BOT_TOKEN'), chatId = readToken('TELEGRAM_HOME_CHANNEL'), topicId = readToken('TELEGRAM_CRON_THREAD_ID') || '55' } = {}) {
   if (!token || !chatId) return { ok: false, error: 'TELEGRAM_BOT_TOKEN/TELEGRAM_HOME_CHANNEL tidak tersedia' }
-  try {
-    const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, message_thread_id: Number(topicId), text, parse_mode: 'Markdown', disable_web_page_preview: true }),
-      signal: AbortSignal.timeout(10_000),
-    })
-    if (!res.ok) return { ok: false, error: `telegram ${res.status}` }
-    return { ok: true }
-  } catch (err) {
-    return { ok: false, error: err.message }
+  // Pecah pada batas baris agar tidak memotong di tengah kata/karakter.
+  const chunks = []
+  for (const para of text.split('\n')) {
+    const last = chunks[chunks.length - 1]
+    if (last && last.length + 1 + para.length <= 3900) chunks[chunks.length - 1] = last + '\n' + para
+    else if (para.length <= 3900) chunks.push(para)
+    else for (let i = 0; i < para.length; i += 3900) chunks.push(para.slice(i, i + 3900))
   }
+  let lastError = null
+  for (let ci = 0; ci < chunks.length; ci++) {
+    const body = { chat_id: chatId, message_thread_id: Number(topicId), text: chunks[ci], disable_web_page_preview: true }
+    if (ci === 0 || chunks.length === 1) body.parse_mode = 'Markdown'
+    let res
+    try {
+      res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(10_000),
+      })
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+    if (res.ok) continue
+    // Markdown ditolak (400 parse error) → ulang chunk ini sebagai teks polos.
+    if (res.status === 400 && body.parse_mode) {
+      try {
+        const res2 = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, message_thread_id: Number(topicId), text: chunks[ci], disable_web_page_preview: true }),
+          signal: AbortSignal.timeout(10_000),
+        })
+        if (res2.ok) continue
+        lastError = `telegram ${res2.status}`
+      } catch (err) {
+        lastError = err.message
+      }
+      continue
+    }
+    return { ok: false, error: `telegram ${res.status}` }
+  }
+  return lastError ? { ok: false, error: lastError } : { ok: true }
 }
 
 /** id kejadian (flags.eventId) dari hasil yang mendasari pesan `m` untuk kunci `key` (sentra:bahaya). */
