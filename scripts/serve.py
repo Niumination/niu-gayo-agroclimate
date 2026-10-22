@@ -19,6 +19,10 @@ FINGERPRINTED = re.compile(r"-[A-Za-z0-9_-]{8,}\.(?:js|css|woff2|svg|png|ico)$")
 REVALIDATE_PATHS = {
     "/", "/index.html", "/sw.js", "/registerSW.js", "/manifest.webmanifest", "/build-info.json",
 }
+# Skrip service worker menentukan kapan rilis baru dipakai; jangan pernah
+# disimpan perantara. `no-store` mencegah cache bersama (CDN/proxy) menyajikan
+# salinan lama sampai berjam-jam, sementara `no-cache` saja masih boleh disimpan.
+SERVICE_WORKER_PATHS = {"/sw.js", "/registerSW.js"}
 
 
 class SPAHandler(SimpleHTTPRequestHandler):
@@ -62,7 +66,11 @@ class SPAHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         requested = getattr(self, "_requested_path", urlsplit(self.path).path)
         filename = Path(requested).name
-        if requested in REVALIDATE_PATHS:
+        if requested in SERVICE_WORKER_PATHS:
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
+        elif requested in REVALIDATE_PATHS:
             self.send_header("Cache-Control", "no-cache, must-revalidate")
         elif FINGERPRINTED.search(filename):
             self.send_header("Cache-Control", "public, max-age=31536000, immutable")

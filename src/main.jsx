@@ -4,6 +4,7 @@ import App from './App'
 import './index.css'
 import './styles/theme-directions.css'
 import './styles/desktop-layout.css'
+import { watchServiceWorker } from './pwa/swUpdate.js'
 
 /**
  * Jaring pengaman: bila satu komponen melempar galat saat render, tampilkan
@@ -37,6 +38,9 @@ class AppErrorBoundary extends React.Component {
     )
   }
 }
+
+// Rilis baru langsung terpakai pada satu kali muat ulang, bukan dua.
+watchServiceWorker()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

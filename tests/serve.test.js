@@ -56,6 +56,15 @@ test('serve.py: SPA fallback hanya untuk navigasi; cache entry point ketat dan a
   const sw = await fetch(`${base}/sw.js`)
   assert.equal(sw.status, 200)
   assert.match(sw.headers.get('cache-control') || '', /no-cache/)
+  // Skrip service worker tidak boleh disimpan perantara sama sekali: bila CDN
+  // menyimpannya, rilis baru bisa tertahan berjam-jam.
+  assert.match(sw.headers.get('cache-control') || '', /no-store/)
+  assert.match(sw.headers.get('pragma') || '', /no-cache/)
+  assert.equal(sw.headers.get('expires'), '0')
+
+  const registerSw = await fetch(`${base}/registerSW.js`)
+  assert.equal(registerSw.status, 200)
+  assert.match(registerSw.headers.get('cache-control') || '', /no-store/)
 
   const hashed = await fetch(`${base}/assets/app-AbCdEfGh.js`)
   assert.equal(hashed.status, 200)
