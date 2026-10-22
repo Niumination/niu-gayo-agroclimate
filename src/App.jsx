@@ -9,6 +9,7 @@ import DesktopSummaryBar from './components/niu/DesktopSummaryBar.jsx'
 import DesktopHazardInspector from './components/niu/DesktopHazardInspector.jsx'
 import HourStrip from './components/niu/HourStrip.jsx'
 import DesktopBoard from './pages/DesktopBoard.jsx'
+import LivingMapDesktop from './pages/LivingMapDesktop.jsx'
 import InstallHint from './pwa/InstallHint.jsx'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
 import DisasterWarning from './components/DisasterWarning'
@@ -53,6 +54,10 @@ function migrateDesktopLayoutPreferences() {
 
 export default function App() {
   const isDesktop = useBreakpoint()
+  // Port pratinjau Living Map (desktop-only). Aktif hanya lewat ?tampilan=peta-hidup;
+  // tanpa parameter ini, DesktopBoard tetap menjadi tampilan desktop default.
+  const livingMapPreview = isDesktop && typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('tampilan') === 'peta-hidup'
 
   // Persistensi wilayah terpilih (localStorage)
   const [selectedLocation, setSelectedLocation] = useState(() => {
@@ -436,7 +441,29 @@ export default function App() {
     </div>
   )
 
-  const desktopLayout = data && (
+  const desktopLayout = data && (livingMapPreview ? (
+    <LivingMapDesktop
+      location={selectedLocation}
+      data={data}
+      hazards={data.hazards}
+      hazardsAll={data.hazardsAll}
+      highlightedLocationId={highlightedLocationId}
+      onHighlightLocation={setHighlightedLocationId}
+      onSelectLocation={onSelectLocation}
+      inspectorOpen={inspectorOpen}
+      onInspectorOpenChange={setInspectorOpen}
+      onOpenReport={openReportDialog}
+      reportOpen={reportDialogOpen}
+      onReportOpenChange={setReportDialogOpen}
+      onOpenShare={openShareOptions}
+      onRefresh={() => loadData(selectedLocation)}
+      onToggleTheme={cycleTheme}
+      onAbout={openAbout}
+      tr={tr}
+      selectedHazardId={selHaz}
+      onSelectHazard={setSelHaz}
+    />
+  ) : (
     <DesktopBoard
       hazards={data.hazards}
       hazardsAll={data.hazardsAll}
@@ -459,7 +486,7 @@ export default function App() {
       onSelectHazard={setSelHaz}
       sections={{ ringkas: dRingkas, ramalan: dRamalan, risiko: dRisiko, sentra: dSentra, arsip: dArsip }}
     />
-  )
+  ))
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -473,7 +500,7 @@ export default function App() {
       {/* P2 — pengumuman pembaruan data untuk pembaca layar */}
       <div role="status" aria-live="polite" className="sr-only">{liveMsg}</div>
       {isDesktop ? (
-        <DesktopHeader {...headerProps} />
+        <DesktopHeader {...headerProps} live={livingMapPreview} />
       ) : (
         <AppBar selectedLocation={selectedLocation} {...headerProps} />
       )}
@@ -567,7 +594,9 @@ export default function App() {
         </>
       )}
 
-      <footer className="border-t border-ink/10 dark:border-mist/10 py-4 text-center text-caption text-ink-muted dark:text-mist-subtle">
+      <footer className={livingMapPreview
+        ? 'niu-footer-livingmap'
+        : 'border-t border-ink/10 dark:border-mist/10 py-4 text-center text-caption text-ink-muted dark:text-mist-subtle'}>
         Niu Gayo Agro-Climate &bull; {tr('footer')} &bull;{' '}
         <button type="button" onClick={() => setAboutOpen(true)} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist transition duration-100 ease-out active:scale-[.97]">
           {tr('aboutData')}

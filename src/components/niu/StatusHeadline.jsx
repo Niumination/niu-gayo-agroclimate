@@ -15,6 +15,7 @@ import LevelBadge from './LevelBadge.jsx'
 export default function StatusHeadline({
   id = 'status',
   kicker,
+  kickerNode,
   title,
   subtitle,
   value,
@@ -59,9 +60,11 @@ export default function StatusHeadline({
             </p>
           )}
         </div>
-        {(kicker || aside) && (
+        {(kicker || kickerNode || aside) && (
           <div className="niu-status-heading-aside flex shrink-0 flex-col items-end gap-1">
-            {kicker && <span className="niu-status-kicker">{kicker}</span>}
+            {(kickerNode || kicker) && (
+              <span className="niu-status-kicker">{kickerNode ?? kicker}</span>
+            )}
             {aside && <div>{aside}</div>}
           </div>
         )}

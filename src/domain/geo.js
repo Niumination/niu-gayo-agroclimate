@@ -65,7 +65,8 @@ export const BURNI_TELONG = { name: 'Burni Telong', lat: 4.769, lon: 96.821, lev
 
 /**
  * Penempatan label sederhana anti-tumpang tindih (greedy): coba kanan → kiri → bawah → atas; lewati bila tetap bertabrakan.
- * @param {Array<{id:string,x:number,y:number,text:string,priority:number}>} points prioritas lebih tinggi ditempatkan lebih dulu
+ * @param {Array<{id:string,x:number,y:number,text:string,priority:number,force?:boolean}>} points prioritas lebih tinggi ditempatkan lebih dulu;
+ *   `force: true` = label wajib tampil (dipakai untuk sentra terpilih) meski bertabrakan
  * @returns {Record<string,{x:number,y:number,anchor:string}|null>} posisi label per id (null = disembunyikan)
  */
 export function placeLabels(points, { fontSize = 8.5, charW = 0.55, gap = 7, boxes = [] } = {}) {
@@ -82,7 +83,9 @@ export function placeLabels(points, { fontSize = 8.5, charW = 0.55, gap = 7, box
       { x: p.x, y: p.y + gap + h * 0.9, anchor: 'middle', box: { x1: p.x - w / 2, x2: p.x + w / 2, y1: p.y + gap, y2: p.y + gap + h } },
       { x: p.x, y: p.y - gap - h * 0.2, anchor: 'middle', box: { x1: p.x - w / 2, x2: p.x + w / 2, y1: p.y - gap - h, y2: p.y - gap } },
     ]
-    const ok = cands.find((c) => !hit(c.box))
+    // `force` hanya untuk label yang tidak boleh hilang (sentra terpilih):
+    // kalau keempat posisi bertabrakan, pakai posisi kanan apa adanya.
+    const ok = cands.find((c) => !hit(c.box)) ?? (p.force ? cands[0] : null)
     if (ok) {
       placed.push(ok.box)
       out[p.id] = { x: ok.x, y: ok.y, anchor: ok.anchor }

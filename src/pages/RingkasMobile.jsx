@@ -4,6 +4,8 @@ import InstrumentTechnicalDetail from '../components/niu/InstrumentTechnicalDeta
 import HazardAttention from '../components/niu/HazardAttention.jsx'
 import HourStrip from '../components/niu/HourStrip.jsx'
 import MetricChip from '../components/MetricChip.jsx'
+import { WeatherIcon } from '../icons/index.jsx'
+import { weatherGlyphForCode, weatherLabelKey } from '../domain/weather/wmo.js'
 import { LEVEL_LABEL } from '../domain/hazards/levels.js'
 
 /**
@@ -29,6 +31,7 @@ export default function RingkasMobile({
   onOpenRisk,
   showAttention = true,
   showHours = true,
+  showCondition = false,
   className = '',
 }) {
   const [technicalOpen, setTechnicalOpen] = useState(false)
@@ -50,12 +53,22 @@ export default function RingkasMobile({
     ...weatherContext,
   ].join(' · ')
   const technicalId = 'ringkas-status-technical'
+  // Glyph cuaca hanya diminta Living Map desktop (fase 3); mobile tetap sama.
+  const glyphName = showCondition ? weatherGlyphForCode(current.weatherCode) : null
 
   return (
     <div className={`niu-ringkas-mobile space-y-4 ${className}`}>
       <StatusHeadline
         id="ringkas-status"
         kicker={tr('airTemp')}
+        kickerNode={
+          glyphName ? (
+            <span className="niu-condition-chip">
+              <WeatherIcon key={glyphName} name={glyphName} motion={showCondition} className="niu-condition-icon h-4 w-4 shrink-0" />
+              <span>{tr(weatherLabelKey(glyphName))}</span>
+            </span>
+          ) : null
+        }
         title={location?.name ? `${tr('nowAt')} ${location.name}` : tr('airTemp')}
         subtitle={locationSubtitle}
         value={n1(current.temp)}

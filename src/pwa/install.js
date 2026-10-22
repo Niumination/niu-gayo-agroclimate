@@ -28,7 +28,19 @@ export function isIosSafari(nav = typeof navigator !== 'undefined' ? navigator :
   return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)
 }
 
-export function isDismissed(now = Date.now(), storage = typeof localStorage !== 'undefined' ? localStorage : null) {
+/**
+ * Akses localStorage bisa melempar SecurityError saat halaman berjalan di iframe
+ * sandbox (origin opaque), bukan hanya tidak tersedia. Baca lewat helper ini.
+ */
+function safeLocalStorage() {
+  try {
+    return window.localStorage ?? null
+  } catch {
+    return null
+  }
+}
+
+export function isDismissed(now = Date.now(), storage = safeLocalStorage()) {
   if (!storage) return false
   try {
     const until = Number(storage.getItem(DISMISS_KEY) || 0)
@@ -38,7 +50,7 @@ export function isDismissed(now = Date.now(), storage = typeof localStorage !== 
   }
 }
 
-export function dismissFor(days = DISMISS_DAYS, now = Date.now(), storage = typeof localStorage !== 'undefined' ? localStorage : null) {
+export function dismissFor(days = DISMISS_DAYS, now = Date.now(), storage = safeLocalStorage()) {
   if (!storage) return
   try {
     storage.setItem(DISMISS_KEY, String(now + days * 24 * 60 * 60 * 1000))

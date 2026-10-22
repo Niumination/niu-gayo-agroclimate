@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react'
 import { ChevronDown, Info, MapPin, Moon, RefreshCw, Share2, Sun } from 'lucide-react'
 import ShareButton from './ShareButton.jsx'
 import DistrictSelector from './DistrictSelector.jsx'
 import NiuMark from './niu/NiuMark.jsx'
+import { dataFreshness } from '../lib/dataFreshness.js'
 
 const updatedTime = (value) => {
   if (!value) return ''
@@ -34,7 +36,26 @@ export default function DesktopHeader({
   onCloseLocationPicker,
   shareOpen,
   onShareOpenChange,
+  live = false,
 }) {
+  // U2 — chip kesegaran hanya untuk Living Map (`live`). Umur data ikut berjalan
+  // tanpa memuat ulang: satu ticker 15 detik, bukan polling data.
+  const [drift, setDrift] = useState(0)
+  useEffect(() => {
+    if (!live || !age) {
+      setDrift(0)
+      return undefined
+    }
+    const started = Date.now()
+    const id = window.setInterval(() => {
+      setDrift(Math.floor((Date.now() - started) / 60_000))
+    }, 15_000)
+    return () => window.clearInterval(id)
+  }, [live, age])
+
+  const minutes = age && Number.isFinite(age.minutes) ? age.minutes + drift : null
+  const freshness = live && minutes != null ? dataFreshness(minutes) : null
+  const ageLabel = freshness ? freshness.label : age?.label
   const currentDirection = theme === 'dark' ? 'Langit' : 'Tanah'
   const nextDirection = theme === 'dark' ? 'Tanah' : 'Langit'
   const locationLabel = selectedLocation?.name ?? 'Pilih sentra'
@@ -73,9 +94,15 @@ export default function DesktopHeader({
           </div>
 
           {age && (
-            <span className={`niu-age ${age.stale ? 'is-stale' : 'is-fresh'}`} aria-live="polite">
+            <span
+              className={`niu-age ${age.stale ? 'is-stale' : 'is-fresh'}${freshness?.tier === 'fresh' ? ' niu-age--live' : ''}`}
+              data-freshness={freshness?.tier}
+              aria-live="polite"
+              title={freshness?.note ? `Data ${ageLabel} — ${freshness.note}` : undefined}
+            >
               <span aria-hidden="true" className="niu-age-dot" />
-              {age.label}
+              {ageLabel}
+              {freshness?.note && <span className="niu-age-note"> · {freshness.note}</span>}
             </span>
           )}
           {lastUpdated && <span className="niu-updated">Diperbarui {updatedTime(lastUpdated)} WIB</span>}

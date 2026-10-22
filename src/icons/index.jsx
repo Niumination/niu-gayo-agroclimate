@@ -102,34 +102,46 @@ export const WEATHER_ICONS = {
   cerah: (
     <>
       <circle cx="12" cy="12" r="4.2" />
-      <path d="M12 2.4v2.2M12 19.4v2.2M2.4 12h2.2M19.4 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6" />
+      <g className="lm-wx-rays">
+        <path d="M12 2.4v2.2M12 19.4v2.2M2.4 12h2.2M19.4 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6" />
+      </g>
     </>
   ),
   berawan: (
     <>
       <circle cx="9" cy="8.4" r="3.4" />
       <path d="M9 3.4v1.4M4.2 8.4H2.9M15.1 8.4h-1.3M5.6 5l-.9-.9M12.6 5l.9-.9" />
-      <path d="M8.8 18.8h8.4a3.4 3.4 0 0 0 .6-6.7 4.4 4.4 0 0 0-8.4 1.2 3 3 0 0 0-.6 5.5Z" />
+      <g className="lm-wx-drift">
+        <path d="M8.8 18.8h8.4a3.4 3.4 0 0 0 .6-6.7 4.4 4.4 0 0 0-8.4 1.2 3 3 0 0 0-.6 5.5Z" />
+      </g>
     </>
   ),
   mendung: (
-    <path d="M7.4 18.6h9.2a3.7 3.7 0 0 0 .5-7.4 4.9 4.9 0 0 0-9.3 1.4 3.3 3.3 0 0 0-.4 6Z" />
+    <g className="lm-wx-drift-slow">
+      <path d="M7.4 18.6h9.2a3.7 3.7 0 0 0 .5-7.4 4.9 4.9 0 0 0-9.3 1.4 3.3 3.3 0 0 0-.4 6Z" />
+    </g>
   ),
   hujan: (
     <>
       <path d="M7.4 15.4h9.2a3.7 3.7 0 0 0 .5-7.4 4.9 4.9 0 0 0-9.3 1.4 3.3 3.3 0 0 0-.4 6Z" />
-      <path d="M9 18.4l-.9 2M13 18.4l-.9 2M17 18.4l-.9 2" />
+      <g className="lm-wx-rain">
+        <path d="M9 18.4l-.9 2M13 18.4l-.9 2M17 18.4l-.9 2" />
+      </g>
     </>
   ),
   petir: (
     <>
       <path d="M7.4 14.6h9.2a3.7 3.7 0 0 0 .5-7.4 4.9 4.9 0 0 0-9.3 1.4 3.3 3.3 0 0 0-.4 6Z" />
-      <path d="M13.2 13.4 10.6 18h2.6l-1.2 2.8" />
+      <g className="lm-wx-flash">
+        <path d="M13.2 13.4 10.6 18h2.6l-1.2 2.8" />
+      </g>
     </>
   ),
   kabut: (
     <>
-      <path d="M4 9.4h11.6M8 13h12M5.4 16.6h11.2M9.6 20h8" />
+      <g className="lm-wx-fog">
+        <path d="M4 9.4h11.6M8 13h12M5.4 16.6h11.2M9.6 20h8" />
+      </g>
     </>
   ),
 }
@@ -152,11 +164,21 @@ export function HazardIcon({ id, className = 'h-5 w-5' }) {
   )
 }
 
-/** Ikon cuaca; tak dikenal → ikon kabut netral. */
-export function WeatherIcon({ name, className = 'h-6 w-6' }) {
+/** Ikon cuaca; tak dikenal → ikon kabut netral.
+ *
+ * `motion` opt-in untuk gerak internal (matahari berputar, hujan jatuh, kabut
+ * bergeser). Default mati supaya pemakaian mobile — dan semua pemakaian lain —
+ * tetap statis; varian statis adalah kontrak, bukan efek samping.
+ */
+export function WeatherIcon({ name, className = 'h-6 w-6', motion = false }) {
   const path = WEATHER_ICONS[name] ?? WEATHER_ICONS.kabut
   return (
-    <svg {...base} className={className} data-weather-icon={WEATHER_ICONS[name] ? name : 'kabut'}>
+    <svg
+      {...base}
+      className={className}
+      data-weather-icon={WEATHER_ICONS[name] ? name : 'kabut'}
+      data-weather-motion={motion ? 'live' : undefined}
+    >
       {path}
     </svg>
   )

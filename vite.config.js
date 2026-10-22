@@ -87,6 +87,9 @@ export default defineConfig({
   },
   server: {
     port: 5188,
+    // Pratinjau Arena merender aplikasi di iframe sandbox (origin 'null');
+    // tanpa header CORS seluruh aset diblokir dan halaman tampil kosong.
+    cors: true,
     // Terima hanya hostname preview Arena; dibutuhkan saat dev server diakses lewat iframe.
     allowedHosts: ['.e2b.app'],
     // Dev: teruskan /api ke server proxy lokal (node server/index.js, :7455) agar fitur
@@ -96,5 +99,10 @@ export default defineConfig({
   preview: {
     // Izinkan hostname preview Arena untuk build lokal, termasuk port preview saat audit.
     allowedHosts: ['.e2b.app'],
+    // Wajib untuk iframe sandbox: aset harus dapat dimuat dari origin opaque.
+    cors: true,
+    // Pratinjau build statis butuh jalur /api yang sama seperti dev, jika tidak
+    // seluruh kartu data akan kosong saat pratinjau diproksi.
+    proxy: { '/api': { target: 'http://127.0.0.1:7455', changeOrigin: true } },
   },
 })

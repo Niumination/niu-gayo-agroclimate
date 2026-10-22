@@ -58,3 +58,13 @@ test('placeLabels: prioritas tinggi ditempatkan dulu; label bertabrakan dipindah
   const blocked = placeLabels([{ id: 'c', x: 300, y: 300, text: 'Linge', priority: 0 }], { boxes: [{ x1: 305, x2: 400, y1: 290, y2: 310 }] })
   assert.notEqual(blocked.c.anchor, 'start')
 })
+
+test('placeLabels: label `force` (sentra terpilih) tetap tampil walau semua sisi terhalang', async () => {
+  const { placeLabels } = await import('../src/domain/geo.js')
+  const point = { id: 'x', x: 100, y: 100, text: 'Bebesan', priority: 0 }
+  const wall = [{ x1: 0, x2: 400, y1: 0, y2: 400 }]
+  assert.equal(placeLabels([point], { boxes: wall }).x, null)
+  const forced = placeLabels([{ ...point, force: true }], { boxes: wall })
+  assert.ok(forced.x)
+  assert.equal(forced.x.anchor, 'start')
+})
