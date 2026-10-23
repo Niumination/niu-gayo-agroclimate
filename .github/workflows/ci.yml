@@ -76,6 +76,23 @@ jobs:
       # Fase 4.4 — smoke test API offline: server dinyalakan tanpa kunci; semua endpoint harus menjawab JSON (degraded boleh, 5xx tidak)
       - name: API smoke test (offline-tolerant)
         run: npm run smoke
-      # CATATAN (P6): uji aksesibilitas berbasis BROWSER (pa11y-ci, axe-core/Playwright) sengaja
-      # TIDAK dijalankan di CI ini — runner repo tidak memasang browser. Jalur manualnya ada di
-      # docs/how-to/09-uji-browser-a11y.md (ratchet: mulai dari kondisi sekarang, turunkan bertahap).
+
+      # F-39 (audit 23 Okt 2026): uji aksesibilitas berbasis BROWSER dulu manual
+      # (docs/how-to/09-uji-browser-a11y.md). Tiga temuan Sprint A — label ganda,
+      # fokus masuk ke panel terlipat, target sentuh < 24 px — lolos dari semua
+      # gerbang statis karena hanya muncul setelah halaman dirender. Sekarang axe-core
+      # berjalan di tiga permukaan (Papan, Peta Tanah, Peta Langit); 1 pelanggaran = gagal.
+      # Browser dipasang ke .cache/browsers (gitignored) dan path-nya diberikan lewat CHROME_PATH
+      # supaya gerbang tidak pernah "lolos" karena diam-diam melewati pemeriksaan.
+      # Versi browser diturunkan dari puppeteer-core, bukan ditulis tangan: Chrome 131 +
+      # puppeteer-core 25 terbukti menggantung di CDP (Runtime.evaluate timeout), dan
+      # pin manual akan basi setiap kali dependensi naik.
+      - name: Siapkan browser headless (gerbang a11y)
+        run: |
+          VERSION=$(node -e "import('puppeteer-core/internal/revisions.js').then((m) => console.log(m.PUPPETEER_REVISIONS['chrome-headless-shell']))")
+          echo "chrome-headless-shell@$VERSION"
+          npx --yes @puppeteer/browsers install "chrome-headless-shell@$VERSION" --path .cache/browsers
+          echo "CHROME_PATH=$PWD/$(find .cache/browsers -type f -name chrome-headless-shell | head -1)" >> "$GITHUB_ENV"
+
+      - name: Gerbang aksesibilitas browser (axe-core · 3 permukaan)
+        run: npm run check:a11y

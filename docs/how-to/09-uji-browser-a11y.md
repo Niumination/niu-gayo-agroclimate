@@ -2,18 +2,42 @@
 
 **Kuadran:** how-to (tugas) · **Audiens:** maintainer/penguji · **Terkait:** paket **P6** (`docs/dev/11-RENCANA-DESIGN-UX.md`)
 
-Gerbang otomatis repo ini (`npm test`, `check:contrast --strict`, `check:typography`, `node --test tests/{a11yContract,motionContract,stateContract}.test.js`) berjalan **tanpa browser**. Pemindai otomatis hanya menangkap ±57 % temuan WCAG dan hampir tidak pernah melihat `2.5.8 Target 24×24` (±18,7 %) — karena itu perlu satu jalur **browser** yang dijalankan manusia.
+Sejak **F-39** (audit 23 Okt 2026) repo ini punya gerbang a11y **berbasis browser** yang ikut CI: `npm run check:a11y` (`scripts/a11y-gate.mjs`). Gerbang ini menyalakan tiruan produksi lokal — `dist/` dilayani seperti host statis, `/api/*` diteruskan ke `server/index.js` — lalu menjalankan axe-core (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`) di tiga permukaan: **Papan desktop**, **Peta hidup · Tanah**, **Peta hidup · Langit**. Satu pelanggaran = build gagal.
 
-> **Kenapa tidak di CI?** Sandbox pembuat paket dan runner CI repo ini tidak memasang browser. Menambahkan Chromium ke CI memperbesar waktu & ongkos tanpa menjaga nilai; jalur ini dijalankan **manual di mesin Anda** (mis. Hermes) lalu hasilnya dicatat di issue/laporan.
+Gerbang itu menutup celah yang dulu lolos dari semua pemeriksaan statis: tiga temuan Sprint A (label ganda, fokus masuk ke panel terlipat, target sentuh < 24 px) hanya muncul setelah halaman benar-benar dirender, sehingga `npm test`, `check:contrast`, dan `check:typography` semuanya hijau.
 
-## 1. Siapkan (sekali)
+**Yang tetap tidak dilihat mesin** dan harus diperiksa manusia: `2.5.8 Target 24×24` (±18,7 % tertangkap pemindai), `2.4.11 Fokus tidak terhalang`, zoom 200 %, serta kondisi jaringan/tema. Empat hal itu ada di §3.
+
+> **Kenapa dulu manual?** Sampai 2.2.2, runner CI tidak memasang browser. Sekarang CI memperoleh `chrome-headless-shell` (dipin ke versi) ke `.cache/browsers/` lalu memberi `CHROME_PATH`; bila `CHROME_PATH` diset tetapi biner tidak ada, gerbang **gagal** — bukan dilewati diam-diam.
+
+## 1. Jalankan gerbang otomatis (wajib lulus)
 
 ```bash
 npm ci
-npm run build && npm run preview          # http://localhost:4173 (atau pakai domain produksi)
+npm run build            # gerbang menolak dist yang lebih tua dari src/
+npm run check:a11y
 ```
 
-## 2. Jalankan pa11y-ci (cepat, halaman per halaman)
+Di mesin baru tanpa browser, gerbang berhenti dengan peringatan (exit 0) dan menyebutkan perintah pemasangannya:
+
+```bash
+# versi browser mengikuti puppeteer-core — jangan pakai angka lain: pasangan yang
+# tidak cocok membuat CDP menggantung (Runtime.evaluate timeout), bukan gagal jelas
+VERSION=$(node -e "import('puppeteer-core/internal/revisions.js').then((m) => console.log(m.PUPPETEER_REVISIONS['chrome-headless-shell']))")
+npx @puppeteer/browsers install "chrome-headless-shell@$VERSION" --path .cache/browsers
+CHROME_PATH="$PWD/$(find .cache/browsers -type f -name chrome-headless-shell | head -1)" npm run check:a11y
+```
+
+Keluaran lulus terlihat seperti ini:
+
+```
+✓ Papan desktop: 0 pelanggaran axe
+✓ Peta hidup — Tanah: 0 pelanggaran axe
+✓ Peta hidup — Langit: 0 pelanggaran axe
+✓ gerbang a11y lolos — 3 permukaan bersih (axe wcag2a, wcag2aa, wcag21a, wcag21aa)
+```
+
+## 2. Pemeriksaan tambahan: pa11y-ci (halaman per halaman)
 
 Berkas [`/.pa11yci.json`](../../.pa11yci.json) sudah disiapkan (2 viewport, standar `WCAG2AA` + `WCAG2.2AA`):
 
@@ -24,7 +48,7 @@ npx --yes pa11y-ci --config .pa11yci.json
 - Target: **0 error**. Mulai dari kondisi sekarang lalu **turunkan bertahap** (ratchet) — jangan menaikkan ambang untuk “menghijaukan” hasil.
 - Bila muncul error baru: catat **halaman + aturan + selector**, perbaiki, jalankan ulang.
 
-## 3. Jalankan axe-core lewat Playwright (lebih dalam: 4 tab × 2 tema)
+## 3. Pemeriksaan manual yang tidak bisa dilihat mesin (4 tab × 2 tema)
 
 ```bash
 npx --yes playwright install chromium

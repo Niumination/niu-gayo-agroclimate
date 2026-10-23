@@ -5,3 +5,6 @@ dist-ssr/
 .DS_Store
 server/data/
 .env
+
+# Browser gerbang a11y (CI memasangnya di sini)
+.cache/

@@ -1,5 +1,43 @@
 # Changelog
 
+## [2.2.3] — 2026-10-23 — Gerbang aksesibilitas di browser masuk CI (F-39)
+
+Sprint B dibuka dengan temuan yang paling menahan: sampai 2.2.2 seluruh pemeriksaan a11y repo berjalan
+tanpa browser. Tiga temuan Sprint A — label ganda, fokus masuk ke panel terlipat, target sentuh < 24 px —
+lolos dari `npm test`, `check:contrast --strict`, `check:typography`, dan ESLint `jsx-a11y` karena hanya
+muncul setelah halaman dirender. Pada 2.2.2 ketiganya ditemukan lewat pemeriksaan manual, bukan gerbang.
+
+**F-39 — `npm run check:a11y`**
+- `scripts/a11y-gate.mjs` menyalakan tiruan produksi lokal: `dist/` dilayani seperti host statis (SPA
+  fallback), `/api/*` diteruskan ke `server/index.js`, lalu axe-core dijalankan di tiga permukaan —
+  **Papan desktop**, **Peta hidup · Tanah**, **Peta hidup · Langit** (tema gelap lewat `localStorage`
+  sebelum navigasi, bukan sekadar `prefers-color-scheme`).
+- Standar yang sama dengan audit: `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`. Satu pelanggaran = exit 1,
+  lengkap dengan aturan, dampak, dan selector simpul.
+- **Tidak bisa lulus diam-diam:** `CHROME_PATH` yang diset tetapi tidak ada = gagal; `dist/` yang lebih tua
+  dari `src/` = gagal (dulu build gagal membuat audit berjalan di atas bundel lama dan tetap hijau);
+  galat konsol halaman ikut menggagalkan permukaan itu.
+- Tanpa browser sama sekali, gerbang berhenti dengan peringatan + perintah pemasangan (jalur pengembang),
+  sedangkan CI selalu memberi `CHROME_PATH` sehingga jalur itu tidak pernah terpakai di sana.
+
+**CI**
+- Langkah baru setelah `npm run build`: versi `chrome-headless-shell` **diturunkan dari `puppeteer-core`**
+  (`PUPPETEER_REVISIONS`) — bukan dipin tangan — dipasang ke `.cache/browsers/` (gitignored), `CHROME_PATH`
+  diekspor lewat `$GITHUB_ENV`, lalu `npm run check:a11y`. Pin manual pernah membuat Chrome 131 dipakai
+  bersama `puppeteer-core` 25: halaman kedua menggantung (`Runtime.evaluate` timeout) dan proses tidak
+  pernah keluar. Kini versi selalu sepasang, dan gerbang menutup browser di `finally` + keluar eksplisit.
+- `puppeteer-core@25.16.0` + `axe-core@4.14.0` sebagai devDependencies: `npm audit` **0 kerentanan**
+  (versi 23 membawa 7 advisory high lewat rantai `proxy-agent`/`basic-ftp`; CI tetap hanya menggerbang
+  `--omit=dev`, tetapi utang baru tidak perlu ditambah).
+- Catatan lama "a11y browser sengaja tidak di CI" dihapus; `docs/how-to/09-uji-browser-a11y.md` kini memuat
+  gerbang otomatis sebagai langkah 1, dengan pemeriksaan manual yang tersisa (`2.5.8`, `2.4.11`, zoom 200 %,
+  kondisi jaringan) tetap di §3.
+
+**Gerbang uji:** 595 tes (+8 `tests/sprintB.test.js` sebagai kontrak: skrip ada, memakai empat tag WCAG,
+tiga permukaan bernama, CI memberi `CHROME_PATH`, `.cache/` gitignored), eslint 0, cakupan 96,76 % baris.
+Dibuktikan bisa gagal: satu `<img>` tanpa `alt` disuntik ke `DesktopBoard.jsx` → `✗ Papan desktop:
+1 pelanggaran axe [critical] image-alt`, exit 1; setelah dikembalikan, tiga permukaan bersih.
+
 ## [2.2.2] — 2026-10-23 — Living Map bisa dijangkau + enam perbaikan audit
 
 Hasil audit 50 iterasi (23 Okt 2026) menemukan fitur Living Map V4 tidak punya jalan masuk:
