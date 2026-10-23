@@ -221,9 +221,23 @@ test('Living Map: strip tab membungkus dan panel konteks tidak menimpa dua panel
   assert.ok(dock, 'aturan dok bawah ada')
   assert.match(dock[1], /right: 14px/, 'dok memenuhi halaman')
   assert.doesNotMatch(dock[1], /--lm-right-inset/, 'dok tidak mengikuti panel konteks')
+  // Jangan dipusatkan dengan lebar maksimum: di layar 1920 itu menyisakan
+  // 230 px kosong di kiri dan kanan bawah, persis keluhan "dua panel di tengah".
+  assert.doesNotMatch(dock[1], /max-width:/, 'dok tidak dibatasi lebar maksimum')
+  assert.doesNotMatch(dock[1], /margin-inline:\s*auto/, 'dok tidak dipusatkan')
   // Mode 2 tetap dialog layar penuh, jadi dok disembunyikan.
   assert.match(css, /\.living-map-shell\[data-mode='2'\] \.lm-bottom[\s\S]{0,80}display: none/)
   assert.doesNotMatch(css, /\[data-mode='3'\] \.lm-bottom[\s\S]{0,80}display: none/, 'Mode 3 tidak perlu menyembunyikan dok')
+})
+
+test('Living Map: catatan data peta tidak menimpa baris alat', () => {
+  const css = read('src/pages/LivingMapDesktop.css')
+  const note = css.match(/\n\.niu-map-data-note \{([\s\S]*?)\n\}/)
+  assert.ok(note, 'aturan catatan data peta ada')
+  // Baris alat setinggi 56 px (satu baris) atau 104 px (dua baris di layar sempit);
+  // catatan harus naik di atas keduanya, bukan memakai angka tetap.
+  assert.match(note[1], /bottom: calc\(var\(--lm-bottom-rest-height[^)]*\) \+ var\(--lm-toolrow-height[^)]*\)/, 'posisi dihitung dari tinggi baris alat')
+  assert.doesNotMatch(note[1], /\+ 82px/, 'bukan angka tetap yang menimpa tombol layer')
 })
 
 test('Living Map: baris alat peta mengikuti prototipe (kiri bawah, satu baris)', () => {

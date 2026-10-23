@@ -257,7 +257,10 @@ html body .niu-map-card--bare .niu-map-controls button[aria-pressed='true'] .niu
   position: absolute;
   z-index: 9;
   left: 14px;
-  bottom: calc(var(--lm-bottom-rest-height, 58px) + 82px);
+  /* Naik di atas baris alat, yang bisa menjadi dua baris di layar sempit
+     (56 px satu baris, 104 px dua baris). Sebelumnya 82 px sehingga catatan
+     ini menimpa tombol layer di 1024x768. */
+  bottom: calc(var(--lm-bottom-rest-height, 58px) + var(--lm-toolrow-height, 56px) + 26px);
   max-width: calc(100% - 28px);
   margin: 0;
   padding: 5px 10px;
@@ -419,13 +422,12 @@ html[data-arah='langit'] .lm-summary .niu-desktop-summarybar .niu-summary-copy s
   right: 14px;
   bottom: 10px;
   display: grid;
-  /* Prototipe: 1000/400 px di 1440 dan 682/310 px di 1024. */
+  /* Prototipe: 1000/400 px di 1440 dan 682/310 px di 1024. Kolom kanan dikunci
+     selebar panel konteks di atasnya supaya tepinya sejajar. */
   grid-template-columns: minmax(0, 1fr) clamp(310px, 28.3%, 400px);
   align-items: end;
   gap: 12px;
   width: auto;
-  max-width: 1460px;
-  margin-inline: auto;
   pointer-events: none;
   transition: right .2s ease;
 }
