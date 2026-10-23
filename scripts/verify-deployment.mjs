@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -7,6 +8,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
 const baseArg = args.find((arg) => /^https?:\/\//i.test(arg)) || process.env.NIU_LIVE_URL
 const expectArg = args.find((arg) => arg.startsWith('--expect='))?.slice('--expect='.length)
+// F-15 (audit 23 Okt 2026): versi target dibaca dari package.json, bukan ditulis ulang di sini —
+// sebelumnya naik versi membuat verify:deployment gagal karena angka lama tertinggal.
+const EXPECTED_VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version
 const expected = expectArg || process.env.NIU_EXPECTED_REVISION || (() => {
   try { return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() } catch { return null }
 })()
@@ -60,7 +64,7 @@ if (build) {
   if (build.app !== 'Niu') fail(`aplikasi statis salah: ${build.app}`)
   if (build.revision !== expected) fail(`frontend revision ${build.revision}; target ${expected}`)
   if (build.dirty !== false) fail(`frontend build dirty=${build.dirty}; rilis harus berasal dari working tree bersih`)
-  if (build.version !== '2.2.1') fail(`frontend version ${build.version}; target patch 2.2.1`)
+  if (build.version !== EXPECTED_VERSION) fail(`frontend version ${build.version}; target ${EXPECTED_VERSION}`)
   if (!build.assets?.scripts?.length || !build.assets?.styles?.length) fail('build-info tidak mencatat JS/CSS assets')
   if (failures.length === 0) pass(`frontend build ${build.version} · ${build.revision}`)
 }

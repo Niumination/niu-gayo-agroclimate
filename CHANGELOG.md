@@ -1,5 +1,42 @@
 # Changelog
 
+## [2.2.2] — 2026-10-23 — Living Map bisa dijangkau + enam perbaikan audit
+
+Hasil audit 50 iterasi (23 Okt 2026) menemukan fitur Living Map V4 tidak punya jalan masuk:
+hanya bisa dibuka dengan mengetik `?tampilan=peta-hidup`. Rilis ini menutup temuan Sprint A.
+
+**F-01 — jalan masuk & keluar Living Map**
+- Tombol **Buka peta hidup** di kartu "Aksi cepat" papan desktop, plus aksi `Buka peta hidup` di palet (⌘K).
+- Tombol **Papan** di dalam pil label "Peta skematik" + aksi `Kembali ke papan desktop` di palet peta.
+- Perpindahan memakai `history.pushState`, jadi tombol Kembali peramban bekerja; `?tampilan=peta-hidup` tetap sah.
+
+**F-02 — fokus tidak lagi masuk ke panel yang tertutup**
+- Isi dua panel bawah diberi `inert` + `aria-hidden` saat ringkas. Sebelumnya 12 tombol jam tersembunyi masih
+  menerima fokus keyboard (panel 58 px, `overflow: hidden`, isi 302 px).
+
+**F-03 — `POST /api/cache/flush` tidak lagi terbuka**
+- Wajib `x-cron-token` bila `ALERTS_CRON_TOKEN` diset; tanpa token hanya menerima permintaan langsung dari loopback
+  tanpa header proxy (`cf-connecting-ip`/`x-forwarded-for`/`x-real-ip`). Metode selain POST → 405.
+
+**F-07 — struktur judul & nama aksesibel**
+- `<h1>` tersembunyi di kerangka desktop (papan & peta), mengikuti sentra terpilih.
+- Pemilih sentra dan dua tombol legenda peta tidak lagi memakai `aria-label` yang menimpa teks terlihat
+  (axe `label-content-name-mismatch`, 3 simpul).
+
+**F-08 — footer kembali setipis teksnya**
+- Tombol "Tentang data & batasan" memakai target 24 px (WCAG 2.2 SC 2.5.8), bukan 44 px di dalam baris 26 px.
+  Menghilangkan 9 px gulir vertikal yang muncul di semua lebar desktop.
+
+**F-26 — bidang ketuk pin peta 24 px**
+- Lingkaran transparan r=12 pada tiap pin (sebelumnya 23 px mengikuti tinggi label).
+
+**F-15 — `verify:deployment` membaca versi dari `package.json`**
+- Versi tidak lagi ditulis ulang di skrip, sehingga naik versi tidak membuat verifikasi gagal.
+
+**Gerbang uji:** 587 tes (6 berkas uji baru `tests/sprintA.test.js`), eslint 0, dan `a11yContract` diperketat —
+pola lama `min-h-[?\d` menerima semua tinggi termasuk 24 px; kini hanya 44 px ke atas, dengan dua pengecualian
+teks sebaris yang ditandai `data-target="inline"` dan didaftarkan namanya.
+
 ## [2.2.1] — 2026-10-18 — Bahasa manusia, sinkronisasi upstream & ketahanan deployment
 
 Penerapan paket zip v2.2.0 ke live site menghasilkan 57 akronim teknis tampil di lapisan 1 desktop (target prototipe = 10). Root cause: spesifikasi P7.7 hanya menguji `messages.js` + 3 kartu lama; `headline` modul bahaya dan `subtitle`/`footer` `HazardFocusCards.jsx` tidak terjangkau uji.

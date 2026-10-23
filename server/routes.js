@@ -353,7 +353,20 @@ export function createHandler(ctx) {
         const reports = recentReports(location)
         return json(res, 200, { count: reports.length, reports })
       }
-      if (path === '/api/cache/flush' && req.method === 'POST') {
+      // Audit F-03 — /api/cache/flush sebelumnya terbuka: siapa pun yang bisa menjangkau
+      // /api/* dapat mengosongkan cache produksi dan memicu puluhan fetch upstream.
+      // Aturan: token cron bila ALERTS_CRON_TOKEN diset; tanpa token, hanya permintaan
+      // langsung dari loopback yang tidak melewati proxy (tanpa header Cloudflare).
+      if (path === '/api/cache/flush') {
+        if (req.method !== 'POST') return json(res, 405, { error: 'gunakan POST' })
+        const expected = process.env.ALERTS_CRON_TOKEN
+        const viaProxy = Boolean(
+          req.headers['cf-connecting-ip'] || req.headers['cf-ray'] || req.headers['x-forwarded-for'] || req.headers['x-real-ip'],
+        )
+        const remote = req.socket?.remoteAddress ?? ''
+        const loopback = remote === '127.0.0.1' || remote === '::1' || remote === '::ffff:127.0.0.1'
+        const allowed = expected ? tokenMatches(req.headers['x-cron-token'], expected) : (loopback && !viaProxy)
+        if (!allowed) return json(res, 403, { error: 'flush cache butuh token cron (x-cron-token) dari host lokal' })
         clearCache()
         return json(res, 200, { ok: true })
       }

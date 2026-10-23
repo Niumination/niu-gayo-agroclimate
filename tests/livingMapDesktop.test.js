@@ -118,7 +118,11 @@ test('Living Map: footer pratinjau setipis teks dan mengikuti tema', () => {
   assert.match(css, /\.niu-footer-livingmap \{[^}]*padding: 4px 12px/, 'padding tipis')
   assert.match(css, /\.niu-footer-livingmap \{[^}]*font-size: var\(--text-caption/, 'ukuran mengikuti caption')
   assert.match(css, /html\[data-arah='langit'\] \.niu-footer-livingmap/, 'warna mengikuti tema Langit')
-  assert.match(css, /\.niu-footer-livingmap button \{[^}]*min-height: 44px/, 'tautan footer tetap target 44 px')
+  // Audit F-08 (23 Okt 2026): target 44 px di dalam baris footer 26 px membuat tombol
+  // menjorok 9 px ke luar layar dan halaman selalu bisa digulir. WCAG 2.2 SC 2.5.8
+  // mensyaratkan 24 px untuk target sebaris — itulah nilai yang dikunci sekarang.
+  assert.match(css, /\.niu-footer-livingmap button \{[^}]*min-height: 24px/, 'tautan footer memakai target 24 px')
+  assert.doesNotMatch(css, /\.niu-footer-livingmap button \{[^}]*margin-block: -14px/, 'trik margin negatif tidak boleh kembali')
 })
 
 test('Pratinjau: tahan iframe sandbox (origin opaque) dan tidak pernah blank', () => {

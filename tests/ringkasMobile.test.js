@@ -140,7 +140,11 @@ test('P7.4: batang hujan dekoratif dan nilai hujan tetap tampil/terbaca', () => 
   assert.match(STRIP, /niu-hour-rainbar/)
   assert.match(STRIP, /aria-hidden="true"/)
   assert.match(STRIP, /r1\(hour\.rain\)/)
-  assert.match(STRIP, /aria-label=\{hourText\(hour\)\}/)
+  // Audit F-07b: aria-label diganti teks tersembunyi agar nama aksesibel memuat teks
+  // angka yang terlihat (axe label-content-name-mismatch). Cabang non-interaktif (mobile)
+  // tetap memakai <li> tanpa atribut tambahan.
+  assert.match(STRIP, /<span className="sr-only"> — suhu \{r1\(hour\.temp\)\} derajat, hujan \{r1\(hour\.rain\)\} mm\/jam<\/span>/)
+  assert.doesNotMatch(STRIP, /aria-label=\{hourText\(hour\)\}/, 'aria-label lama tidak boleh kembali')
 })
 
 test('P7.6: desktop menyediakan tombol jam, panah, scrubber, pembacaan hidup, solar dan hembusan', () => {

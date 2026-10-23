@@ -314,10 +314,15 @@ export default function SchematicMap({
         type="button"
         className="niu-map-legend-toggle min-h-11"
         aria-pressed={on}
-        aria-label={`${on ? 'Sembunyikan' : 'Tampilkan'} ${label}`}
         title={`${on ? 'Sembunyikan' : 'Tampilkan'} ${label}`}
         onClick={() => onLayerChange(id)}
-      >{content}</button>
+      >
+        {content}
+        {/* Audit F-07 — aria-label lama tidak memuat teks legenda yang terlihat
+            ("Ekstrem, Bahaya, …"), sehingga axe menandainya label-content-name-mismatch.
+            Aksi ditulis sebagai teks tersembunyi agar nama = teks tampak + tindakan. */}
+        <span className="sr-only"> — {on ? 'sembunyikan' : 'tampilkan'} {label}</span>
+      </button>
     )
   }
   const legendItems = (
@@ -420,6 +425,9 @@ export default function SchematicMap({
                     </>
                   )}
                   {selected && <circle cx={location.x} cy={location.y} r={10} fill="none" stroke="currentColor" strokeOpacity={0.7} strokeWidth={1.2} className="text-ink dark:text-mist" />}
+                  {/* Audit F-26 — bidang ketuk 24 px (WCAG 2.2 SC 2.5.8). Transparan,
+                      tidak mengubah tampilan; hanya memperluas area hover/klik pin. */}
+                  {onSelectLocation && <circle cx={location.x} cy={location.y} r={12} fill="transparent" data-map-hit="true" aria-hidden="true" />}
                   <circle cx={location.x} cy={location.y} r={location.worst === 'ekstrem' ? 7 : 5.5} fill={FILL[location.worst]} stroke="#fff" strokeWidth={1}>
                     <title>{label}</title>
                   </circle>

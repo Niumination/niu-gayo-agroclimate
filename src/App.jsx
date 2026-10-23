@@ -54,10 +54,32 @@ function migrateDesktopLayoutPreferences() {
 
 export default function App() {
   const isDesktop = useBreakpoint()
-  // Port pratinjau Living Map (desktop-only). Aktif hanya lewat ?tampilan=peta-hidup;
-  // tanpa parameter ini, DesktopBoard tetap menjadi tampilan desktop default.
-  const livingMapPreview = isDesktop && typeof window !== 'undefined' &&
-    new URLSearchParams(window.location.search).get('tampilan') === 'peta-hidup'
+  // Dua tampilan desktop: papan lima bagian (bawaan) dan Living Map.
+  // `?tampilan=peta-hidup` tetap sah untuk tautan langsung dan pengujian, tetapi
+  // pengguna kini dapat berpindah lewat tombol di papan dan tombol kembali di peta
+  // (audit F-01: fitur sebelumnya tidak punya jalan masuk sama sekali).
+  const readView = useCallback(() => (
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tampilan') === 'peta-hidup'
+      ? 'map'
+      : 'board'
+  ), [])
+  const [desktopView, setDesktopView] = useState(readView)
+  const showLivingMap = useCallback((next) => {
+    setDesktopView(next ? 'map' : 'board')
+    if (typeof window === 'undefined' || !window.history?.pushState) return
+    const url = new URL(window.location.href)
+    if (next) url.searchParams.set('tampilan', 'peta-hidup')
+    else url.searchParams.delete('tampilan')
+    // pushState (bukan replaceState) agar tombol Kembali peramban mengembalikan tampilan sebelumnya.
+    window.history.pushState({ tampilan: next ? 'peta-hidup' : null }, '', url)
+    window.scrollTo({ top: 0 })
+  }, [])
+  useEffect(() => {
+    const onPop = () => setDesktopView(readView())
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [readView])
+  const livingMapPreview = isDesktop && desktopView === 'map'
 
   // Persistensi wilayah terpilih (localStorage)
   const [selectedLocation, setSelectedLocation] = useState(() => {
@@ -462,6 +484,7 @@ export default function App() {
       tr={tr}
       selectedHazardId={selHaz}
       onSelectHazard={setSelHaz}
+      onOpenBoard={() => showLivingMap(false)}
     />
   ) : (
     <DesktopBoard
@@ -484,6 +507,7 @@ export default function App() {
       tr={tr}
       selectedHazardId={selHaz}
       onSelectHazard={setSelHaz}
+      onOpenLivingMap={() => showLivingMap(true)}
       sections={{ ringkas: dRingkas, ramalan: dRamalan, risiko: dRisiko, sentra: dSentra, arsip: dArsip }}
     />
   ))
@@ -579,7 +603,16 @@ export default function App() {
       )}
 
       {isDesktop ? (
-        <main id="main" className="flex-1 w-full min-w-0">{desktopLayout}</main>
+        <main id="main" className="flex-1 w-full min-w-0">
+          {/* Audit F-07 — halaman desktop tidak punya judul tingkat satu. Cukup satu,
+              tersembunyi secara visual, dan ikut berubah saat sentra diganti. */}
+          <h1 className="sr-only">
+            {livingMapPreview
+              ? `Peta hidup cuaca dan peringatan dini sentra ${selectedLocation?.name ?? 'Aceh Tengah'}`
+              : `Cuaca dan peringatan dini sentra ${selectedLocation?.name ?? 'Aceh Tengah'}`}
+          </h1>
+          {desktopLayout}
+        </main>
       ) : (
         <>
           <main id="main" className="flex-1 w-full">
@@ -598,7 +631,7 @@ export default function App() {
         ? 'niu-footer-livingmap'
         : 'border-t border-ink/10 dark:border-mist/10 py-4 text-center text-caption text-ink-muted dark:text-mist-subtle'}>
         Niu Gayo Agro-Climate &bull; {tr('footer')} &bull;{' '}
-        <button type="button" onClick={() => setAboutOpen(true)} className="min-h-11 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist transition duration-100 ease-out active:scale-[.97]">
+        <button type="button" data-target="inline" onClick={() => setAboutOpen(true)} className="min-h-6 inline-flex items-center underline underline-offset-2 hover:text-ink dark:hover:text-mist transition duration-100 ease-out active:scale-[.97]">
           {tr('aboutData')}
         </button>
       </footer>

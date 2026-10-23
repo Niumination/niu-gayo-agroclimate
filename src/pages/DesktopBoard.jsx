@@ -3,7 +3,7 @@ import CommandPalette from '../components/niu/CommandPalette.jsx'
 import DesktopHazardInspector from '../components/niu/DesktopHazardInspector.jsx'
 import ReportButton from '../components/ReportButton'
 import ShareButton from '../components/ShareButton'
-import { PanelLeftClose, PanelLeftOpen, Share2 } from 'lucide-react'
+import { Map, PanelLeftClose, PanelLeftOpen, Share2 } from 'lucide-react'
 import LocationRail from '../components/LocationRail'
 import { LOCATIONS } from '../data/locations'
 import { LEVEL_LABEL } from '../domain/hazards/levels.js'
@@ -60,6 +60,7 @@ export default function DesktopBoard({
   onHighlightLocation,
   onSelectLocation,
   onOpenLocationPicker,
+  onOpenLivingMap,
   inspectorOpen,
   onInspectorOpenChange,
   onOpenReport,
@@ -250,6 +251,7 @@ export default function DesktopBoard({
       run: () => goZone(zone.id),
     }))
     const actionItems = [
+      { id: 'aksi-peta-hidup', label: 'Buka peta hidup', sub: 'Peta sentra dengan panel konteks tiga mode', run: onOpenLivingMap },
       { id: 'aksi-lapor', label: 'Lapor kejadian', sub: 'Laporkan kondisi di sekitar sentra', run: onOpenReport },
       { id: 'aksi-bagikan', label: 'Bagikan ringkasan', sub: 'WhatsApp, SMS, atau salin', run: onOpenShare },
       { id: 'aksi-muat-ulang', label: 'Muat ulang data', sub: 'Ambil pembaruan terbaru', run: onRefresh },
@@ -273,6 +275,7 @@ export default function DesktopBoard({
     onToggleTheme,
     onAbout,
     onOpenLocationPicker,
+    onOpenLivingMap,
     goZone,
     setInsp,
     dens,
@@ -308,12 +311,13 @@ export default function DesktopBoard({
           type="button"
           onClick={() => setPal(true)}
           aria-haspopup="dialog"
-          aria-label="Buka palet perintah (⌘K)"
           title="Cari sentra, bahaya, atau aksi"
           className="desk-shortcuts desk-shortcuts-trigger min-h-11"
         >
           <span className="desk-shortcuts-full">⌘K cari · 1–5 pindah · [ rel · D padat · F fokus</span>
           <span className="desk-shortcuts-compact">⌘K cari</span>
+          {/* Audit F-07b — pintasan yang terlihat kini menjadi bagian nama aksesibel. */}
+          <span className="sr-only"> — buka palet perintah</span>
         </button>
       </nav>
 
@@ -354,6 +358,20 @@ export default function DesktopBoard({
                 ? 'niu-rail-share-button'
                 : 'inline-flex min-h-11 w-full items-center justify-center rounded-pil border border-tanah-garis-kuat px-3 text-body-sm font-semibold text-tanah-aksen hover:bg-tanah-terbenam dark:border-langit-garis-kuat dark:text-langit-aksen dark:hover:bg-langit-terbenam'}
             />
+            {/* Audit F-01 — jalan masuk ke Living Map. Sebelumnya hanya bisa dibuka
+                dengan mengetik ?tampilan=peta-hidup; parameter itu tetap sah. */}
+            <button
+              type="button"
+              onClick={onOpenLivingMap}
+              aria-label="Buka peta hidup"
+              title="Buka peta hidup"
+              className={rail === 'lipat'
+                ? 'niu-rail-share-button'
+                : 'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-pil border border-tanah-garis-kuat px-3 text-body-sm font-semibold text-tanah-aksen hover:bg-tanah-terbenam dark:border-langit-garis-kuat dark:text-langit-aksen dark:hover:bg-langit-terbenam'}
+            >
+              <Map aria-hidden="true" className="h-4 w-4 shrink-0" />
+              {rail !== 'lipat' && <span>Buka peta hidup</span>}
+            </button>
           </div>
         </section>
 

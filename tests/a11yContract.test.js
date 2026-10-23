@@ -67,7 +67,14 @@ export function buttonTags(text) {
   return tags
 }
 
-const TARGET = /(min-h-\[?\d|min-h-11|\bh-1[0-2]\b|\bpy-[3-9]\b|\bp-[5-9]\b)/
+// Target sentuh baku: 44 px. `min-h-[?\d` lama menerima SEMUA min-h-<angka>, termasuk
+// 24 px — celah yang akan membuat perbaikan F-08 (footer) lolos tanpa terlihat. Kini hanya
+// 44 px ke atas yang diterima; tombol teks dalam satu baris (F-08/F-01) memakai penanda
+// eksplisit `data-target="inline"` + `min-h-6` (WCAG 2.2 SC 2.5.8: 24×24) dan dihitung terpisah.
+const TARGET = /(min-h-1[1-9]\b|min-h-\[(?:4[4-9]|[5-9]\d|\d{3,})px\]|\bh-1[0-2]\b|\bpy-[3-9]\b|\bp-[5-9]\b)/
+const INLINE_TARGET = /data-target="inline"/
+/** Satu-satunya tombol teks sebaris yang diizinkan 24 px. Bertambah = harus dibahas. */
+const INLINE_ALLOWED = ['src/App.jsx', 'src/pages/LivingMapDesktop.jsx']
 
 /** Kelas konstanta lokal (mis. `const link = '…'`) untuk className dinamis. */
 function classConsts(text) {
@@ -163,6 +170,7 @@ test('P2 · kontak darurat & bantuan konsisten dapat dijangkau', () => {
 
 test('P2 · seluruh tombol punya target sentuh ≥ 44 px', () => {
   const offenders = []
+  const inlineFiles = new Set()
   let total = 0
   for (const { rel, text } of SRC) {
     if (!text.includes('<button')) continue
@@ -182,11 +190,22 @@ test('P2 · seluruh tombol punya target sentuh ≥ 44 px', () => {
       // Tombol latar penuh (`absolute inset-0`) menutupi seluruh layar — target jauh di atas 44 px,
       // dan nilainya tidak perlu ditulis ulang sebagai kelas tinggi (P6: latar dialog jadi <button>).
       if (!ok && /\binset-0\b/.test(tag)) ok = true
+      // Tombol teks di dalam satu baris teks: 24 px (SC 2.5.8), hanya di berkas yang terdaftar.
+      if (!ok && INLINE_TARGET.test(tag)) {
+        if (!/min-h-6\b/.test(tag)) offenders.push(`${rel} (inline < 24 px): ${tag.slice(0, 80).replace(/\s+/g, ' ')}`)
+        inlineFiles.add(rel)
+        ok = true
+      }
       if (!ok) offenders.push(`${rel}: ${tag.slice(0, 90).replace(/\s+/g, ' ')}`)
     }
   }
   assert.ok(total >= 20, `pemindai tombol mencurigakan (total ${total})`)
   assert.deepStrictEqual(offenders, [], `tombol tanpa target ≥ 44 px:\n${offenders.join('\n')}`)
+  assert.deepStrictEqual(
+    [...inlineFiles].sort(),
+    INLINE_ALLOWED,
+    'pengecualian 24 px hanya untuk tombol teks sebaris yang sudah disetujui (footer + kembali ke papan)',
+  )
 })
 
 test('P2 · label interaksi & bantuan tersedia di kedua bahasa', () => {

@@ -61,6 +61,7 @@ export default function LivingMapDesktop({
   tr = (key) => key,
   selectedHazardId,
   onSelectHazard,
+  onOpenBoard,
 }) {
   const [activePanel, setActivePanel] = useState('condition')
   const [drawerMode, setDrawerMode] = useState('1')
@@ -139,6 +140,14 @@ export default function LivingMapDesktop({
     revealBottomPanel(key, next)
   }, [pinnedPanels, revealBottomPanel])
 
+  // F-02 (audit): saat panel tertutup, isinya hanya tersembunyi secara visual
+  // (`max-height: 58px; overflow: hidden`), sehingga tombol jam di dalamnya masih
+  // menerima fokus keyboard. `inert` mengeluarkan isi itu dari urutan fokus & pohon aksesibilitas.
+  const collapsed = {
+    weather: !(openPanels.weather || pinnedPanels.weather),
+    season: !(openPanels.season || pinnedPanels.season),
+  }
+
   const bottomProps = useCallback((key) => ({
     onMouseEnter: () => revealBottomPanel(key, true),
     onMouseLeave: () => { if (!pinnedPanels[key]) revealBottomPanel(key, false) },
@@ -170,6 +179,7 @@ export default function LivingMapDesktop({
       group: 'Panel',
       run: () => tabTo(item.id),
     })),
+    { id: 'action-board', label: 'Kembali ke papan desktop', sub: 'Tampilan papan lima bagian', group: 'Aksi', run: onOpenBoard },
     { id: 'action-refresh', label: 'Muat ulang data', sub: 'Lewat pemuatan data App yang ada', group: 'Aksi', run: onRefresh },
     { id: 'action-report', label: 'Lapor kejadian', sub: 'Buka formulir laporan yang ada', group: 'Aksi', run: onOpenReport },
     { id: 'action-share', label: 'Bagikan ringkasan', sub: 'Buka pilihan berbagi yang ada', group: 'Aksi', run: onOpenShare },
@@ -177,7 +187,7 @@ export default function LivingMapDesktop({
     { id: 'action-theme', label: 'Ganti arah Tanah / Langit', sub: 'Kontrol tema aplikasi', group: 'Aksi', run: onToggleTheme },
     { id: 'action-focus', label: `Mode fokus: ${focusMode ? 'aktif' : 'nonaktif'}`, sub: 'Sembunyikan ringkasan dan panel bawah', group: 'Aksi', run: () => setFocusMode((value) => !value) },
     { id: 'action-density', label: `Kepadatan: ${compact ? 'padat' : 'nyaman'}`, sub: 'Ubah jarak panel', group: 'Aksi', run: () => setCompact((value) => !value) },
-  ], [hazards, onSelectLocation, onSelectHazard, onRefresh, onOpenReport, onOpenShare, onAbout, onToggleTheme, tabTo, focusMode, compact])
+  ], [hazards, onSelectLocation, onSelectHazard, onRefresh, onOpenReport, onOpenShare, onAbout, onToggleTheme, onOpenBoard, tabTo, focusMode, compact])
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -495,7 +505,19 @@ export default function LivingMapDesktop({
           bare
         />
 
-        <div className="lm-map-credit">Peta skematik</div>
+        <div className="lm-map-credit">
+          <span>Peta skematik</span>
+          <span aria-hidden="true">·</span>
+          {/* Audit F-01 — jalan keluar dari Living Map tanpa harus menebak pintasan keyboard. */}
+          <button
+            type="button"
+            className="lm-view-back min-h-6"
+            data-target="inline"
+            onClick={onOpenBoard}
+            aria-label="Kembali ke papan desktop"
+            title="Kembali ke papan desktop"
+          >Papan</button>
+        </div>
 
         {summaryVisible && (
           <section className="lm-summary" aria-label={`Ringkasan ${location?.name ?? 'sentra terpilih'}`}>
@@ -536,7 +558,7 @@ export default function LivingMapDesktop({
                 <button type="button" className="min-h-11 min-w-11 lm-panel-toggle" aria-expanded={Boolean(openPanels.weather || pinnedPanels.weather)} aria-pressed={pinnedPanels.weather} aria-label={pinnedPanels.weather ? 'Lepas panel prakiraan' : 'Pertahankan panel prakiraan terbuka'} title={pinnedPanels.weather ? 'Lepas panel prakiraan' : 'Pertahankan panel prakiraan terbuka'} onClick={() => toggleBottomPin('weather')}>{pinnedPanels.weather ? '⌖' : '⌃'}</button>
               </div>
             </header>
-            <div className="lm-bottom-content">
+            <div className="lm-bottom-content" inert={collapsed.weather || undefined} aria-hidden={collapsed.weather || undefined}>
               <div ref={barsRef} className="lm-bars">
                 <HourStrip hours={hours12} interactive className="lm-hourstrip" />
               </div>
@@ -552,7 +574,7 @@ export default function LivingMapDesktop({
                 <button type="button" className="min-h-11 min-w-11 lm-panel-toggle" aria-expanded={Boolean(openPanels.season || pinnedPanels.season)} aria-pressed={pinnedPanels.season} aria-label={pinnedPanels.season ? 'Lepas panel kebun dan musim' : 'Pertahankan panel kebun dan musim terbuka'} title={pinnedPanels.season ? 'Lepas panel kebun dan musim' : 'Pertahankan panel kebun dan musim terbuka'} onClick={() => toggleBottomPin('season')}>{pinnedPanels.season ? '⌖' : '⌃'}</button>
               </div>
             </header>
-            <div className="lm-bottom-content">
+            <div className="lm-bottom-content" inert={collapsed.season || undefined} aria-hidden={collapsed.season || undefined}>
               <CoffeeAdvisory coffee={data?.coffee} tr={tr} />
               <SeasonalBanner seasonal={data?.disaster?.seasonal} tr={tr} />
             </div>

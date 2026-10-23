@@ -9,12 +9,6 @@ const r1 = (value) => (value == null || Number.isNaN(Number(value)) ? '—' : Nu
 const r0 = (value) => (value == null || Number.isNaN(Number(value)) ? '—' : Math.round(Number(value)).toLocaleString('id-ID'))
 const timeLabel = (value) => (typeof value === 'string' ? value.slice(0, 5).replace(':', '.') : '—')
 
-function hourText(hour) {
-  const rain = Number(hour.rain)
-  const rainLabel = Number.isFinite(rain) ? `${r1(rain)} mm/jam` : 'data hujan tidak tersedia'
-  return `${timeLabel(hour.time)} · ${r1(hour.temp)} derajat · hujan ${rainLabel}`
-}
-
 export default function HourStrip({
   hours = [],
   title = '12 jam ke depan',
@@ -79,10 +73,13 @@ export default function HourStrip({
         className={className}
         onClick={() => setSelectedIndex(index)}
         onKeyDown={(event) => onHourKeyDown(event, index)}
-        aria-label={hourText(hour)}
         aria-pressed={index === selectedIndex}
       >
         {content}
+        {/* Audit F-07b — aria-label lama ("00.00 · 17,7 derajat · …") tidak memuat teks
+            angka yang terlihat, sehingga axe menandai label-content-name-mismatch.
+            Satuan sekarang ditambahkan sebagai teks tersembunyi: nama = teks tampak + satuan. */}
+        <span className="sr-only"> — suhu {r1(hour.temp)} derajat, hujan {r1(hour.rain)} mm/jam</span>
       </button>
     ) : (
       <li key={`${hour.time}-${index}`} className={className}>

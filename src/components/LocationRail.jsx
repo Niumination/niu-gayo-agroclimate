@@ -39,7 +39,6 @@ export default function LocationRail({
                 onFocus={() => onHighlightLocation?.(loc.id)}
                 onBlur={() => onHighlightLocation?.(null)}
                 aria-current={active ? 'true' : undefined}
-                aria-label={`${loc.name}, ${loc.elevation.toLocaleString('id-ID')} mdpl, ${LEVEL_LABEL[level] ?? 'status tidak tersedia'}`}
                 data-highlighted={highlighted ? 'true' : undefined}
                 className={`w-full text-left py-3 pr-2 flex items-baseline gap-2.5 min-h-[44px] rounded-md transition-colors duration-100 ease-out active:scale-[.97] ${
                   active
@@ -59,6 +58,10 @@ export default function LocationRail({
                 <span className="font-data text-caption shrink-0 text-ink-muted dark:text-mist-subtle tabular-nums">
                   {loc.elevation.toLocaleString('id-ID')}
                 </span>
+                {/* Audit F-07b — titik warna level bersifat dekoratif (aria-hidden), jadi level
+                    diucapkan lewat teks tersembunyi; sebelumnya aria-label menimpa seluruh teks
+                    yang terlihat (nama + indeks + elevasi) dan ditandai axe. */}
+                <span className="sr-only"> — {LEVEL_LABEL[level] ?? 'status tidak tersedia'}</span>
               </button>
             </li>
           )

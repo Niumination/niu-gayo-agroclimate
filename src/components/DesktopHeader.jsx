@@ -78,11 +78,14 @@ export default function DesktopHeader({
               type="button"
               onClick={onOpenLocationPicker}
               aria-haspopup="dialog"
-              aria-label={`Pilih sentra; saat ini ${locationLabel}${elevation ? `, ${elevation} ${tr('mdpl')}` : ''}`}
               title="Pilih sentra"
               className="niu-location-select niu-location-trigger min-h-11 w-full text-left active:scale-[.99]"
             >
               <MapPin className="niu-location-icon" aria-hidden="true" />
+              {/* Audit F-07 — nama aksesibel dibangun dari teks yang terlihat (axe
+                  label-content-name-mismatch): "Pilih sentra" ditambahkan sebagai teks
+                  tersembunyi, bukan aria-label yang tidak memuat seluruh teks tampak. */}
+              <span className="sr-only">Pilih sentra; saat ini </span>
               <span className="niu-location-trigger-copy min-w-0 flex-1">
                 <strong>{locationLabel}</strong>
                 {selectedLocation && (

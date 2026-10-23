@@ -237,10 +237,13 @@ test('P7.5: palet memuat zona, bahaya, dan sentra', () => {
   assert.match(BOARD, /group: 'Sentra'/)
 })
 
-test('P7.6: palet memuat delapan aksi v6 plus kontrol inspector tanpa menghilangkan aksi yang ada', () => {
-  assert.equal((BOARD.match(/id: 'aksi-/g) ?? []).length, 9)
+test('P7.6: palet memuat aksi v6 + Buka peta hidup + kontrol inspector tanpa menghilangkan aksi yang ada', () => {
+  // Audit F-01 (23 Okt 2026): aksi ke-10 `aksi-peta-hidup` ditambahkan sebagai jalan masuk
+  // Living Map; jumlah lama (9) sengaja dinaikkan bersama uji baru agar tidak jadi angka bebas.
+  assert.equal((BOARD.match(/id: 'aksi-/g) ?? []).length, 10)
   assert.match(BOARD, /id: 'aksi-rincian'/)
-  for (const action of ['onOpenReport', 'onOpenShare', 'onRefresh', 'onToggleTheme', 'setDens', 'setFocus', 'setInsp', 'onAbout', 'onOpenLocationPicker']) {
+  assert.match(BOARD, /id: 'aksi-peta-hidup'/)
+  for (const action of ['onOpenReport', 'onOpenShare', 'onRefresh', 'onToggleTheme', 'setDens', 'setFocus', 'setInsp', 'onAbout', 'onOpenLocationPicker', 'onOpenLivingMap']) {
     assert.ok(BOARD.includes(action), `${action} tidak terhubung ke palet`)
   }
   assert.match(PAL, /fuzzyScore/)

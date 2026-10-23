@@ -311,6 +311,9 @@ html[data-arah='langit'] .niu-header-desktop .niu-age[data-freshness='aging'] {
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 6px 14px;
   border: 1px solid var(--lm-line);
   border-radius: 999px;
@@ -325,6 +328,25 @@ html[data-arah='langit'] .niu-header-desktop .niu-age[data-freshness='aging'] {
   white-space: nowrap;
   pointer-events: none;
 }
+
+/* Audit F-01 — tombol kembali ke papan. Berada di dalam pil label "Peta skematik"
+   agar tidak menambah navigasi header; target 24 px (WCAG 2.2 SC 2.5.8) sebab
+   tombol ini berada di dalam satu baris teks. */
+.lm-view-back {
+  min-height: 24px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.lm-view-back:hover { color: var(--lm-accent); }
+.lm-view-back:focus-visible { outline: 2px solid var(--lm-accent); outline-offset: 2px; }
 
 .lm-summary {
   position: absolute;
@@ -765,8 +787,11 @@ html[data-arah='langit'] .lm-panel-modal-layer,
   text-align: center;
 }
 .niu-footer-livingmap button {
-  min-height: 44px;
-  margin-block: -14px;
+  /* Audit F-08 — tombol 44 px dengan margin negatif 14 px membuatnya menjorok 9 px
+     keluar layar dan halaman selalu bisa digulir. 24 px (WCAG 2.2 SC 2.5.8) muat
+     di baris teks, jadi tidak perlu trik margin. */
+  min-height: 24px;
+  margin-block: 0;
   padding: 0 2px;
   color: inherit;
   text-underline-offset: 2px;
