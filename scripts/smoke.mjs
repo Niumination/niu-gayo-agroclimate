@@ -81,7 +81,7 @@ try {
   if (missing.length) failed++
 
   // Operasional: POST /api/cache/flush harus 200 { ok: true }.
-  const fl = await fetch(`${base}/api/cache/flush`, { method: 'POST' })
+  const fl = await fetch(`${base}/api/cache/flush`, { method: 'POST', headers: { 'x-cron-token': 'smoke' } })
   const flb = await fl.json().catch(() => ({}))
   console.log(`${fl.ok && flb.ok ? '✓' : '✗'} ${fl.status} POST /api/cache/flush`)
   if (!(fl.ok && flb.ok)) failed++
