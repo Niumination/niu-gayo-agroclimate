@@ -179,3 +179,30 @@ test('createHandler: POST /api/reports mengabaikan x-forwarded-for buatan klien'
   assert.equal(await kirim('2.2.2.2'), 201)
   assert.deepEqual(kunci, ['10.0.0.9', '10.0.0.9'], 'dua header berbeda harus memakai kunci yang sama')
 })
+
+// Sprint B · F-05 — /healthz harus menyebut IMERG, bukan hanya "semua normal".
+test('createHandler: /healthz melaporkan sumber imerg turunan dari /api/alerts', async () => {
+  const handler = createHandler({
+    VALID_LOCATIONS: new Set(),
+    LOCATIONS: [],
+    readToken: () => '',
+    cacheStats: () => ({}),
+    PKG_VERSION: '2.2.5',
+    BUILD_INFO: {},
+    peek: () => ({
+      fresh: true,
+      value: {
+        generatedAt: '2026-10-23T16:00:00.000Z',
+        staleness: { imergCount: 0, fallbackCount: 15, maxAgeDays: null, total: 15 },
+        locations: [{ antecedent: { source: 'model-ecmwf', fallbackReason: 'IMERG tidak dapat dijangkau dari host ini (fetch failed)' } }],
+      },
+    }),
+  })
+  const res = fakeRes()
+  await handler({ url: '/healthz', method: 'GET', headers: {} }, res)
+  const body = JSON.parse(res.body)
+  assert.equal(body.sources.imerg.state, 'degraded')
+  assert.equal(body.sources.imerg.imergCount, 0)
+  assert.equal(body.sources.imerg.fallbackCount, 15)
+  assert.match(body.sources.imerg.error, /tidak dapat dijangkau/)
+})

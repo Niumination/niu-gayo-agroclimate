@@ -168,3 +168,41 @@ test('laporan warga abu/gas (FR-VULK-4): wajib kind yang valid', () => {
   assert.equal(validateReport({ location: 'takengon', type: 'gas', kind: 'menyengat' }).report.kind, 'menyengat')
   assert.match(validateReport({ location: 'takengon', type: 'gas', kind: 'parah' }).error, /ringan \| menyengat/)
 })
+
+// ── Sprint B · F-16 (audit 23 Okt 2026): host produksi ditolak MAGMA (403) ──────────────────
+import { fetchMagmaHtml } from '../server/magma.js'
+
+const HALAMAN = '<td>Bur Ni Telong - Aceh <a href="https://magma.esdm.go.id/v1/gunung-api/laporan/1">Lihat laporan</a>'
+
+test('F-16: 403 → satu percobaan ulang dengan UA peramban', async () => {
+  const ua = []
+  const html = await fetchMagmaHtml('https://contoh/magma', {
+    fetchImpl: async (_u, o) => {
+      ua.push(o.headers['User-Agent'])
+      return ua.length === 1 ? { status: 403, ok: false, text: async () => '' } : { status: 200, ok: true, text: async () => HALAMAN }
+    },
+  })
+  assert.strictEqual(html, HALAMAN)
+  assert.strictEqual(ua.length, 2)
+  assert.match(ua[1], /^Mozilla\/5\.0/)
+})
+
+test('F-16: 403 terus → pesan menyebut blokir host, dengan penanda blocked', async () => {
+  await assert.rejects(
+    () => fetchMagmaHtml('https://contoh/magma', { fetchImpl: async () => ({ status: 403, ok: false, text: async () => '' }) }),
+    (err) => {
+      assert.match(err.message, /menolak host ini/)
+      assert.equal(err.blocked, true)
+      return true
+    },
+  )
+})
+
+test('F-16: status lain tidak diulang (mis. 500 cukup sekali)', async () => {
+  let n = 0
+  await assert.rejects(
+    () => fetchMagmaHtml('https://contoh/magma', { fetchImpl: async () => { n++; return { status: 500, ok: false, text: async () => '' } } }),
+    /HTTP 500/,
+  )
+  assert.strictEqual(n, 1)
+})

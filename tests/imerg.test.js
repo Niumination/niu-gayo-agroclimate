@@ -152,3 +152,54 @@ test('antecedentIndexWithFallback: data < 3 hari → fallback model-ecmwf', asyn
   assert.strictEqual(r.source, 'model-ecmwf')
   assert.match(r.fallbackReason, /< 3/)
 })
+
+// ── Sprint B · F-05 (audit 23 Okt 2026): bedakan penyebab IMERG gagal ────────────────────────
+// Sebelum ini, semua kegagalan selain 401/403 menjadi `null` → "0 hari tersedia", sehingga
+// token yang tak terpasang terlihat sama dengan data yang belum terbit.
+import { getImergAri } from '../server/imerg.js'
+
+const titik = (n) => ({ lat: 4.7 + n * 0.001, lon: 96.9 + n * 0.001 })
+const esok = new Date(Date.UTC(2026, 9, 23))
+
+test('F-05: 302 ke URS → galat auth yang menyebut token, bukan "data kosong"', async () => {
+  clearCache()
+  await assert.rejects(
+    () => getImergAri(titik(1).lat, titik(1).lon, { token: 'tok', now: esok, fetchImpl: async () => fakeResp(302, '') }),
+    (err) => {
+      assert.match(err.message, /dialihkan ke login Earthdata \(HTTP 302/)
+      assert.equal(err.code, 'imerg-auth')
+      return true
+    },
+  )
+})
+
+test('F-05: 200 tetapi HTML (halaman login) → galat auth, bukan granule kosong', async () => {
+  clearCache()
+  await assert.rejects(
+    () => getImergAri(titik(2).lat, titik(2).lon, { token: 'tok', now: esok, fetchImpl: async () => fakeResp(200, '<html><body>Earthdata Login</body></html>') }),
+    /membalas halaman HTML \(login\)/,
+  )
+})
+
+test('F-05: 404 tetap berarti granule belum terbit (tanpa galat auth)', async () => {
+  clearCache()
+  await assert.rejects(
+    () => getImergAri(titik(3).lat, titik(3).lon, { token: 'tok', now: esok, fetchImpl: async () => fakeResp(404, 'not found') }),
+    /tersedia 0 hari/,
+  )
+})
+
+test('F-05: host tidak terjangkau → berhenti setelah 2 tanggal, bukan 12', async () => {
+  clearCache()
+  let panggilan = 0
+  await assert.rejects(
+    () => getImergAri(titik(4).lat, titik(4).lon, {
+      token: 'tok',
+      now: esok,
+      fetchImpl: async () => { panggilan++; throw new Error('fetch failed') },
+    }),
+    /tidak dapat dijangkau dari host ini/,
+  )
+  // 2 tanggal × (1 percobaan + 2 ulang) = 6 — jauh di bawah 12 tanggal × 3.
+  assert.ok(panggilan <= 6, `panggilan ${panggilan} harus ≤ 6`)
+})

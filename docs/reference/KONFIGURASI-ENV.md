@@ -64,6 +64,15 @@
 ## Bukan env
 
 - **NASA IMERG (Earthdata):** token dibaca dari `~/.netrc` (baris `machine urs.earthdata.nasa.gov`), bukan variabel lingkungan — lihat `server/imerg.js`.
+  Sejak F-05 (2.2.5) kegagalannya dibedakan dan dilaporkan apa adanya di `/healthz.sources.imerg` dan
+  `fallbackReason` tiap sentra:
+  - `IMERG dialihkan ke login Earthdata (HTTP 302 …)` → token tidak terpasang/ditolak; periksa `~/.netrc`
+    (baris diawali `machine urs.earthdata.nasa.gov` dan memuat token Earthdata yang masih berlaku).
+  - `IMERG auth gagal (HTTP 401/403 …)` → token kedaluwarsa/dicabut.
+  - `IMERG membalas halaman HTML (login)` → token diterima sebagai header tetapi tidak berlaku.
+  - `IMERG tidak dapat dijangkau dari host ini (…)` → egress/ TLS ke `gpm1.gesdisc.eosdis.nasa.gov`
+    diblokir dari host tersebut (bukan soal token). Berhenti setelah 2 tanggal, bukan 12.
+  - `IMERG granule belum terbit (HTTP 404)` → benar-benar data kosong (bukan galat).
 - **Telegram alternatif:** bila variabel tidak ada di lingkungan, server juga membaca `~/.hermes/.env`.
 
 Lihat juga: [ENDPOINT-API.md](ENDPOINT-API.md) · [SKRIP-NPM.md](SKRIP-NPM.md) · `docs/dev/04-DATA-SOURCES.md` (katalog & lisensi sumber)

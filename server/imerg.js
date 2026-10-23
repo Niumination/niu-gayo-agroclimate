@@ -86,6 +86,15 @@ export function parseImergAsciiValue(text) {
   return null
 }
 
+/** Galat bertanda: `code` menentukan apakah panggilan boleh diulang atau harus berhenti.
+ *  Sebelum audit F-05 (23 Okt 2026), semua kegagalan selain 401/403 ditelan menjadi `null`
+ *  ("granule belum terbit"). Akibatnya token yang tidak terpasang — NASA menjawab 302 ke
+ *  halaman login lalu 200 berisi HTML — terlihat persis seperti "data belum tersedia", dan
+ *  sistem menghabiskan 12 hari × 3 percobaan per sentra sebelum menyerah dengan alasan
+ *  yang salah. `imergCount: 0` di /api/alerts adalah gejala, bukan penyebab.
+ */
+const imergError = (message, code) => Object.assign(new Error(message), { code })
+
 async function fetchText(url, token, { fetchImpl, timeoutMs = REQUEST_TIMEOUT_MS, retries = RETRIES } = {}) {
   const doFetch = fetchImpl || ((u, o) => fetch(u, o))
   let lastErr
@@ -95,17 +104,33 @@ async function fetchText(url, token, { fetchImpl, timeoutMs = REQUEST_TIMEOUT_MS
     try {
       const resp = await doFetch(url, {
         signal: ctrl.signal,
+        // Jangan ikuti 302 ke URS: halaman login HTML akan terlihat seperti "data kosong".
+        redirect: 'manual',
         headers: { Authorization: `Bearer ${token}` },
       })
-      if (resp.status === 401 || resp.status === 403) {
-        throw new Error(`IMERG auth gagal (HTTP ${resp.status}) — cek token Earthdata (.netrc)`)
+      const status = resp.status
+      if (status >= 300 && status < 400) {
+        throw imergError(
+          `IMERG dialihkan ke login Earthdata (HTTP ${status} → urs.earthdata.nasa.gov): token tidak terpasang atau tidak diterima`,
+          'imerg-auth',
+        )
       }
-      if (!resp.ok) throw new Error(`IMERG OPeNDAP HTTP ${resp.status}`)
-      return await resp.text()
+      if (status === 401 || status === 403) {
+        throw imergError(`IMERG auth gagal (HTTP ${status}) — cek token Earthdata (~/.netrc)`, 'imerg-auth')
+      }
+      if (status === 404) throw imergError('IMERG granule belum terbit (HTTP 404)', 'imerg-missing')
+      if (!resp.ok) throw imergError(`IMERG OPeNDAP HTTP ${status}`, 'imerg-http')
+      const text = await resp.text()
+      // 200 tetapi HTML = halaman login/portal, bukan nilai OPeNDAP.
+      if (/^\s*</.test(text)) {
+        throw imergError('IMERG membalas halaman HTML (login), bukan data OPeNDAP — token kedaluwarsa/ditolak', 'imerg-auth')
+      }
+      return text
     } catch (err) {
       lastErr = err
-      // 401/403 tidak ada gunanya di-retry (token invalid/expired).
-      if (err.message.startsWith('IMERG auth gagal')) throw err
+      const code = err.code || 'imerg-network'
+      // Auth & granule-hilang tidak ada gunanya diulang.
+      if (code === 'imerg-auth' || code === 'imerg-missing') throw err
       if (attempt < retries) await new Promise((r) => setTimeout(r, 500 * (attempt + 1)))
     } finally {
       clearTimeout(timer)
@@ -122,8 +147,10 @@ export async function fetchImergDailyPoint(dateUtc, lat, lon, token, opts = {}) 
   try {
     text = await fetchText(url, token, opts)
   } catch (err) {
-    if (err.message.includes('auth gagal')) throw err
-    return null // 404 granule belum terbit / network → anggap belum tersedia
+    // Hanya "granule belum terbit" yang berarti data kosong; masalah token/HTTP lain
+    // harus naik ke pemanggil supaya alasan degradasi di API benar dan tidak boros retry.
+    if (err.code === 'imerg-missing' || err.code === 'imerg-http') return null
+    throw err
   }
   // HTTP 200 tapi body error Hyrax → granule tidak valid.
   if (text.includes('Error {') || text.includes('Resource Not Found')) return null
@@ -146,10 +173,23 @@ export async function getImergAri(lat, lon, { token, now = new Date(), fetchImpl
     const values = [] // terbaru dulu
     const dates = []
     const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+    let gagalJaringan = 0
     for (let back = 1; back <= MAX_DAYS_BACK && values.length < NEEDED_DAYS; back++) {
       const d = new Date(start)
       d.setUTCDate(d.getUTCDate() - back)
-      const v = await fetchImergDailyPoint(d, lat, lon, t, { fetchImpl })
+      let v
+      try {
+        v = await fetchImergDailyPoint(d, lat, lon, t, { fetchImpl })
+      } catch (err) {
+        // Host yang tidak bisa menjangkau GES DISC tidak perlu dicoba 12 kali
+        // (3 percobaan × 15 dtk per tanggal = menit). Dua kegagalan berturut-turut
+        // sudah cukup untuk menyimpulkan masalah jangkauan, bukan data kosong.
+        if (err.code === 'imerg-auth') throw err
+        if (++gagalJaringan >= 2) {
+          throw new Error(`IMERG tidak dapat dijangkau dari host ini (${err.message})`, { cause: err })
+        }
+        continue
+      }
       if (v != null) {
         values.push(v)
         dates.push(utcDateKey(d))

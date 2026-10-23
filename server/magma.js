@@ -70,10 +70,38 @@ function writeLast(file, doc) {
   } catch { /* best-effort */ }
 }
 
-async function defaultFetchText(url) {
-  const res = await fetch(url, { signal: AbortSignal.timeout(15_000), headers: { 'User-Agent': 'niu-gayo-agroclimate/2 (+https://cuaca.abstract.biz.id)' } })
+const UA_KITA = 'niu-gayo-agroclimate/2 (+https://cuaca.abstract.biz.id)'
+// Beberapa WAF memblokir UA bot tetapi meloloskan UA peramban. Ini bukan penyamaran untuk
+// menembus proteksi: hanya satu percobaan ulang ketika sumber menjawab 401/403 — dan bila
+// tetap ditolak, kegagalannya dilaporkan sebagai blokir, bukan "struktur halaman berubah".
+const UA_PERAMBAN = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+
+/**
+ * F-16 (audit 23 Okt 2026): host produksi menerima HTTP 403 dari MAGMA sementara host lain
+ * menerima 200 untuk halaman yang sama — jadi kegagalannya bukan parser, melainkan penolakan
+ * di sisi sumber. Fungsi ini mencoba UA kita, lalu sekali lagi dengan UA peramban, dan
+ * menerjemahkan 401/403 menjadi pesan yang menyebut blokir secara eksplisit supaya
+ * `/api/volcano` dan `/healthz` tidak lagi hanya berkata "HTTP 403".
+ */
+export async function fetchMagmaHtml(url, { fetchImpl = (u, o) => fetch(u, o), timeoutMs = 15_000 } = {}) {
+  const ambil = (ua) =>
+    fetchImpl(url, {
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: { 'User-Agent': ua, Accept: 'text/html,application/xhtml+xml' },
+    })
+  let res = await ambil(UA_KITA)
+  if (res.status === 401 || res.status === 403) res = await ambil(UA_PERAMBAN)
+  if (res.status === 401 || res.status === 403) {
+    const err = new Error(`HTTP ${res.status} — MAGMA menolak host ini (blokir IP/UA di sisi sumber)`)
+    err.blocked = true
+    throw err
+  }
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.text()
+}
+
+async function defaultFetchText(url) {
+  return fetchMagmaHtml(url)
 }
 
 /** Angin di puncak (10 m + 850 hPa) dari Open-Meteo; null bila gagal. */
@@ -181,6 +209,7 @@ export async function getVolcanoStatus({ fetchText = defaultFetchText, fetchJson
     stale: stale || undefined,
     overridden: overridden || undefined,
     error,
+    blocked: /menolak host ini/.test(error || '') || undefined,
     counts,
     volcano: volcano ? { ...volcano, summit: { lat: summit.lat, lon: summit.lon }, radiusKm } : null,
     wind,

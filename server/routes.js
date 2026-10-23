@@ -71,6 +71,27 @@ export function createHandler(ctx) {
     try {
       if (path === '/healthz') {
         // NFR: status per sumber dari cache (tanpa memicu fetch) + fitur aktif
+        // F-05 (audit 23 Okt 2026): IMERG tidak punya kunci cache sendiri — hasilnya menempel
+        // pada /api/alerts. Tanpa entri ini, "imergCount: 0" hanya terlihat kalau seseorang
+        // membuka /api/alerts dan membaca staleness; /healthz berkata seolah semuanya normal.
+        const srcImerg = () => {
+          const p = peek('alerts:all')
+          const v = p?.value ?? null
+          const st = v?.staleness
+          if (!st) return { state: 'belum-dimuat' }
+          const alasan = (v?.locations ?? []).map((l) => l?.antecedent?.fallbackReason).find(Boolean)
+          const semuaFallback = st.imergCount === 0
+          return {
+            state: semuaFallback ? 'degraded' : 'ok',
+            fresh: p.fresh,
+            retrievedAt: v.generatedAt ?? null,
+            imergCount: st.imergCount,
+            fallbackCount: st.fallbackCount,
+            total: st.total,
+            maxAgeDays: st.maxAgeDays ?? null,
+            ...(semuaFallback ? { error: alasan || 'semua sentra memakai fallback model ECMWF' } : {}),
+          }
+        }
         const src = (key) => {
           const p = peek(key)
           if (!p) return { state: 'belum-dimuat' }
@@ -90,7 +111,7 @@ export function createHandler(ctx) {
           uptime: process.uptime(),
           cache: cacheStats(),
           features: { hazardsEnabled: HAZARDS_ON, firmsKey: !!FIRMS_MAP_KEY, telegram: !!readToken('TELEGRAM_BOT_TOKEN'), cronToken: !!process.env.ALERTS_CRON_TOKEN },
-          sources: { alerts: src('alerts:all'), bmkgNowcast: src('bmkg:nowcast'), airQuality: src('aq:all'), hotspots: src('firms:all'), fireDanger: src('fire:all'), hazards: src('hazards:all'), quakes: src('quakes:all'), volcano: src('volcano:status'), flood: src('flood:all'), petabencana: src('petabencana:aceh') },
+          sources: { alerts: src('alerts:all'), imerg: srcImerg(), bmkgNowcast: src('bmkg:nowcast'), airQuality: src('aq:all'), hotspots: src('firms:all'), fireDanger: src('fire:all'), hazards: src('hazards:all'), quakes: src('quakes:all'), volcano: src('volcano:status'), flood: src('flood:all'), petabencana: src('petabencana:aceh') },
         })
       }
       if (path === '/api/weather') {

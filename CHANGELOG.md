@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.2.5] — 2026-10-23 — Sumber data: kegagalan IMERG & MAGMA akhirnya bisa didiagnosis
+
+Sprint B bagian 3 — F-05 (IMERG 0/15) dan F-16 (MAGMA 403). Kedua temuan ini **bukan bug parser**:
+parser dan URL terbukti benar saat diuji dari host lain (MAGMA: 200, 69 gunung, Bur Ni Telong
+"Waspada"; IMERG: endpoint menjawab 302/401 sesuai ada-tidaknya token). Yang salah adalah **cara
+sistem melaporkan kegagalannya** — dan itu yang membuat masalah di host tidak pernah bisa dituntaskan.
+
+**F-05 — IMERG: berhenti menyamarkan kegagalan sebagai "data belum terbit"**
+- `fetchText()` dulu menelan semua respons selain 401/403 menjadi `null`. Token yang tidak terpasang
+  membuat NASA mengalihkan (302) ke halaman login, `fetch` mengikuti redirect itu, menerima **200
+  berisi HTML**, dan parser menganggapnya "granule belum ada". Hasilnya `imergCount: 0` dengan alasan
+  menyesatkan, sementara 12 tanggal × 3 percobaan tetap dijalankan.
+- Sekarang `redirect: 'manual'` + klasifikasi eksplisit: `302 → login`, `401/403 → token ditolak`,
+  `200 + HTML → halaman login`, `404 → benar-benar kosong`, selain itu jaringan.
+- Galat auth/HTML **tidak** diulang per tanggal; host tak terjangkau berhenti setelah **2** tanggal
+  (dulu bisa 12). Diukur: satu kegagalan kini selesai ~3,4 detik, bukan puluhan detik/menit.
+- `/healthz` mendapat `sources.imerg` (`imergCount`, `fallbackCount`, `total`, `error` = alasan
+  terakhir dari sentra), jadi `verify:deployment` otomatis menampilkannya sebagai peringatan sumber.
+  `/api/alerts` tetap menyebut alasan per sentra (`antecedent.fallbackReason`).
+
+**F-16 — MAGMA: satu percobaan ulang dengan UA peramban, lalu pesan yang jujur**
+- `fetchMagmaHtml()` mengirim UA aplikasi; bila dijawab 401/403, mencoba **sekali** dengan UA peramban.
+  Bila tetap ditolak, pesannya menyebut blokir di sisi sumber, bukan "HTTP 403" telanjang, dan payload
+  `/api/volcano` menandai `blocked: true`.
+- Nilai terakhir tetap dipakai (`stale: true`) dengan batas umur `MAGMA_STALE_DAYS` seperti sebelumnya.
+
+**Yang belum berubah (dan tidak bisa diselesaikan dari kode):** data IMERG baru akan kembali bila host
+produksi punya token Earthdata yang sah **dan** bisa menjangkau `gpm1.gesdisc.eosdis.nasa.gov`; MAGMA
+baru pulih bila IP host tidak lagi diblokir (atau UA peramban lolos). Keduanya kini terlihat jelas di
+`/healthz` alih-alih tersembunyi.
+
+**Gerbang uji:** 611 tes (+8), eslint 0, build OK, hash aset **tidak berubah**.
+
 ## [2.2.4] — 2026-10-23 — Laporan warga: tulis atomik, simpanan terbatas, rate limit tak bisa dipalsukan
 
 Sprint B bagian 2 — tiga temuan audit pada jalur `POST /api/reports`. Ketiganya berada di satu berkas
