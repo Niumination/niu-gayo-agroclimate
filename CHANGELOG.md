@@ -1,5 +1,43 @@
 # Changelog
 
+## [2.2.4] — 2026-10-23 — Laporan warga: tulis atomik, simpanan terbatas, rate limit tak bisa dipalsukan
+
+Sprint B bagian 2 — tiga temuan audit pada jalur `POST /api/reports`. Ketiganya berada di satu berkas
+(`server/reports.js`) dan satu baris route, jadi digabung dalam satu patch. Bentuk respons API tidak
+berubah: `201` / `400` / `413` / `429` tetap sama.
+
+**F-34 — penulisan atomik**
+- `saveReports()` dulu memanggil `fs.writeFileSync()` langsung ke `reports.json`. Proses yang mati di
+  tengah penulisan meninggalkan JSON terpotong; `loadReports()` menelannya sebagai `[]` dan **seluruh
+  riwayat laporan hilang tanpa suara**.
+- Kini: serialisasi dulu (gagal = tidak menyentuh berkas), tulis ke `*.tmp` di direktori yang sama,
+  `fsync`, lalu `rename` (atomik di POSIX). Galat apa pun membersihkan berkas sementara dan membiarkan
+  berkas lama utuh.
+
+**F-35 — simpanan tidak lagi tumbuh tanpa batas**
+- Tiap kiriman dulu menambah entri selamanya, sementara API hanya menyajikan 7 hari.
+- Kini `pruneReports()` mempertahankan **30 hari** dan paling banyak **5 000 entri** (±1 MB), entri
+  tertua dibuang lebih dulu; entri tanpa `timestamp` valid ikut dibuang. `loadReports()` juga menolak
+  JSON yang bukan larik.
+
+**F-36 — rate limit tidak bisa dilewati dengan header buatan sendiri**
+- Kunci dulu diambil dari `x-forwarded-for` apa adanya (dipecah pada koma pertama) — nilai yang
+  sepenuhnya ditulis klien. Mengganti header tiap permintaan = batas 5/jam tidak pernah tercapai, dan
+  tiap IP palsu menjadi kunci baru di peta in-memory.
+- Kini `clientIp()`: `cf-connecting-ip` (ditimpa Cloudflare) → XFF **hanya** bila `TRUST_PROXY_XFF=1`,
+  dengan hop **terakhir** (proxy terdekat) → alamat soket. Peta kunci dipangkas saat melewati
+  **20 000** kunci, jadi IP palsu tidak bisa menggelembungkan memori.
+
+**Bukti runtime (server lokal, port 7461/7462):**
+- 6 × `POST /api/reports` dengan `x-forwarded-for` **berbeda** tiap kali → `201 201 201 201 201 429`.
+  Sebelum perbaikan, keenamnya `201`.
+- Direktori data dibuat read-only → `POST` menjawab `502`, `reports.json` **utuh**, 0 berkas `.tmp`
+  tertinggal (dulu penulisan langsung ke berkas tujuan).
+- Berkas laporan tetap JSON valid dan hanya berisi entri yang lolos validasi.
+
+**Gerbang uji:** 603 tes (+7), eslint 0, cakupan baris 96,9 %, build OK, hash aset **tidak berubah**
+(`index-phbGh5bg.js` / `index-B8VTY5rg.css`) — nol perubahan tampilan.
+
 ## [2.2.3] — 2026-10-23 — Gerbang aksesibilitas di browser masuk CI (F-39)
 
 Sprint B dibuka dengan temuan yang paling menahan: sampai 2.2.2 seluruh pemeriksaan a11y repo berjalan

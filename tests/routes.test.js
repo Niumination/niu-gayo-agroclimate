@@ -5,6 +5,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { SECURITY_HEADERS, CAP_HEADERS, tokenMatches, createHandler } from '../server/routes.js'
+import { clientIp } from '../server/reports.js'
 
 function fakeRes() {
   return {
@@ -149,4 +150,32 @@ test('createHandler: /api/ensemble upstream gagal → JSON degraded 200, bukan 5
     data: null,
   })
   assert.ok(Number.isFinite(Date.parse(JSON.parse(res.body).retrievedAt)))
+})
+
+// Sprint B · F-36 (audit 23 Okt 2026) — jalur HTTP laporan warga memakai clientIp().
+test('createHandler: POST /api/reports mengabaikan x-forwarded-for buatan klien', async () => {
+  const kunci = []
+  const handler = createHandler({
+    VALID_LOCATIONS: new Set(['takengon']),
+    clientIp,
+    rateLimited: (ip) => { kunci.push(ip); return false },
+    validateReport: () => ({ report: { location: 'takengon', type: 'longsor', note: '' } }),
+    submitReport: async () => ({ saved: { ok: true }, relayed: false }),
+  })
+  const kirim = async (xff) => {
+    const res = fakeRes()
+    const body = JSON.stringify({ location: 'takengon', type: 'longsor' })
+    const req = {
+      url: '/api/reports',
+      method: 'POST',
+      headers: { 'x-forwarded-for': xff, 'content-type': 'application/json' },
+      socket: { remoteAddress: '10.0.0.9' },
+      async *[Symbol.asyncIterator]() { yield Buffer.from(body) },
+    }
+    await handler(req, res)
+    return res.status
+  }
+  assert.equal(await kirim('1.1.1.1'), 201)
+  assert.equal(await kirim('2.2.2.2'), 201)
+  assert.deepEqual(kunci, ['10.0.0.9', '10.0.0.9'], 'dua header berbeda harus memakai kunci yang sama')
 })

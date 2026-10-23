@@ -10,6 +10,13 @@ const DATA_DIR = path.join(__dirname, 'data')
 const REPORTS_FILE = path.join(DATA_DIR, 'reports.json')
 const RATE_LIMIT = 5 // per jam per IP
 const HOUR_MS = 60 * 60 * 1000
+// F-35 (audit 23 Okt 2026): berkas laporan tumbuh tanpa batas — tiap POST menambah satu entri
+// selamanya, padahal API hanya menyajikan 7 hari. Simpan 30 hari dan paling banyak 5 000 entri
+// (±1 MB); entri tertua dibuang lebih dulu.
+export const RETENTION_DAYS = 30
+export const MAX_REPORTS = 5_000
+// F-36: peta rate limit juga tidak boleh tumbuh tanpa batas oleh IP palsu.
+export const MAX_RATE_KEYS = 20_000
 
 // Baca token dari env / ~/.hermes/.env (pattern sama seperti office-bridge).
 export function readToken(name) {
@@ -48,19 +55,96 @@ function ensureStore() {
 
 export function loadReports() {
   try {
-    return JSON.parse(fs.readFileSync(REPORTS_FILE, 'utf8'))
+    const parsed = JSON.parse(fs.readFileSync(REPORTS_FILE, 'utf8'))
+    return Array.isArray(parsed) ? parsed : []
   } catch {
     return []
   }
 }
 
+/** Buang entri kedaluwarsa/tak bertanggal, lalu batasi jumlahnya (terbaru dipertahankan). */
+export function pruneReports(list, now = Date.now()) {
+  const cutoff = now - RETENTION_DAYS * 24 * HOUR_MS
+  const kept = (Array.isArray(list) ? list : []).filter((r) => {
+    const t = Date.parse(r?.timestamp)
+    return Number.isFinite(t) && t >= cutoff
+  })
+  return kept.length > MAX_REPORTS ? kept.slice(kept.length - MAX_REPORTS) : kept
+}
+
+/**
+ * Tulis JSON secara atomik — F-34 (audit 23 Okt 2026).
+ * `writeFileSync` langsung ke berkas tujuan membuat proses yang mati di tengah penulisan
+ * meninggalkan JSON terpotong; `loadReports()` lalu mengembalikan [] dan seluruh riwayat
+ * laporan hilang tanpa suara. Urutannya sekarang: serialisasi → tulis ke berkas sementara di
+ * direktori yang sama → fsync → rename (atomik di POSIX). Kegagalan apa pun membersihkan
+ * berkas sementara dan membiarkan berkas lama utuh.
+ */
+export function writeJsonAtomic(file, data) {
+  const json = JSON.stringify(data, null, 2) // lempar sebelum menyentuh berkas
+  const tmp = `${file}.${process.pid}.${Date.now().toString(36)}.tmp`
+  let fd = null
+  try {
+    fd = fs.openSync(tmp, 'w')
+    fs.writeFileSync(fd, json)
+    fs.fsyncSync(fd)
+    fs.closeSync(fd)
+    fd = null
+    fs.renameSync(tmp, file)
+  } catch (err) {
+    if (fd !== null) {
+      try { fs.closeSync(fd) } catch { /* sudah tertutup */ }
+    }
+    try { fs.unlinkSync(tmp) } catch { /* tidak sempat dibuat */ }
+    throw err
+  }
+}
+
 function saveReports(list) {
   ensureStore()
-  fs.writeFileSync(REPORTS_FILE, JSON.stringify(list, null, 2))
+  writeJsonAtomic(REPORTS_FILE, pruneReports(list))
 }
 
 // --- Rate limit per IP (in-memory) ---
 const hits = new Map() // ip -> [timestamps]
+
+/** Kunci rate limit yang dipakai nyata.
+ *  F-36 (audit 23 Okt 2026): dulu `x-forwarded-for` diambil apa adanya dan dipecah pada koma
+ *  pertama — nilai yang sepenuhnya ditulis klien. Satu header acak per permintaan cukup untuk
+ *  melewati batas 5/jam tanpa henti, dan tiap IP palsu baru menjadi kunci baru di `hits`.
+ *  Urutan kepercayaan sekarang: `cf-connecting-ip` (ditimpa Cloudflare, bukan disisipkan klien)
+ *  → XFF hanya bila operator menyatakan ada proxy tepercaya (`TRUST_PROXY_XFF=1`, ambil hop
+ *  terakhir yang paling dekat) → alamat soket sebenarnya.
+ */
+export function clientIp(req, { trustProxyXff = process.env.TRUST_PROXY_XFF === '1' } = {}) {
+  const cf = req?.headers?.['cf-connecting-ip']
+  if (cf) return String(cf).split(',')[0].trim()
+  if (trustProxyXff) {
+    const hops = String(req?.headers?.['x-forwarded-for'] || '')
+      .split(',')
+      .map((h) => h.trim())
+      .filter(Boolean)
+    if (hops.length) return hops[hops.length - 1]
+  }
+  return req?.socket?.remoteAddress || '?'
+}
+
+/** Jumlah kunci yang sedang disimpan (dipakai uji & pemantauan). */
+export function rateLimitStoreSize() {
+  return hits.size
+}
+
+/** Buang kunci kedaluwarsa; bila masih melebihi batas, buang yang paling lama tak aktif. */
+function pruneRateStore(now) {
+  for (const [key, arr] of hits) {
+    if (!arr.some((t) => now - t < HOUR_MS)) hits.delete(key)
+  }
+  while (hits.size > MAX_RATE_KEYS) {
+    const oldest = hits.keys().next().value
+    hits.delete(oldest)
+  }
+}
+
 export function rateLimited(ip) {
   const now = Date.now()
   const arr = (hits.get(ip) || []).filter((t) => now - t < HOUR_MS)
@@ -70,6 +154,7 @@ export function rateLimited(ip) {
   }
   arr.push(now)
   hits.set(ip, arr)
+  if (hits.size > MAX_RATE_KEYS) pruneRateStore(now)
   return false
 }
 

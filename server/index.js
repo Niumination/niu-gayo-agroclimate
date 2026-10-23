@@ -33,7 +33,7 @@ import { assessDrought } from '../src/domain/hazards/drought.js'
 import { seasonalInfoExtended } from '../src/domain/seasonal.js'
 import climateOutlook from '../src/data/hazards/climateOutlook.json' with { type: 'json' }
 import disasterHistory from '../src/data/disasterHistory.json' with { type: 'json' }
-import { validateReport, rateLimited, submitReport, recentReports, readToken } from './reports.js'
+import { validateReport, rateLimited, submitReport, recentReports, readToken, clientIp } from './reports.js'
 import { getHazardsForLocation, getHazardsAll, archiveSnapshot } from './hazards.js'
 import { runAlertCycle, readFeed } from './alerts.js'
 import { getQuakes, quakesForLocation } from './bmkgQuake.js'
@@ -139,7 +139,7 @@ const handler = createHandler({
   hazardsGet, hazardsAllGet, consensusGet,
   SPI_BASELINE, computeSpi, assessDrought, seasonalInfoExtended, climateOutlook, disasterHistory,
   readFeed, runAlertCycle, toCapXml,
-  validateReport, rateLimited, submitReport, recentReports,
+  validateReport, rateLimited, submitReport, recentReports, clientIp,
   PKG_VERSION, BUILD_INFO, HAZARDS_ON, FIRMS_MAP_KEY, readToken,
 })
 

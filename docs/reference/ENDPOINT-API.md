@@ -35,7 +35,7 @@ Semua endpoint menerima **GET** kecuali disebut lain. `location` = id sentra dar
 | `/api/hazards?location=<id>\|all` | **11 bahaya** dengan level seragam, metrik, anjuran (umum/rentan/kebun/sekolah), sumber, `interactions[]`; `all` = ringkasan 15 sentra + **penulisan arsip harian** |
 | `/api/alerts/feed[?hours=&location=&hazard=&id=&format=]` | peringatan bergaya CAP 1.2. `format=cap` → **CAP 1.2 XML** (satu peringatan, `id` opsional), selain itu JSON. `hours` 1…336 (default 24) |
 | `POST /api/alerts/run[?dryRun=1&only=gempa,vulkanik]` | menjalankan siklus peringatan (dipakai `scripts/alerts-cron.mjs`). `dryRun` tidak mengirim & tidak mengubah state; `only` = jalur cepat per bahaya |
-| `/api/reports` | **GET** riwayat laporan warga 7 hari (`?location=`); **POST** kirim laporan (validasi + rate limit **5/jam/IP**, payload ≤ 10 kB) → `201` |
+| `/api/reports` | **GET** riwayat laporan warga 7 hari (`?location=`); **POST** kirim laporan (validasi + rate limit **5/jam/IP**, payload ≤ 10 kB) → `201`. Penyimpanan: 30 hari / ≤ 5 000 entri, ditulis atomik |
 | `/api/seasonal?month=<1-12>` | kalender musiman diperluas (fase kering, jendela embun upas, penyesuaian ENSO/IOD) |
 | `/api/disaster-history?location=<id>[&hazard=<id>]` | riwayat kejadian terkurasi per sentra + ringkasan per bahaya |
 
@@ -51,6 +51,8 @@ Semua endpoint menerima **GET** kecuali disebut lain. `location` = id sentra dar
 - **Header keamanan** pada **semua** respons (JSON maupun CAP XML): `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`.
 - **`POST /api/alerts/run`**: bila `ALERTS_CRON_TOKEN` terisi, wajib header `x-cron-token` (dibandingkan constant-time). Salah → `403`; metode salah → `405`.
 - **Pola degraded**: sumber yang gagal **tidak** membuat endpoint `5xx`. Bentuk responsnya tetap, dengan `degraded: true` + `error`, dan bila ada nilai terakhir tersimpan maka nilai itu dipakai beserta `retrievedAt`. Uji `scripts/smoke.mjs` menegakkan aturan ini.
+- **Kunci rate limit laporan** (`POST /api/reports`): `cf-connecting-ip` bila ada (ditimpa Cloudflare), selain itu alamat soket. `x-forwarded-for` **diabaikan** kecuali operator menyalakan `TRUST_PROXY_XFF=1` — nilai itu ditulis klien, jadi memakainya sebagai kunci membuat batas 5/jam bisa dilewati hanya dengan mengganti header tiap permintaan.
+- **Penyimpanan laporan**: `server/data/reports.json` dipangkas ke 30 hari dan paling banyak 5 000 entri (API menyajikan 7 hari), lalu ditulis atomik — berkas sementara + `fsync` + `rename` — sehingga proses yang mati di tengah penulisan tidak meninggalkan JSON terpotong yang membuat seluruh riwayat hilang.
 - **Status kode**: `200` normal · `201` laporan dibuat · `400` parameter salah · `403` token cron · `404` tidak ditemukan · `405` metode salah · `413` payload terlalu besar · `429` rate limit laporan · `502` galat internal saat menangani permintaan.
 - **Kontrak hasil bahaya** (dipakai `/api/hazards`): `{ id, label, group, level, levelLabel, score, headline, detail, metrics[], advice{umum,rentan,kebun,sekolah}, sources[], flags, degraded, validUntil, evaluatedAt }`. Level: `n/a < rendah < waspada < bahaya < ekstrem`.
 

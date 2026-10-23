@@ -62,7 +62,7 @@ export function createHandler(ctx) {
       hazardsGet, hazardsAllGet, consensusGet,
       SPI_BASELINE, computeSpi, assessDrought, seasonalInfoExtended, climateOutlook, disasterHistory,
       readFeed, runAlertCycle, toCapXml,
-      validateReport, rateLimited, submitReport, recentReports,
+      validateReport, rateLimited, submitReport, recentReports, clientIp,
       PKG_VERSION, BUILD_INFO = {}, HAZARDS_ON, FIRMS_MAP_KEY, readToken,
   } = ctx
   return async (req, res) => {
@@ -334,7 +334,8 @@ export function createHandler(ctx) {
       // F8 — laporan warga (POST simpan + relay Telegram #55; GET riwayat 7 hari)
       if (path === '/api/reports') {
         if (req.method === 'POST') {
-          const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '?').split(',')[0].trim()
+          // F-36: kunci rate limit tidak boleh berasal dari header yang ditulis klien.
+          const ip = clientIp(req)
           if (rateLimited(ip)) return json(res, 429, { error: 'batas 5 laporan/jam terlampaui' })
           let body = ''
           for await (const chunk of req) {
