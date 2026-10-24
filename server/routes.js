@@ -9,12 +9,21 @@
  * F-13: header keamanan dasar terpasang pada semua respons (JSON & CAP XML).
  */
 import crypto from 'node:crypto'
+import { assessSources } from '../src/domain/sourceHealth.js'
 
 /** F-13 — header keamanan dasar untuk seluruh respons. */
 export const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
+  // Audit F-19 — `DENY` memblokir semua iframe, termasuk iframe sah dari situs sendiri
+  // (mis. pratinjau CAP di halaman internal). `SAMEORIGIN` menutup klik-jacking tanpa itu.
+  'X-Frame-Options': 'SAMEORIGIN',
   'Referrer-Policy': 'no-referrer',
+  // Audit F-11 — header yang belum ada sama sekali sebelumnya.
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=(), usb=()',
+  'Cross-Origin-Resource-Policy': 'same-site',
+  // Respons API bukan dokumen: tidak perlu memuat apa pun.
+  'Content-Security-Policy': "default-src 'none'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'",
 }
 
 /** Header respons CAP 1.2 XML (F-13 + CORS publik). */
@@ -22,6 +31,20 @@ export const CAP_HEADERS = {
   'Content-Type': 'application/cap+xml; charset=utf-8',
   'Access-Control-Allow-Origin': '*',
   ...SECURITY_HEADERS,
+}
+
+/** Audit F-19 — balasan untuk permintaan tulis tidak boleh memasang `Access-Control-Allow-Origin: *`:
+ *  dengan begitu situs mana pun bisa mengirim laporan/flush atas nama pengunjung. Permintaan
+ *  same-origin tetap bekerja tanpa header CORS. */
+function jsonWrite(res, status, body) {
+  const data = JSON.stringify(body)
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store',
+    Vary: 'Origin',
+    ...SECURITY_HEADERS,
+  })
+  res.end(data)
 }
 
 function json(res, status, body) {
@@ -63,7 +86,7 @@ export function createHandler(ctx) {
       SPI_BASELINE, computeSpi, assessDrought, seasonalInfoExtended, climateOutlook, disasterHistory,
       readFeed, runAlertCycle, toCapXml,
       validateReport, rateLimited, submitReport, recentReports, clientIp,
-      PKG_VERSION, BUILD_INFO = {}, HAZARDS_ON, FIRMS_MAP_KEY, readToken,
+      PKG_VERSION, BUILD_INFO = {}, HAZARDS_ON, FIRMS_MAP_KEY, readToken, onCacheCleared,
   } = ctx
   return async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
@@ -98,6 +121,8 @@ export function createHandler(ctx) {
           const v = p.value ?? {}
           return { state: v.degraded ? 'degraded' : 'ok', fresh: p.fresh, retrievedAt: v.retrievedAt ?? v.generatedAt ?? null, error: v.error ?? v.reason ?? undefined }
         }
+        // F-05/F-16 — satu tempat menghitung "sumber mana yang bermasalah", dipakai alarm cron.
+        const sources = { alerts: src('alerts:all'), imerg: srcImerg(), bmkgNowcast: src('bmkg:nowcast'), airQuality: src('aq:all'), hotspots: src('firms:all'), fireDanger: src('fire:all'), hazards: src('hazards:all'), quakes: src('quakes:all'), volcano: src('volcano:status'), flood: src('flood:all'), petabencana: src('petabencana:aceh') }
         return json(res, 200, {
           ok: true,
           version: PKG_VERSION,
@@ -111,7 +136,8 @@ export function createHandler(ctx) {
           uptime: process.uptime(),
           cache: cacheStats(),
           features: { hazardsEnabled: HAZARDS_ON, firmsKey: !!FIRMS_MAP_KEY, telegram: !!readToken('TELEGRAM_BOT_TOKEN'), cronToken: !!process.env.ALERTS_CRON_TOKEN },
-          sources: { alerts: src('alerts:all'), imerg: srcImerg(), bmkgNowcast: src('bmkg:nowcast'), airQuality: src('aq:all'), hotspots: src('firms:all'), fireDanger: src('fire:all'), hazards: src('hazards:all'), quakes: src('quakes:all'), volcano: src('volcano:status'), flood: src('flood:all'), petabencana: src('petabencana:aceh') },
+          sources,
+          health: assessSources(sources),
         })
       }
       if (path === '/api/weather') {
@@ -224,7 +250,7 @@ export function createHandler(ctx) {
         // ADR-22: rujukan peringatan resmi BMKG yang aktif untuk Aceh disertakan di setiap pesan
         const official = bmkg?.active ? (bmkg.alerts ?? []).filter((a) => a.isAceh !== false).slice(0, 3).map((a) => ({ authority: 'BMKG', title: a.title, link: a.link, pubDate: a.pubDate })) : []
         const result = await runAlertCycle(all, { dryRun, official, only })
-        return json(res, 200, result)
+        return jsonWrite(res, 200, result)
       }
       // Fase 2.1 H-GEMPA — FR-GEMPA-1: gempa relevan (≤ 300 km / disebut Aceh) + jarak per sentra bila ?location=
       if (path === '/api/quakes') {
@@ -366,7 +392,7 @@ export function createHandler(ctx) {
           const parsed = validateReport(safeJson(body))
           if (parsed.error) return json(res, 400, { error: parsed.error })
           const result = await submitReport(parsed.report)
-          return json(res, 201, result)
+          return jsonWrite(res, 201, result)
         }
         const location = url.searchParams.get('location')
         if (location && !VALID_LOCATIONS.has(location)) {
@@ -390,12 +416,22 @@ export function createHandler(ctx) {
         const allowed = expected ? tokenMatches(req.headers['x-cron-token'], expected) : (loopback && !viaProxy)
         if (!allowed) return json(res, 403, { error: 'flush cache butuh token cron (x-cron-token) dari host lokal' })
         clearCache()
-        return json(res, 200, { ok: true })
+        // Audit F-17 — cache kosong berarti pengguna berikutnya menanggung ~5 detik lagi.
+        // Pemanasan dijalankan di latar; balasan tidak menunggu (flush tetap cepat).
+        try {
+          onCacheCleared?.()
+        } catch {
+          /* pemanasan bersifat best-effort */
+        }
+        return jsonWrite(res, 200, { ok: true })
       }
       return json(res, 404, { error: 'not found' })
     } catch (err) {
-      console.error(`[api] ${path}:`, err.message)
-      return json(res, 502, { error: err.message })
+      // Audit F-31 — pesan internal (host upstream, path server, nama token) tidak boleh
+      // sampai ke klien. Yang dikirim hanya kode + nomor rujukan; detailnya di log server.
+      const ref = `e${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+      console.error(`[api] ${ref} ${path}:`, err?.message || err)
+      return json(res, 502, { error: 'galat internal saat mengambil data', code: 'internal', ref })
     }
   }
 }

@@ -11,6 +11,8 @@ import { sliceHourlyFromCurrent, currentSolarRad, apiTimestamp } from '../domain
 import { weatherFeatures } from '../domain/hazards/features.js'
 import { evaluateAll } from '../domain/hazards/index.js'
 import { getHiddenHazards } from '../lib/prefs.js'
+import { antecedentIndex } from '../domain/antecedentIndex.js'
+import { fetchWithTimeout } from '../lib/http.js'
 
 function colorForLevel(level) {
   const l = String(level)
@@ -65,16 +67,13 @@ export async function getAgroClimateData(location, { onLate } = {}) {
 
   // --- M3: longsor — skor gabungan ---
   const idx0 = nowIdx >= 0 ? nowIdx : 0
-  const rain24 = (hourly.precipitation || [])
-    .slice(Math.max(0, idx0 - 23), idx0 + 1)
-    .reduce((a, b) => a + (b ?? 0), 0)
-  const rain72 = (hourly.precipitation || [])
-    .slice(Math.max(0, idx0 - 71), idx0 + 1)
-    .reduce((a, b) => a + (b ?? 0), 0)
+  // Audit F-30 — ARI dihitung oleh fungsi yang sama dengan server (src/domain/antecedentIndex.js),
+  // bukan rumus salinan. Nilainya identik dengan sebelumnya; hanya sumbernya yang disatukan.
+  const ari = antecedentIndex(hourly.precipitation || [], idx0)
+  const rain24 = ari.ari24
+  const rain72 = ari.ari72
   const peakHourly = Math.max(0, ...(hourly.precipitation || []).slice(Math.max(0, idx0 - 23), idx0 + 1))
   const soilNow = hourly.soil_moisture_0_to_7cm?.[idx0] ?? 0
-  // F2 (ADR-9): ARI antecedent dari model (upgrade satelit IMERG menunggu Earthdata).
-  const ari = { ari24: Math.round(rain24 * 10) / 10, ari72: Math.round(rain72 * 10) / 10, source: 'model-ecmwf' }
   const ls = landslideScore({
     rain24,
     rain72,
@@ -126,7 +125,7 @@ export async function getAgroClimateData(location, { onLate } = {}) {
     const api = (p) => `${base.replace(/\/$/, '')}/api/${p}`
     // F-06: laporan warga ikut gelombang paralel (dulu serial setelah gelombang utama,
     // sehingga menambah ekor tunggu tanpa alasan).
-    const reportsP = fetch(api(`reports?location=${encodeURIComponent(location.id)}`))
+    const reportsP = fetchWithTimeout(api(`reports?location=${encodeURIComponent(location.id)}`))
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null)
     // F-06: pengirim hasil "menyusul" — semua kegagalan ditelan, tidak pernah memblokir data inti.
@@ -135,32 +134,32 @@ export async function getAgroClimateData(location, { onLate } = {}) {
       try { onLate?.(key, value) } catch { /* jangan blokir dashboard */ }
     }
     // Dua permintaan tampilan-saja: tetap berjalan sekarang, hasilnya lewat `onLate`.
-    fetch(api(`consensus?location=${encodeURIComponent(location.id)}`))
+    fetchWithTimeout(api(`consensus?location=${encodeURIComponent(location.id)}`))
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null)
       .then((payload) => emitLate('consensus', payload))
-    fetch(api('external-reports'))
+    fetchWithTimeout(api('external-reports'))
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null)
       .then((payload) => emitLate('externalReports', payload))
     const [bRes, hRes, sRes, aRes, fRes, dRes, qRes, vRes, kRes, gRes] = await Promise.allSettled([
-      fetch(api('bmkg-nowcast')),
-      fetch(api(`disaster-history?location=${encodeURIComponent(location.id)}`)),
-      fetch(api('seasonal')),
+      fetchWithTimeout(api('bmkg-nowcast')),
+      fetchWithTimeout(api(`disaster-history?location=${encodeURIComponent(location.id)}`)),
+      fetchWithTimeout(api('seasonal')),
       // H-ASAP (v2 Fase 1) — ISPU estimasi CAMS + proksi kabut asap (best-effort)
-      fetch(api(`air-quality?location=${encodeURIComponent(location.id)}`)),
+      fetchWithTimeout(api(`air-quality?location=${encodeURIComponent(location.id)}`)),
       // H-API (Sprint 2) — FWI harian + hotspot FIRMS + HTH; H-KERING — HTH & neraca air (best-effort)
-      fetch(api(`fire-danger?location=${encodeURIComponent(location.id)}`)),
-      fetch(api(`drought?location=${encodeURIComponent(location.id)}`)),
+      fetchWithTimeout(api(`fire-danger?location=${encodeURIComponent(location.id)}`)),
+      fetchWithTimeout(api(`drought?location=${encodeURIComponent(location.id)}`)),
       // Fase 2 — gempa BMKG, Burni Telong (MAGMA), konvektif (CAPE/LI), debit GloFAS (best-effort)
-      fetch(api(`quakes?location=${encodeURIComponent(location.id)}`)),
-      fetch(api('volcano')),
-      fetch(api(`convective?location=${encodeURIComponent(location.id)}`)),
-      fetch(api('flood')),
+      fetchWithTimeout(api(`quakes?location=${encodeURIComponent(location.id)}`)),
+      fetchWithTimeout(api('volcano')),
+      fetchWithTimeout(api(`convective?location=${encodeURIComponent(location.id)}`)),
+      fetchWithTimeout(api('flood')),
     ])
     // 1.6b — ringkasan level 15 sentra untuk peta skematik (best-effort).
     // F-06: tetap dimulai lebih awal, tetapi TIDAK ditunggu di sini (lihat `onHazardsAll`).
-    const hzAllP = fetch(api('hazards?location=all'))
+    const hzAllP = fetchWithTimeout(api('hazards?location=all'))
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null)
       .then((payload) => {

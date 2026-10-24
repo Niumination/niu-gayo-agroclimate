@@ -10,9 +10,9 @@
  * Skrip ini menyalakan tiruan produksi lokal — `dist/` dilayani seperti host
  * statis, `/api/*` diteruskan ke `server/index.js` — lalu menjalankan axe-core
  * di tiga permukaan yang paling sering berubah:
- *   1. Papan desktop          /
- *   2. Peta hidup — Tanah     /?tampilan=peta-hidup
- *   3. Peta hidup — Langit    /?tampilan=peta-hidup  (localStorage tema gelap)
+ *   1. Peta hidup — Tanah     /
+ *   2. Peta hidup — Langit    /?tampilan=peta-hidup  (localStorage tema gelap)
+ *   3. sentra dari URL   /?sentra=linge
  *
  * Pemakaian:
  *   npm run build && npm run check:a11y
@@ -66,8 +66,9 @@ function findChrome() {
 
 /** Permukaan yang diperiksa. `prepare` dijalankan sebelum navigasi (localStorage). */
 const SURFACES = [
-  { name: 'Papan desktop', url: '/', wait: '.desk-rail-actions' },
-  { name: 'Peta hidup — Tanah', url: '/?tampilan=peta-hidup', wait: '.lm-bottom' },
+  // F-32 — Peta Hidup kini satu-satunya UI desktop, jadi akar situs (`/`) ikut diperiksa
+  // dengan kait yang sama; permukaan "papan" tidak ada lagi.
+  { name: 'Peta hidup — Tanah', url: '/', wait: '.lm-bottom' },
   {
     name: 'Peta hidup — Langit',
     url: '/?tampilan=peta-hidup',
@@ -77,6 +78,8 @@ const SURFACES = [
       localStorage.setItem('niu.arah', 'langit')
     },
   },
+  // Keadaan berbeda, bukan halaman berbeda: sentra dari URL (audit F-24) tetap harus bersih.
+  { name: 'Peta hidup — sentra dari URL', url: '/?sentra=linge', wait: '.lm-bottom' },
 ]
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']

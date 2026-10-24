@@ -46,6 +46,7 @@ import { toCapXml } from '../src/domain/alert.js'
 import { parseEnabled } from '../src/domain/hazards/index.js'
 import { LOCATIONS } from '../src/data/locations.js'
 import { createHandler } from './routes.js'
+import { createPrewarm, schedulePrewarm } from './prewarm.js'
 
 const VALID_LOCATIONS = new Set(LOCATIONS.map((l) => l.id)) // Fase 0.2: satu sumber kebenaran (src/data/locations.js)
 
@@ -130,6 +131,11 @@ const consensusGet = (id) =>
     return computeConsensus(id, { bmkgAlertActive: bmkg.active })
   })
 
+// Audit F-17 — pemanasan cache sesudah start & sesudah flush (lihat server/prewarm.js).
+const prewarm = createPrewarm({
+  hazardsAllGet, bmkgGet, quakesAllGet, floodGet,
+})
+
 // F-09: perakitan konteks untuk router (server/routes.js) — dependensi eksplisit, tanpa variabel implisit.
 const handler = createHandler({
   VALID_LOCATIONS, LOCATIONS, peek, cacheStats, clearCache,
@@ -141,9 +147,12 @@ const handler = createHandler({
   readFeed, runAlertCycle, toCapXml,
   validateReport, rateLimited, submitReport, recentReports, clientIp,
   PKG_VERSION, BUILD_INFO, HAZARDS_ON, FIRMS_MAP_KEY, readToken,
+  onCacheCleared: () => { prewarm('flush').catch(() => {}) },
 })
 
 const server = http.createServer(handler)
+
+schedulePrewarm(prewarm)
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`[api] agroclimate-api listening on 127.0.0.1:${PORT} (ttl weather=${PROXY_TTL_MIN}m ensemble=${ENSEMBLE_TTL_MIN}m wn2=${WN2_TTL_MIN}m bmkg=${BMKG_TTL_MIN}m aq=${AQ_TTL_MIN}m archive=${ARCHIVE_TTL_MIN}m firms=${FIRMS_TTL_MIN}m${FIRMS_MAP_KEY ? '' : ' [FIRMS_MAP_KEY kosong → hotspot degraded]'})`)

@@ -3,6 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Audit F-21 — build menargetkan ES2020. Peramban yang lebih tua tidak akan
+         menjalankan modul sama sekali; tanpa pemberitahuan, layar tinggal kosong.
+         Blok `nomodule` hanya dieksekusi peramban lama, jadi tidak membebani yang modern. -->
+    <script nomodule>
+      document.documentElement.classList.add('niu-no-module')
+    </script>
+    <style>
+      .niu-no-module #root { display: none !important; }
+      .niu-no-module body::before {
+        content: 'Peramban ini terlalu lama untuk Niu. Perbarui Chrome, Firefox, Safari, atau Edge versi terbaru untuk melihat cuaca dan peringatan dini Tanah Gayo.';
+        display: block; padding: 24px; font: 16px/1.6 system-ui, -apple-system, sans-serif;
+        color: #22301F; background: #F1E7D8;
+      }
+      @media (prefers-color-scheme: dark) {
+        .niu-no-module body::before { color: #E9E2D4; background: #16273B; }
+      }
+    </style>
     <title>Niu — Cuaca &amp; Peringatan Dini Tanah Gayo</title>
     <meta name="description" content="Cuaca, risiko kebun kopi, dan peringatan dini bencana untuk Tanah Gayo, Aceh Tengah. Dibuat ringkas agar terbaca saat sinyal lemah." />
     <meta name="color-scheme" content="light dark" />

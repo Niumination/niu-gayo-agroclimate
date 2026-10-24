@@ -27,9 +27,13 @@ test('F-39: axe-core dan puppeteer-core adalah dependensi dev (bukan runtime)', 
 })
 
 test('F-39: gerbang memeriksa tiga permukaan yang diaudit Sprint A', () => {
-  for (const nama of ['Papan desktop', 'Peta hidup — Tanah', 'Peta hidup — Langit']) {
+  // F-32 — permukaan "Papan desktop" dihapus karena papannya diarsipkan; dua permukaan
+  // Peta Hidup tetap ada dan permukaan ketiga menguji keadaan sentra-dari-URL.
+  for (const nama of ['Peta hidup — Tanah', 'Peta hidup — Langit']) {
     assert.ok(gate.includes(nama), `permukaan "${nama}" harus tetap diaudit`)
   }
+  assert.ok(gate.includes('?sentra=linge'), 'permukaan sentra-dari-URL harus tetap diaudit')
+  assert.equal((gate.match(/name: 'Peta hidup — Tanah'/g) ?? []).length, 1, 'permukaan Tanah diaudit sekali')
   // Permukaan Langit harus benar-benar memakai tema gelap, bukan sekadar nama.
   assert.match(gate, /localStorage\.setItem\('nga\.theme',\s*'dark'\)/)
   assert.match(gate, /localStorage\.setItem\('niu\.arah',\s*'langit'\)/)

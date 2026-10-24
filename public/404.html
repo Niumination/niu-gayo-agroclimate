@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="id" data-arah="tanah">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Halaman tidak ditemukan · Niu Gayo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --tanah: #f1e7d8;
+        --kartu: #fbf6ec;
+        --tinta: #241e17;
+        --redup: #6a5c4b;
+        --garis: #cdbfa8;
+        --aksen: #2f4a38;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: var(--tanah);
+        color: var(--tinta);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.5;
+      }
+      main {
+        width: min(560px, 100%);
+        background: var(--kartu);
+        border: 1px solid var(--garis);
+        border-radius: 16px;
+        padding: clamp(20px, 4vw, 32px);
+      }
+      .kicker {
+        margin: 0 0 6px;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--redup);
+        font-weight: 600;
+      }
+      h1 { margin: 0 0 8px; font-size: clamp(22px, 3.4vw, 30px); letter-spacing: -0.01em; }
+      p { margin: 0 0 14px; color: var(--redup); font-size: 15px; }
+      .angka {
+        display: inline-block;
+        margin-bottom: 10px;
+        font-family: ui-monospace, "JetBrains Mono", monospace;
+        font-size: 13px;
+        padding: 2px 8px;
+        border: 1px solid var(--garis);
+        border-radius: 999px;
+        color: var(--redup);
+      }
+      nav { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+      a.tombol {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 16px;
+        border-radius: 10px;
+        border: 1px solid var(--aksen);
+        background: var(--aksen);
+        color: #f7fafc;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+      }
+      a.tombol--kedua { background: transparent; color: var(--aksen); }
+      a.tombol:focus-visible { outline: 3px solid #8a755a; outline-offset: 2px; }
+      footer { margin-top: 20px; font-size: 12px; color: var(--redup); }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --tanah: #16273b;
+          --kartu: #1d3149;
+          --tinta: #f7fafc;
+          --redup: #c9d6e1;
+          --garis: #33506e;
+          --aksen: #ffd2a1;
+        }
+        a.tombol { color: #16273b; }
+        a.tombol--kedua { color: var(--aksen); }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="kicker">Niu Gayo Agro-Climate</p>
+      <span class="angka">404</span>
+      <h1>Halaman ini tidak ada</h1>
+      <p>
+        Alamat yang Anda buka tidak dikenal atau sudah dipindahkan. Data cuaca dan peringatan dini
+        tetap bisa dibuka dari halaman utama — pilih sentra di sana.
+      </p>
+      <nav aria-label="Jalan keluar">
+        <a class="tombol" href="/">Buka ringkasan hari ini</a>
+        <a class="tombol tombol--kedua" href="/?tampilan=peta-hidup">Buka peta hidup</a>
+      </nav>
+      <footer>Niu adalah informasi pendukung keputusan, bukan peringatan dini resmi.</footer>
+    </main>
+  </body>
+</html>

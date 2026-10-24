@@ -12,7 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'offline.html', 'icons/pwa-192.png', 'icons/pwa-512.png', 'icons/pwa-maskable-512.png'],
       manifest: {
-        id: '/niu/',
+        // Audit F-12 — id harus sama dengan start_url; '/niu/' tidak pernah cocok dengan scope '/'.
+        id: '/',
         name: 'Niu — Cuaca & Peringatan Dini Tanah Gayo',
         short_name: 'Niu',
         description: 'Papan cuaca dan peringatan dini untuk sentra kopi Arabika Gayo: hujan, longsor, karat daun, asap, gempa, dan api.',
@@ -43,7 +44,16 @@ export default defineConfig({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         navigationPreload: true,
-        navigateFallback: '/index.html',
+        // Audit F-09 (Sprint C·II) — offline.html di-precache tetapi tidak pernah dipakai:
+        // navigasi offline dulu dijawab index.html, yang lalu gagal memuat `/api/*` dan
+        // menampilkan papan kosong. Sekarang kerangka offline yang jelas yang disajikan.
+        navigateFallback: '/offline.html',
+        // Sprint C·I (F-14) — tanpa denylist, service worker menjawab SETIAP navigasi
+        // (termasuk alamat yang salah) dengan index.html, sehingga public/404.html tidak
+        // pernah tampil bagi pengunjung yang sudah pernah membuka situs. Hanya akar situs
+        // (pathname '/') yang dilayani dari cache; alamat lain dibiarkan ke jaringan supaya
+        // server statis bisa menjawab 404 bermerek.
+        navigateFallbackDenylist: [/^\/.+/],
         runtimeCaching: [
           {
             // Proxy API: network-first, fallback cache saat offline
@@ -72,6 +82,12 @@ export default defineConfig({
     }),
   ],
   build: {
+    // Audit F-21 — tanpa target, keluaran mengikuti bawaan toolchain sehingga peramban lama bisa
+    // menerima sintaks yang tidak dikenalnya tanpa pesan apa pun. es2020: cukup modern untuk kode
+    // ini, cukup tua untuk Chrome 87 / Safari 14 / Firefox 78 / Edge 88 (semua masih dipakai).
+    // Peramban yang lebih tua menampilkan pemberitahuan `nomodule` dari index.html.
+    target: 'es2020',
+    cssTarget: ['chrome87', 'safari14', 'firefox78', 'edge88'],
     // Vite 8 memakai Rolldown; codeSplitting.groups adalah API resmi untuk pemisahan vendor.
     // Pisahkan vendor agar cache lebih baik & tiap berkas lebih kecil (anggaran total gzip tetap berlaku).
     rolldownOptions: {

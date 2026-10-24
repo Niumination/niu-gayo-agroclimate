@@ -1,0 +1,7 @@
+# Audit F-13 — dulu robots.txt dilayani Cloudflare (bukan milik aplikasi), sehingga
+# sitemap tidak pernah dirujuk. Berkas ini disajikan server statis bila konfigurasinya
+# mengizinkan (lihat docs/deploy/STATIC-SERVER.md).
+User-agent: *
+Allow: /
+
+Sitemap: https://cuaca.abstract.biz.id/sitemap.xml

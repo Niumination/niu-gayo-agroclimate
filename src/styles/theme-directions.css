@@ -373,17 +373,17 @@ html[data-arah='langit'] .niu-status-kicker { padding-inline: 0; background: tra
   html[data-arah='langit'] .niu-status-card .niu-metric { padding-inline: 4px; }
 }
 @media (max-width: 430px) {
-  html[data-arah='langit'] .niu-metric-label-full {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    clip-path: inset(50%) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
+  html[data-arah='langit'] .niu-metric-label-full.niu-metric-label-full {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
   html[data-arah='langit'] .niu-metric-label-compact { display: inline-block; }
   html[data-arah='langit'] .niu-metric-unit { overflow-wrap: anywhere; }
@@ -391,17 +391,17 @@ html[data-arah='langit'] .niu-status-kicker { padding-inline: 0; background: tra
 @media (min-width: 560px) {
   @container niu-status (max-width: 430px) {
     html[data-arah='tanah'] .niu-metric-label-full,
-    html[data-arah='langit'] .niu-metric-label-full {
-      position: absolute !important;
-      width: 1px !important;
-      height: 1px !important;
-      padding: 0 !important;
-      margin: -1px !important;
-      overflow: hidden !important;
-      clip: rect(0, 0, 0, 0) !important;
-      clip-path: inset(50%) !important;
-      white-space: nowrap !important;
-      border: 0 !important;
+    html[data-arah='langit'] .niu-metric-label-full.niu-metric-label-full {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
     }
     html[data-arah='tanah'] .niu-metric-label-compact,
     html[data-arah='langit'] .niu-metric-label-compact { display: inline-block; }

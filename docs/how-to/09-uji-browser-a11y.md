@@ -2,7 +2,9 @@
 
 **Kuadran:** how-to (tugas) · **Audiens:** maintainer/penguji · **Terkait:** paket **P6** (`docs/dev/11-RENCANA-DESIGN-UX.md`)
 
-Sejak **F-39** (audit 23 Okt 2026) repo ini punya gerbang a11y **berbasis browser** yang ikut CI: `npm run check:a11y` (`scripts/a11y-gate.mjs`). Gerbang ini menyalakan tiruan produksi lokal — `dist/` dilayani seperti host statis, `/api/*` diteruskan ke `server/index.js` — lalu menjalankan axe-core (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`) di tiga permukaan: **Papan desktop**, **Peta hidup · Tanah**, **Peta hidup · Langit**. Satu pelanggaran = build gagal.
+Sejak **F-39** (audit 23 Okt 2026) repo ini punya gerbang a11y **berbasis browser** yang ikut CI: `npm run check:a11y` (`scripts/a11y-gate.mjs`). Gerbang ini menyalakan tiruan produksi lokal — `dist/` dilayani seperti host statis, `/api/*` diteruskan ke `server/index.js` — lalu menjalankan axe-core (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`) di tiga permukaan: **Peta hidup · Tanah** (`/`), **Peta hidup · Langit**, dan **Peta hidup · sentra dari
+URL** (`/?sentra=linge`). Sejak F-32 (2.3.1) Peta Hidup adalah satu-satunya UI desktop, jadi permukaan
+"papan" dihapus. Satu pelanggaran = build gagal.
 
 Gerbang itu menutup celah yang dulu lolos dari semua pemeriksaan statis: tiga temuan Sprint A (label ganda, fokus masuk ke panel terlipat, target sentuh < 24 px) hanya muncul setelah halaman benar-benar dirender, sehingga `npm test`, `check:contrast`, dan `check:typography` semuanya hijau.
 
@@ -31,9 +33,9 @@ CHROME_PATH="$PWD/$(find .cache/browsers -type f -name chrome-headless-shell | h
 Keluaran lulus terlihat seperti ini:
 
 ```
-✓ Papan desktop: 0 pelanggaran axe
 ✓ Peta hidup — Tanah: 0 pelanggaran axe
 ✓ Peta hidup — Langit: 0 pelanggaran axe
+✓ Peta hidup — sentra dari URL: 0 pelanggaran axe
 ✓ gerbang a11y lolos — 3 permukaan bersih (axe wcag2a, wcag2aa, wcag21a, wcag21aa)
 ```
 

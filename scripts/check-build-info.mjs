@@ -16,6 +16,17 @@ const git = (args) => {
 }
 const head = process.env.NIU_BUILD_REVISION || git(['rev-parse', 'HEAD'])
 const status = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' })
+// Audit F-22b — di salinan tanpa .git (mis. hasil ekstrak ZIP untuk audit), git gagal dan
+// skrip dulu berhenti dengan assertion mentah. Sekarang: lewati secara terkontrol + alasan jelas.
+// `git status` di luar repo tidak menghasilkan status.error (spawn-nya sendiri berhasil),
+// melainkan exit != 0. Dulu syaratnya hanya `status.error`, sehingga salinan ZIP tetap
+// berhenti dengan assertion mentah. Sekarang keduanya dianggap "bukan repo Git".
+const statusOk = !status.error && status.status === 0
+if (!head || !statusOk) {
+  console.log('[build-info] dilewati: bukan repo Git dan NIU_BUILD_REVISION tidak diset.')
+  console.log('             Jalankan di clone Git, atau set NIU_BUILD_REVISION=<sha40> saat build.')
+  process.exit(0)
+}
 
 assert.equal(info.app, 'Niu', 'build-info app bukan Niu')
 assert.equal(info.version, pkg.version, `versi build ${info.version} tidak sama dengan package.json ${pkg.version}`)

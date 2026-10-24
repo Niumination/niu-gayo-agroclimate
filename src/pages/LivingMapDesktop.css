@@ -1,17 +1,21 @@
-/* Living Map desktop — port V4 ke shell React. Desktop-only; mobile tidak diubah. */
+/* Living Map desktop — port V4 ke shell React. Desktop-only; mobile tidak diubah.
+ *
+ * Skala breakpoint desktop (audit F-29): 760/761 (pasangan), 1100, 1180, 1280, 1440, 1600, 1700.
+ * Nilai 1099/1699 yang tadinya berbeda 1 px sudah disatukan. Jangan menambah nilai baru di
+ * berkas ini tanpa alasan; uji `tests/sprintC4.test.js` menjaga daftar ini. */
 .living-map-shell,
 .lm-context {
-  --lm-surface: var(--color-tanah-permukaan, #F1E7D8);
-  --lm-card: var(--color-tanah-kartu, #FBF6EC);
-  --lm-solid: var(--color-tanah-kartu, #FBF6EC);
-  --lm-line: color-mix(in srgb, var(--color-tanah-garis-kuat, #8A755A) 42%, transparent);
-  --lm-text: var(--color-tanah-tinta, #241E17);
-  --lm-muted: var(--color-tanah-tinta-redup, #6A5C4B);
-  --lm-accent: var(--color-tanah-aksen, #2F4A38);
-  --lm-glass: color-mix(in srgb, var(--color-tanah-kartu, #FBF6EC) 82%, transparent);
-  --lm-glass-strong: color-mix(in srgb, var(--color-tanah-kartu, #FBF6EC) 94%, transparent);
+  --lm-surface: var(--color-tanah-permukaan);
+  --lm-card: var(--color-tanah-kartu);
+  --lm-solid: var(--color-tanah-kartu);
+  --lm-line: color-mix(in srgb, var(--color-tanah-garis-kuat) 42%, transparent);
+  --lm-text: var(--color-tanah-tinta);
+  --lm-muted: var(--color-tanah-tinta-redup);
+  --lm-accent: var(--color-tanah-aksen);
+  --lm-glass: color-mix(in srgb, var(--color-tanah-kartu) 82%, transparent);
+  --lm-glass-strong: color-mix(in srgb, var(--color-tanah-kartu) 94%, transparent);
   /* Panel konteks Mode 1: kaca tembus pandang di atas peta (blur menjaga teks tetap terbaca). */
-  --lm-glass-panel: color-mix(in srgb, var(--color-tanah-kartu, #FBF6EC) 58%, transparent);
+  --lm-glass-panel: color-mix(in srgb, var(--color-tanah-kartu) 58%, transparent);
 
   /* Skala tipografi ringkas untuk permukaan peta.
      Prototipe V4 memakai basis 14 px (caption 11–12 px); port React sempat
@@ -28,6 +32,20 @@
   --text-label--line-height: 1.4;
   --text-caption: 0.6875rem;         /* 11 px */
   --text-caption--line-height: 1.45;
+  /* Audit F-27 — semua nilai warna mentah Living Map tinggal di sini (satu tempat),
+     bukan tersebar sebagai literal di 40+ aturan. */
+  --lm-shadow-chip: #16232F1F;
+  --lm-shadow-panel: #1623301C;
+  --lm-shadow-panel-strong: #1623302E;
+  --lm-shadow-soft: #15233210;
+  --lm-shadow: #15233224;
+  --lm-shadow-strong: #15233233;
+  --lm-scrim-soft: #10182040;
+  --lm-scrim: #10182066;
+  --lm-scrim-strong: #10182059;
+  --lm-warn-ink: #6f4b00;
+  --lm-warn-ink-dark: #ffe6be;
+  --lm-warn-bg: #fbf3de;
   /* Tinggi dua panel saat ringkas (idle) — acuan posisi baris alat peta. */
   --lm-bottom-rest-height: 58px;
   color: var(--lm-text);
@@ -55,15 +73,15 @@ html[data-arah='langit'] .lm-context {
      body. Shell tidak boleh menutupnya dengan warna rata, supaya arah Langit
      sama seperti aplikasi live. */
   --lm-surface: transparent;
-  --lm-card: var(--color-langit-kartu, #16273B);
-  --lm-solid: var(--color-langit-kartu, #16273B);
+  --lm-card: var(--color-langit-kartu);
+  --lm-solid: var(--color-langit-kartu);
   --lm-line: var(--niu-line, rgb(255 255 255 / 0.14));
-  --lm-text: var(--niu-ink, #F7FAFC);
+  --lm-text: var(--niu-ink);
   --lm-muted: var(--niu-ink-muted, rgb(247 250 252 / 0.72));
-  --lm-accent: var(--niu-accent, #FFD2A1);
-  --lm-glass: color-mix(in srgb, var(--color-langit-kartu, #16273B) 80%, transparent);
-  --lm-glass-strong: color-mix(in srgb, var(--color-langit-kartu, #16273B) 94%, transparent);
-  --lm-glass-panel: color-mix(in srgb, var(--color-langit-kartu, #16273B) 70%, transparent);
+  --lm-accent: var(--niu-accent);
+  --lm-glass: color-mix(in srgb, var(--color-langit-kartu) 80%, transparent);
+  --lm-glass-strong: color-mix(in srgb, var(--color-langit-kartu) 94%, transparent);
+  --lm-glass-panel: color-mix(in srgb, var(--color-langit-kartu) 70%, transparent);
 }
 
 /* Dialog perlebar panel memakai skala ringkas yang sama dengan permukaan peta. */
@@ -122,7 +140,7 @@ html[data-arah='langit'] .lm-context {
 .niu-map-toolrow:focus-within {
   border-color: var(--lm-line);
   background: var(--lm-card);
-  box-shadow: 0 6px 22px #16232F1F;
+  box-shadow: 0 6px 22px var(--lm-shadow-chip);
 }
 html body .niu-map-card--bare .niu-map-controls {
   position: static;
@@ -232,7 +250,7 @@ html body .niu-map-card--bare .niu-map-controls button[aria-pressed='true'] .niu
 }
 .niu-map-svg .niu-pin-label[data-narrow='true'] {
   paint-order: stroke fill;
-  stroke: var(--lm-card, #FBF6EC);
+  stroke: var(--lm-card);
   stroke-width: 2.2px;
   stroke-linejoin: round;
 }
@@ -264,9 +282,9 @@ html body .niu-map-card--bare .niu-map-controls button[aria-pressed='true'] .niu
   max-width: calc(100% - 28px);
   margin: 0;
   padding: 5px 10px;
-  border: 1px solid color-mix(in srgb, var(--color-level-waspada, #b07d1a) 38%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-level-waspada) 38%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-level-waspada, #b07d1a) 12%, var(--lm-card));
+  background: color-mix(in srgb, var(--color-level-waspada) 12%, var(--lm-card));
   color: var(--lm-text);
   font-size: var(--text-caption, 11px);
   line-height: 1.3;
@@ -276,12 +294,12 @@ html body .niu-map-card--bare .niu-map-controls button[aria-pressed='true'] .niu
 /* U2 — tiga tingkat kesegaran chip header. "stale" memakai gaya is-stale yang
    sudah ada; "aging" diberi nada hangat tanpa alarm. */
 .niu-header-desktop .niu-age[data-freshness='aging'] {
-  color: #6f4b00;
-  background: #fbf3de;
+  color: var(--lm-warn-ink);
+  background: var(--lm-warn-bg);
   border-color: rgb(138 78 0 / 0.2);
 }
 html[data-arah='langit'] .niu-header-desktop .niu-age[data-freshness='aging'] {
-  color: #ffe6be;
+  color: var(--lm-warn-ink-dark);
   background: rgb(255 205 120 / 0.12);
   border-color: rgb(255 205 120 / 0.28);
 }
@@ -329,25 +347,6 @@ html[data-arah='langit'] .niu-header-desktop .niu-age[data-freshness='aging'] {
   pointer-events: none;
 }
 
-/* Audit F-01 — tombol kembali ke papan. Berada di dalam pil label "Peta skematik"
-   agar tidak menambah navigasi header; target 24 px (WCAG 2.2 SC 2.5.8) sebab
-   tombol ini berada di dalam satu baris teks. */
-.lm-view-back {
-  min-height: 24px;
-  padding: 0 2px;
-  border: 0;
-  border-radius: 6px;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
-}
-.lm-view-back:hover { color: var(--lm-accent); }
-.lm-view-back:focus-visible { outline: 2px solid var(--lm-accent); outline-offset: 2px; }
-
 .lm-summary {
   position: absolute;
   z-index: 8;
@@ -361,7 +360,7 @@ html[data-arah='langit'] .niu-header-desktop .niu-age[data-freshness='aging'] {
   border-radius: 18px;
   /* Kartu sentra terpilih = kaca tipis saat diam, memadat saat disentuh/fokus. */
   background: var(--lm-glass-panel);
-  box-shadow: 0 8px 28px #1623301C;
+  box-shadow: 0 8px 28px var(--lm-shadow-panel);
   -webkit-backdrop-filter: blur(20px) saturate(1.06);
   backdrop-filter: blur(20px) saturate(1.06);
   overscroll-behavior: contain;
@@ -372,7 +371,7 @@ html[data-arah='langit'] .niu-header-desktop .niu-age[data-freshness='aging'] {
 .lm-summary:focus-within {
   background: var(--lm-glass-strong);
   border-color: color-mix(in srgb, var(--lm-accent) 32%, var(--lm-line));
-  box-shadow: 0 14px 38px #1623302E;
+  box-shadow: 0 14px 38px var(--lm-shadow-panel-strong);
   -webkit-backdrop-filter: blur(26px) saturate(1.08);
   backdrop-filter: blur(26px) saturate(1.08);
 }
@@ -461,7 +460,7 @@ html[data-arah='langit'] .lm-summary .niu-desktop-summarybar .niu-summary-copy s
   border: 1px solid var(--lm-line);
   border-radius: 16px;
   background: color-mix(in srgb, var(--lm-glass) 34%, transparent);
-  box-shadow: 0 5px 20px #15233210;
+  box-shadow: 0 5px 20px var(--lm-shadow-soft);
   pointer-events: auto;
   transition: max-height .2s ease, background-color .15s ease, box-shadow .15s ease;
 }
@@ -472,7 +471,7 @@ html[data-arah='langit'] .lm-summary .niu-desktop-summarybar .niu-summary-copy s
   max-height: min(320px, 46vh, calc(var(--lm-shell-height, 100svh) - var(--lm-toolrow-height, 56px) - 310px));
   overflow: auto;
   background: var(--lm-glass);
-  box-shadow: 0 10px 32px #15233224;
+  box-shadow: 0 10px 32px var(--lm-shadow);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   overscroll-behavior: contain;
@@ -509,14 +508,14 @@ html[data-arah='langit'] .lm-summary .niu-desktop-summarybar .niu-summary-copy s
 /* Dialog "perlebar panel": tengah halaman, seperti palet pencarian.
    Di-portal ke <body>, jadi token tema diulang di sini (di luar .living-map-shell). */
 .lm-panel-modal-layer {
-  --lm-card: var(--color-tanah-kartu, #FBF6EC);
-  --lm-solid: var(--color-tanah-kartu, #FBF6EC);
-  --lm-line: color-mix(in srgb, var(--color-tanah-garis-kuat, #8A755A) 42%, transparent);
-  --lm-text: var(--color-tanah-tinta, #241E17);
-  --lm-muted: var(--color-tanah-tinta-redup, #6A5C4B);
-  --lm-accent: var(--color-tanah-aksen, #2F4A38);
-  --lm-glass-strong: color-mix(in srgb, var(--color-tanah-kartu, #FBF6EC) 94%, transparent);
-  --lm-surface: var(--color-tanah-permukaan, #F1E7D8);
+  --lm-card: var(--color-tanah-kartu);
+  --lm-solid: var(--color-tanah-kartu);
+  --lm-line: color-mix(in srgb, var(--color-tanah-garis-kuat) 42%, transparent);
+  --lm-text: var(--color-tanah-tinta);
+  --lm-muted: var(--color-tanah-tinta-redup);
+  --lm-accent: var(--color-tanah-aksen);
+  --lm-glass-strong: color-mix(in srgb, var(--color-tanah-kartu) 94%, transparent);
+  --lm-surface: var(--color-tanah-permukaan);
   --text-body: 0.875rem;
   --text-body--line-height: 1.55;
   --text-body-sm: 0.8125rem;
@@ -531,7 +530,7 @@ html[data-arah='langit'] .lm-summary .niu-desktop-summarybar .niu-summary-copy s
   display: grid;
   place-items: center;
   padding: 24px;
-  background: #10182066;
+  background: var(--lm-scrim);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
 }
@@ -545,7 +544,7 @@ html[data-arah='langit'] .lm-summary .niu-desktop-summarybar .niu-summary-copy s
   border-radius: 20px;
   background: var(--lm-solid);
   color: var(--lm-text);
-  box-shadow: 0 24px 80px #10182059;
+  box-shadow: 0 24px 80px var(--lm-scrim-strong);
 }
 .lm-panel-modal:focus-visible { outline: 2px solid var(--lm-accent); outline-offset: 2px; }
 .lm-panel-modal-head {
@@ -573,14 +572,14 @@ html[data-arah='langit'] .lm-summary .niu-desktop-summarybar .niu-summary-copy s
 .lm-panel-modal-body > * + * { margin-top: 12px; }
 html[data-arah='langit'] .lm-panel-modal-layer,
 .dark .lm-panel-modal-layer {
-  --lm-card: var(--color-langit-kartu, #16273B);
-  --lm-solid: var(--color-langit-kartu, #16273B);
+  --lm-card: var(--color-langit-kartu);
+  --lm-solid: var(--color-langit-kartu);
   --lm-line: var(--niu-line, rgb(255 255 255 / 0.14));
-  --lm-text: var(--niu-ink, #F7FAFC);
+  --lm-text: var(--niu-ink);
   --lm-muted: var(--niu-ink-muted, rgb(247 250 252 / 0.72));
-  --lm-accent: var(--niu-accent, #FFD2A1);
-  --lm-glass-strong: color-mix(in srgb, var(--color-langit-kartu, #16273B) 94%, transparent);
-  --lm-surface: var(--color-langit-malam, #101C28);
+  --lm-accent: var(--niu-accent);
+  --lm-glass-strong: color-mix(in srgb, var(--color-langit-kartu) 94%, transparent);
+  --lm-surface: var(--color-langit-malam);
 }
 /* Kartu di dalam dialog memakai permukaan dialog, bukan bingkai kartu ganda.
    Padding kartu dipertahankan agar garis pemisah internalnya tetap menjorok. */
@@ -630,7 +629,7 @@ html[data-arah='langit'] .lm-panel-modal-layer,
   border-radius: 20px;
   /* Mode 1 = kaca tembus pandang seperti semula; Mode 2 & 3 menimpanya dengan pejal. */
   background: var(--lm-glass-panel);
-  box-shadow: 0 14px 42px #15233224;
+  box-shadow: 0 14px 42px var(--lm-shadow);
   -webkit-backdrop-filter: blur(20px) saturate(1.06);
   backdrop-filter: blur(20px) saturate(1.06);
   transition: width .2s ease, top .2s ease, bottom .2s ease, background-color .18s ease, box-shadow .18s ease;
@@ -640,7 +639,7 @@ html[data-arah='langit'] .lm-panel-modal-layer,
 .lm-context:not(.lm-context-mode-2):not(.lm-context-mode-3):hover,
 .lm-context:not(.lm-context-mode-2):not(.lm-context-mode-3):focus-within {
   background: var(--lm-glass-strong);
-  box-shadow: 0 18px 46px #15233233;
+  box-shadow: 0 18px 46px var(--lm-shadow-strong);
   -webkit-backdrop-filter: blur(26px) saturate(1.08);
   backdrop-filter: blur(26px) saturate(1.08);
 }
@@ -665,7 +664,7 @@ html[data-arah='langit'] .lm-panel-modal-layer,
   height: 100dvh;
   border-radius: 20px 0 0 20px;
   background: var(--lm-solid);
-  box-shadow: -16px 0 60px #10182040;
+  box-shadow: -16px 0 60px var(--lm-scrim-soft);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -720,7 +719,7 @@ html[data-arah='langit'] .lm-panel-modal-layer,
 .lm-section-stack { display: grid; gap: 12px; }
 .lm-section-stack > * { min-width: 0; }
 .lm-service-note { padding: 14px; border: 1px solid var(--lm-line); border-radius: 16px; }
-.lm-modal-scrim { position: fixed; z-index: 1001; inset: 0; border: 0; background: #10182066; backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+.lm-modal-scrim { position: fixed; z-index: 1001; inset: 0; border: 0; background: var(--lm-scrim); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
 
 .living-map-shell.is-focus .lm-summary,
 .living-map-shell.is-focus .lm-bottom,
@@ -779,9 +778,9 @@ html[data-arah='langit'] .lm-panel-modal-layer,
   gap: 0 6px;
   padding: 4px 12px;
   margin-top: auto;
-  border-top: 1px solid var(--color-tanah-garis, #DCCDB6);
+  border-top: 1px solid var(--color-tanah-garis);
   background: transparent;
-  color: var(--color-tanah-tinta-redup, #6A5C4B);
+  color: var(--color-tanah-tinta-redup);
   font-size: var(--text-caption, 12px);
   line-height: 1.45;
   text-align: center;
@@ -797,16 +796,16 @@ html[data-arah='langit'] .lm-panel-modal-layer,
   text-underline-offset: 2px;
 }
 .niu-footer-livingmap button:hover,
-.niu-footer-livingmap button:focus-visible { color: var(--color-tanah-tinta, #241E17); }
+.niu-footer-livingmap button:focus-visible { color: var(--color-tanah-tinta); }
 html[data-arah='langit'] .niu-footer-livingmap,
 .dark .niu-footer-livingmap {
-  border-top-color: var(--color-langit-garis, #27394C);
-  color: var(--color-langit-tinta-redup, #A9B8C7);
+  border-top-color: var(--color-langit-garis);
+  color: var(--color-langit-tinta-redup);
 }
 html[data-arah='langit'] .niu-footer-livingmap button:hover,
 html[data-arah='langit'] .niu-footer-livingmap button:focus-visible,
 .dark .niu-footer-livingmap button:hover,
-.dark .niu-footer-livingmap button:focus-visible { color: var(--color-langit-tinta, #F2F6FA); }
+.dark .niu-footer-livingmap button:focus-visible { color: var(--color-langit-tinta); }
 
 /* ---------------------------------------------------------------------------
    Gerak ringan Living Map (fase 1–2).

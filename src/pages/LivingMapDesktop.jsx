@@ -7,6 +7,8 @@ import CommandPalette from '../components/niu/CommandPalette.jsx'
 import DesktopSummaryBar from '../components/niu/DesktopSummaryBar.jsx'
 import DisasterHistoryCard from '../components/DisasterHistoryCard.jsx'
 import EmergencyContacts from '../components/EmergencyContacts.jsx'
+import ErrorBoundary from '../components/ErrorBoundary.jsx'
+import { hideBackground } from '../lib/hideBackground.js'
 import HazardPanel from '../components/HazardPanel.jsx'
 import DesktopHazardInspector from '../components/niu/DesktopHazardInspector.jsx'
 import HourStrip from '../components/niu/HourStrip.jsx'
@@ -63,7 +65,6 @@ export default function LivingMapDesktop({
   tr = (key) => key,
   selectedHazardId,
   onSelectHazard,
-  onOpenBoard,
 }) {
   const [activePanel, setActivePanel] = useState('condition')
   const [drawerMode, setDrawerMode] = useState('1')
@@ -181,7 +182,6 @@ export default function LivingMapDesktop({
       group: 'Panel',
       run: () => tabTo(item.id),
     })),
-    { id: 'action-board', label: 'Kembali ke papan desktop', sub: 'Tampilan papan lima bagian', group: 'Aksi', run: onOpenBoard },
     { id: 'action-refresh', label: 'Muat ulang data', sub: 'Lewat pemuatan data App yang ada', group: 'Aksi', run: onRefresh },
     { id: 'action-report', label: 'Lapor kejadian', sub: 'Buka formulir laporan yang ada', group: 'Aksi', run: onOpenReport },
     { id: 'action-share', label: 'Bagikan ringkasan', sub: 'Buka pilihan berbagi yang ada', group: 'Aksi', run: onOpenShare },
@@ -189,7 +189,7 @@ export default function LivingMapDesktop({
     { id: 'action-theme', label: 'Ganti arah Tanah / Langit', sub: 'Kontrol tema aplikasi', group: 'Aksi', run: onToggleTheme },
     { id: 'action-focus', label: `Mode fokus: ${focusMode ? 'aktif' : 'nonaktif'}`, sub: 'Sembunyikan ringkasan dan panel bawah', group: 'Aksi', run: () => setFocusMode((value) => !value) },
     { id: 'action-density', label: `Kepadatan: ${compact ? 'padat' : 'nyaman'}`, sub: 'Ubah jarak panel', group: 'Aksi', run: () => setCompact((value) => !value) },
-  ], [hazards, onSelectLocation, onSelectHazard, onRefresh, onOpenReport, onOpenShare, onAbout, onToggleTheme, onOpenBoard, tabTo, focusMode, compact])
+  ], [hazards, onSelectLocation, onSelectHazard, onRefresh, onOpenReport, onOpenShare, onAbout, onToggleTheme, tabTo, focusMode, compact])
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -266,18 +266,7 @@ export default function LivingMapDesktop({
     const panel = drawerRef.current
     const previousFocus = document.activeElement
     const previousOverflow = document.body.style.overflow
-    const saved = new Map()
-    let current = panel
-    while (current?.parentElement) {
-      const parent = current.parentElement
-      for (const sibling of parent.children) {
-        if (sibling === current || sibling.hasAttribute('data-lm-modal-keep') || sibling.hasAttribute('data-lm-react-inert')) continue
-        if (!saved.has(sibling)) saved.set(sibling, sibling.inert)
-        sibling.inert = true
-      }
-      current = parent
-      if (parent === document.body) break
-    }
+    const restoreBackground = hideBackground(panel)
     document.body.style.overflow = 'hidden'
     const firstFocus = window.requestAnimationFrame(() => modeButtonRef.current?.focus({ preventScroll: true }))
     const onKeyDown = (event) => {
@@ -315,7 +304,7 @@ export default function LivingMapDesktop({
       document.removeEventListener('focusin', onFocusIn)
       document.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = previousOverflow
-      for (const [element, wasInert] of saved) element.inert = wasInert
+      restoreBackground()
       window.requestAnimationFrame(() => {
         if (previousFocus?.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus()
       })
@@ -329,6 +318,9 @@ export default function LivingMapDesktop({
     if (!panel) return undefined
     const opener = expandRef.current[expandedPanel]
     const previousOverflow = document.body.style.overflow
+    // Audit F-25 — dialog "perlebar panel" dulu hanya mengunci gulir; isi halaman di belakangnya
+    // tetap terbaca pembaca layar dan tetap bisa difokus. Sekarang latar benar-benar inert.
+    const restoreBackground = hideBackground(panel)
     document.body.style.overflow = 'hidden'
     const focusFirst = window.requestAnimationFrame(() => {
       const first = [...panel.querySelectorAll(FOCUSABLE)].find((item) => item.getClientRects().length > 0)
@@ -359,6 +351,7 @@ export default function LivingMapDesktop({
       window.cancelAnimationFrame(focusFirst)
       document.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = previousOverflow
+      restoreBackground()
       window.requestAnimationFrame(() => {
         if (opener?.isConnected) opener.focus({ preventScroll: true })
       })
@@ -487,16 +480,17 @@ export default function LivingMapDesktop({
         </div>
 
         <div id="lm-context-content" className="lm-context-content" role="tabpanel" tabIndex={0} aria-labelledby={`lm-tab-${activePanel}`}>
-          {sections[activePanel]}
+          <ErrorBoundary compact>{sections[activePanel]}</ErrorBoundary>
         </div>
       </aside>
   )
 
   return (
     <div ref={stageRef} className={`living-map-shell${focusMode ? ' is-focus' : ''}${compact ? ' is-compact' : ''}`} data-mode={drawerMode} data-inspector={showInspector ? 'open' : 'closed'}>
-      <div className="living-map-canvas" data-lm-react-inert="" inert={isModal || undefined}>
-        <SchematicMap
-          hazardsAll={hazardsAll}
+      <div className="living-map-canvas" data-lm-react-inert="" inert={isModal || Boolean(expandedPanel) || undefined}>
+        <ErrorBoundary compact>
+          <SchematicMap
+            hazardsAll={hazardsAll}
           levelsPending={hazardsAllPending}
           selectedLocation={location}
           highlightedLocationId={highlightedLocationId}
@@ -505,25 +499,17 @@ export default function LivingMapDesktop({
           hotspots={hotspots}
           layers={layers}
           onLayerChange={setLayer}
-          levelKey="worstAcute"
-          bare
-        />
+            levelKey="worstAcute"
+            bare
+          />
+        </ErrorBoundary>
 
         <div className="lm-map-credit">
           <span>Peta skematik</span>
-          <span aria-hidden="true">·</span>
-          {/* Audit F-01 — jalan keluar dari Living Map tanpa harus menebak pintasan keyboard. */}
-          <button
-            type="button"
-            className="lm-view-back min-h-6"
-            data-target="inline"
-            onClick={onOpenBoard}
-            aria-label="Kembali ke papan desktop"
-            title="Kembali ke papan desktop"
-          >Papan</button>
         </div>
 
         {summaryVisible && (
+          <ErrorBoundary compact>
           <section className="lm-summary" aria-label={`Ringkasan ${location?.name ?? 'sentra terpilih'}`}>
             <div className="lm-summary-head">
               <div>
@@ -544,6 +530,7 @@ export default function LivingMapDesktop({
               <button type="button" className="min-h-11 text-body-sm font-semibold" onClick={() => onOpenShare?.()}>Bagikan</button>
             </div>
           </section>
+          </ErrorBoundary>
         )}
 
         {!summaryVisible && <button type="button" className="lm-summary-restore min-h-11" onClick={() => setSummaryVisible(true)}>Sentra terpilih +</button>}

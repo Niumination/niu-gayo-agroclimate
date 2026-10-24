@@ -43,7 +43,7 @@ Semua endpoint menerima **GET** kecuali disebut lain. `location` = id sentra dar
 
 | Endpoint | Isi |
 |---|---|
-| `/healthz` | `ok`, `version`, `uptime`, `cache`, `features` (`hazardsEnabled`, `firmsKey`, `telegram`, `cronToken`), `sources.*` = `{ state: ok \| degraded \| belum-dimuat, fresh, retrievedAt, error }`. **Tidak memicu fetch** — membaca isi cache. `sources.imerg` diturunkan dari `/api/alerts` (`imergCount`, `fallbackCount`, `total`, alasan kegagalan terakhir) |
+| `/healthz` | `ok`, `version`, `uptime`, `cache`, `features` (`hazardsEnabled`, `firmsKey`, `telegram`, `cronToken`), `sources.*` = `{ state: ok \| degraded \| belum-dimuat, fresh, retrievedAt, error }`. **Tidak memicu fetch** — membaca isi cache. `sources.imerg` diturunkan dari `/api/alerts` (`imergCount`, `fallbackCount`, `total`, alasan kegagalan terakhir). Sejak 2.3.2 ada juga `health` = `{ ok, checkedAt, staleHours, problems: [{ id, state, ageHours, reason }] }` — daftar sumber yang `degraded`, `belum-dimuat`, atau datanya lebih tua dari 6 jam; inilah yang dibaca alarm cron |
 | `POST /api/cache/flush` | mengosongkan cache (butuh akses loopback; dipakai saat debugging) |
 
 ## Kontrak & keamanan

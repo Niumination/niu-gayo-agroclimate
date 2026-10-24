@@ -74,7 +74,7 @@ export function buttonTags(text) {
 const TARGET = /(min-h-1[1-9]\b|min-h-\[(?:4[4-9]|[5-9]\d|\d{3,})px\]|\bh-1[0-2]\b|\bpy-[3-9]\b|\bp-[5-9]\b)/
 const INLINE_TARGET = /data-target="inline"/
 /** Satu-satunya tombol teks sebaris yang diizinkan 24 px. Bertambah = harus dibahas. */
-const INLINE_ALLOWED = ['src/App.jsx', 'src/pages/LivingMapDesktop.jsx']
+const INLINE_ALLOWED = ['src/App.jsx']
 
 /** Kelas konstanta lokal (mis. `const link = '…'`) untuk className dinamis. */
 function classConsts(text) {
@@ -204,7 +204,7 @@ test('P2 · seluruh tombol punya target sentuh ≥ 44 px', () => {
   assert.deepStrictEqual(
     [...inlineFiles].sort(),
     INLINE_ALLOWED,
-    'pengecualian 24 px hanya untuk tombol teks sebaris yang sudah disetujui (footer + kembali ke papan)',
+    'pengecualian 24 px hanya untuk tombol teks sebaris yang sudah disetujui (tautan footer)',
   )
 })
 

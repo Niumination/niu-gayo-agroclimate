@@ -39,8 +39,10 @@ test('F-06: consensus & external-reports keluar dari jalur tunggu (bukan input m
 })
 
 test('F-06: laporan warga (reports) tidak lagi diminta serial setelah gelombang', () => {
-  assert.doesNotMatch(SERVICE, /await fetch\(api\(`reports/, 'reports harus ikut gelombang paralel')
-  assert.match(SERVICE, /const reportsP = fetch\(api\(`reports/)
+  assert.doesNotMatch(SERVICE, /await fetch(WithTimeout)?\(api\(`reports/, 'reports harus ikut gelombang paralel')
+  // Sprint C·III (F-10): permintaan kini lewat `fetchWithTimeout` — nama pemanggilnya boleh berubah,
+  // yang penting tidak di-await di tempat.
+  assert.match(SERVICE, /const reportsP = fetch(WithTimeout)?\(api\(`reports/)
 })
 
 test('F-06: App menggabungkan payload menyusul tanpa menimpa disaster utuh', () => {
@@ -50,7 +52,10 @@ test('F-06: App menggabungkan payload menyusul tanpa menimpa disaster utuh', () 
 })
 
 test('F-06: ruang desktop dicadangkan sebelum data pertama (anti-CLS)', () => {
-  assert.match(APP, /\{desktopLayout \?\? \(error \? null : <LivingMapBoot \/>\)\}/)
+  // Sprint C·II (F-20): tampilan desktop sekarang lazy — kerangka tetap cadangan, baik saat
+  // chunk menyusul (Suspense) maupun saat data pertama belum tiba.
+  assert.match(APP, /Suspense fallback=\{<LivingMapBoot \/>\}/, 'chunk desktop menyusul: kerangka jadi cadangan')
+  assert.match(APP, /error \? null : <LivingMapBoot \/>/, 'sebelum data pertama: ruang sudah dicadangkan')
   const skeleton = APP.slice(APP.indexOf('showSkeleton &&'), APP.indexOf('showSkeleton &&') + 160)
   assert.match(skeleton, /!isDesktop/, 'skeleton papan tidak boleh menjadi saudara <main> di desktop')
   assert.match(BOOT, /className="living-map-shell lm-boot"/)
@@ -60,13 +65,13 @@ test('F-06: ruang desktop dicadangkan sebelum data pertama (anti-CLS)', () => {
   assert.doesNotMatch(BOOT, /°C|\b(mm|Waspada|Bahaya|Ekstrem|Rendah)\b/)
 })
 
-test('F-04/F-06: peta papan desktop memakai level akut yang sama dengan bilahnya', () => {
+test('F-04/F-06: level akut dipakai konsisten oleh satu-satunya UI desktop', () => {
   const app = tanpaKomentar(APP)
-  // Living Map memakai level akut di berkasnya sendiri; papan desktop di tab Sentra di App.
+  // F-32 — blok Sentra papan (dan dSentra di App) diarsipkan; Peta Hidup memakai level akut
+  // di berkasnya sendiri, jadi tidak ada lagi dua sumber yang bisa berbeda.
   assert.match(tanpaKomentar(LM), /levelKey="worstAcute"/, 'Living Map memakai level akut')
-  const sentra = app.slice(app.indexOf('const dSentra'), app.indexOf('const dArsip'))
-  assert.match(sentra, /levelKey="worstAcute"/, 'tanpa ini tab Sentra menulis "Bahaya" saat bilah menulis "Waspada"')
-  assert.match(sentra, /levelsPending=\{hazardsAllPending\}/)
+  assert.match(tanpaKomentar(LM), /levelsPending=\{hazardsAllPending\}/, 'status memuat level diteruskan ke peta')
+  assert.doesNotMatch(app, /const dSentra/, 'blok Sentra papan tidak boleh kembali tanpa keputusan baru')
 })
 
 test('F-06: peta menyatakan "memuat level" saat ringkasan sentra menyusul', () => {

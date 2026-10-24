@@ -1,5 +1,202 @@
 # Changelog
 
+## [2.3.2] — 2026-10-24 — Alarm kesehatan sumber & uji DOM untuk komponen inti (F-05, F-16, F-38)
+
+Dua temuan data (F-05 IMERG, F-16 MAGMA) tidak bisa ditutup dari sisi aplikasi — keduanya butuh
+tindakan operator. Yang ditutup di sini adalah bagian yang **bisa**: kegagalan sumber tidak lagi
+diam-diam.
+
+- `src/domain/sourceHealth.js` (baru) — `assessSources()` mengubah `sources.*` dari `/healthz`
+  menjadi daftar masalah: `degraded`, `belum-dimuat`, atau data lebih tua dari **6 jam**.
+  Ditambah `sourceSignature()`, `shouldNotifySourceHealth()` (masa tenang 6 jam) dan
+  `renderSourceHealth()`. Murni: tanpa jaringan, tanpa jam global, tanpa tulis berkas.
+- `server/routes.js` — `/healthz` kini memuat blok `health` (`ok`, `checkedAt`, `staleHours`,
+  `problems[]`). `sources.*` tidak berubah, jadi pembaca lama tetap jalan.
+- `scripts/alerts-cron.mjs` — setelah siklus peringatan, skrip membaca `/healthz` dan mengirim **satu**
+  pesan alarm bila ada masalah, dengan anti-bising per tanda tangan + masa tenang 6 jam. Keadaan
+  disimpan di `server/data/source-alert-state.json` (bisa dialihkan lewat `SOURCE_ALERT_STATE`).
+  Tanpa token Telegram alarm hanya masuk log; kegagalan kirim tidak menggagalkan siklus peringatan.
+- `tests/sprintC6.test.js` (baru) — 9 uji perilaku untuk modul di atas dan untuk blok `health`
+  di `/healthz` (kasus MAGMA 403 dipakai sebagai fixture).
+- **F-38 lanjutan** — `tests/domNiu.test.js` (baru): 21 uji render nyata untuk `LevelBadge`,
+  `StatusHeadline`, `AttentionCard`, `DisasterWarning`, `CoffeeAdvisory`, `AboutData`,
+  `AirQualityCard`, `ReportButton`, `HazardPanel`, dan `RingkasMobile`. 27 uji sumber berbasis regex
+  yang digantikan dihapus dari `tests/niuComponents.test.js` dan `tests/ringkasMobile.test.js`:
+  cakupan naik karena kode komponen benar-benar dijalankan, bukan sekadar dibaca.
+- **F-38 lanjutan (peta)** — `tests/domLivingMap.test.js` (baru): 8 uji render untuk `SchematicMap`
+  yang menggantikan sembilan pemeriksaan regex sumber di `tests/livingMapDesktop.test.js`.
+  Yang dikunci sekarang adalah perilaku, bukan tulisannya: legenda adalah `role="group"` bernama,
+  chip melaporkan `aria-pressed` dan berubah judul Sembunyikan ↔ Tampilkan, legenda jatuh ke
+  tampilan statis tanpa handler lapisan, catatan "belum punya data" muncul hanya saat lapisan
+  risiko aktif dan ≥3 sentra tanpa level, dan keadaan memuat berbunyi "Memuat level".
+- `tests/helpers/jsx-hooks.mjs` — kini juga melayani impor `*.json`, jadi komponen yang membaca
+  data (peta, dan nanti `ClimateBanner`) bisa dirender di uji tanpa menambah dependensi.
+- `tests/sprintC4.test.js` — anggaran teks diturunkan 790 → **660**; ratchet baru: jumlah uji DOM
+  tidak boleh turun dari **34**, dan regex CSS mentah dijaga ≤ 13 (kini 11).
+- `docs/how-to/02-aktifkan-peringatan-telegram.md` + `docs/reference/ENDPOINT-API.md` — cara kerja
+  alarm, aturan anti-bising, dan bentuk blok `health`.
+
+Gerbang: **635 tes**, lint 0, axe 3/3, bundle 163,8 kB gzip, cakupan 90,6 / 84,2 / 91,8, smoke lolos.
+
+**Yang tetap terbuka (butuh operator, bukan kode):** token NASA Earthdata yang sah dan egress ke
+GES DISC (F-05), serta pengecualian IP/egress untuk `magma.esdm.go.id` (F-16). Langkah opsnya ada di
+`HANDOFF-CUMULATIVE.md` paket ini.
+
+## [2.3.1] — 2026-10-24 — Peta Hidup jadi satu-satunya UI desktop (F-32)
+
+Keputusan produk 24 Oktober 2026: **Peta Hidup** (`src/pages/LivingMapDesktop.jsx`) menjadi satu-satunya
+UI desktop. Papan lima bagian **diarsipkan**, bukan dihapus, di `archive/DesktopBoard-2026-10-24.jsx.txt`.
+
+- `src/App.jsx` — satu cabang layout desktop: `desktopLayout` selalu `<LivingMapDesktop>`. Saklar
+  `desktopView` / `showLivingMap` / `livingMapPreview` dibuang, beserta blok lima zona
+  (`dRingkas`, `dRamalan`, `dRisiko`, `dSentra`, `dArsip`) dan impor yang hanya dipakainya.
+  `?tampilan=peta-hidup` tetap **diterima** supaya tautan lama tidak rusak, tetapi tidak lagi mengubah
+  apa pun; `?sentra=<id>` dan pemulihan sentra lewat tombol Kembali peramban tetap bekerja (F-24).
+- `src/pages/LivingMapDesktop.jsx` — prop `onOpenBoard` beserta tombol "Papan" di pil "Peta skematik"
+  dan item palet "Kembali ke papan desktop" dihapus. Tidak ada lagi tombol yang menuju tempat yang
+  sama: header tidak bertambah, satu-satunya navigasi tetap panel konteks dan palet.
+- `src/pages/LivingMapDesktop.css` — aturan `.lm-view-back` (24 px) dibuang karena tombolnya tiada.
+- `src/pages/DesktopBoard.jsx` → `archive/DesktopBoard-2026-10-24.jsx.txt` (disimpan utuh sebagai
+  `.txt` agar tidak ikut lint/build). `tests/desktopBoard.test.js` dihapus bersama komponennya.
+- Uji yang mengunci keadaan lama diperbarui, bukan dilonggarkan:
+  `tests/sprintA.test.js` (F-01 → F-32: tidak ada `<DesktopBoard>` dan tidak ada jalan kembali ke
+  papan), `tests/livingMapDesktop.test.js` (peta = layout desktop tunggal), `tests/lcpF06.test.js`
+  (level akut cukup satu sumber), `tests/ringkasMobile.test.js` (RingkasMobile hanya jalur mobile),
+  `tests/a11yContract.test.js` (pengecualian target 24 px tinggal tautan footer),
+  `tests/pwa.test.js` dan `tests/sprintC2.test.js` (chunk & berkas yang diperiksa), serta
+  `scripts/a11y-gate.mjs` (permukaan `/`, Langit, dan `?sentra=linge`).
+
+Gerbang: **623 tes**, lint 0, axe 3/3, bundle **163,8 kB gzip** (turun 6,5 kB; terbesar 84,9 kB),
+cakupan 97 %+, smoke lolos. Bukti browser: `/` merender Peta Hidup pada 1920, 1440, dan 1100 px;
+mobile 390 px tidak berubah; konsol bersih.
+
+## [2.3.0] — 2026-10-24 — Sprint C·I: pesan galat aman, PWA sah, 404 & sitemap (bundel 1 dari 4)
+
+Bundel pertama dari penutupan 41 temuan audit 2026-10-23. Semua perubahan di sini **server/perilaku/PWA**;
+tidak ada aturan risiko, data, atau tata letak yang disentuh.
+
+> Nomor `F-xx` pada bagian ini mengikuti `audit-2026-10-23/TEMUAN.csv`. Nomor yang sama pada catatan
+> rilis 2.2.1 berasal dari audit yang berbeda — jangan disamakan.
+
+**Keamanan pesan galat**
+
+- `server/routes.js` — galat 502 tidak lagi meneruskan `err.message` ke klien (bisa memuat path server
+  atau nama variabel token). Kini `{ error: 'galat internal saat mengambil data', code: 'internal', ref }`;
+  detail asli hanya ditulis ke log dengan prefiks `ref` yang sama, sehingga keluhan pengguna tetap bisa
+  dicocokkan ke baris log. (F-31)
+- `server/reports.js` — `escapeMarkdown()` baru menetralkan `_ * \` [` di teks relay Telegram; nama sentra
+  atau judul bahaya yang memuat `_`/`*` tidak lagi merusak format pesan. (F-37)
+
+**Keterangan operasional yang jujur**
+
+- `server/alerts.js` — ringkasan siklus kini `{ ...summarise, planned, sent, mode }`. Mode *dry-run*
+  melaporkan `sent: 0`, bukan menyamakan "draft dibuat" dengan "terkirim". (F-33)
+- `scripts/smoke.mjs`, `scripts/alerts-cron.mjs` — label `draft=`/`kirim=` mengikuti arti di atas.
+
+**PWA & halaman statis**
+
+- `vite.config.js` — `id` manifest `'/'` (dulu `'/niu/'`). Id yang berbeda dari `start_url` membuat
+  identitas instalasi tidak pernah cocok. (F-12)
+- `public/404.html` — halaman 404 berbahasa Indonesia, tema terang/gelap, tanpa aset eksternal,
+  dengan jalan kembali ke peta hidup. (F-14)
+- `vite.config.js` — `navigateFallbackDenylist: [/^\/.+/]`. Tanpa ini service worker menjawab
+  **setiap** navigasi dengan `index.html`, sehingga 404.html hanya terlihat oleh pengunjung yang
+  belum pernah membuka situs. Kini hanya akar `/` yang dilayani dari cache; alamat salah diteruskan
+  ke jaringan dan server statis menjawab 404. (F-14)
+- `public/robots.txt` + `public/sitemap.xml` — dua URL publik, rujukan sitemap di robots. (F-13)
+- `docs/deploy/STATIC-SERVER.md` — resep nginx/Caddy/Cloudflare agar 404/robots/sitemap benar-benar
+  tersaji, plus perintah `curl` untuk memverifikasi setelah deploy.
+
+**Perkakas uji**
+
+- `tests/pwa.test.js` — nama berkas workbox dicari lewat `readdirSync` (`workbox-[0-9a-f]{8}.js`),
+  tidak lagi hash tetap yang berubah tiap build. (F-18)
+- `tests/sprintC1.test.js` — 7 tes perilaku baru: 502 tanpa bocoran, `escapeMarkdown`, ringkasan
+  dry-run, `id` manifest vs `start_url`, isi 404, isi sitemap/robots, `check:build-info` tanpa git.
+- `scripts/check-build-info.mjs` — bila `.git` dan `NIU_BUILD_REVISION` sama-sama tidak ada, skrip
+  melewati pemeriksaan dengan exit 0 dan pesan jelas (dulu gagal di salinan ZIP tanpa git).
+
+### Bundel II — arsitektur & ketahanan (F-09, F-17, F-20, F-21, F-23, F-24, F-25)
+
+- **F-24** `?sentra=<id>`: sentra terpilih ikut di URL (diinisialisasi dari tautan, ditulis dengan
+  `replaceState`, dan dipulihkan saat tombol Kembali/Maju). Sebelumnya tautan yang dibagikan selalu
+  membuka sentra milik penerima. Fungsi murni di `src/lib/locationUrl.js` + 2 uji.
+- **F-20** `React.lazy` untuk dua tampilan desktop: chunk utama 97,6 → **87,2 kB gzip**, LivingMapDesktop
+  dan DesktopBoard dimuat sesuai kebutuhan (cadangan tetap kerangka `LivingMapBoot`).
+- **F-23** ErrorBoundary ringkas per panel (peta, ringkasan sentra, panel konteks). Satu panel galat tidak
+  lagi mengganti seluruh aplikasi dengan halaman galat.
+- **F-25** Dialog "perlebar panel" kini membuat latar `inert` **dan** `aria-hidden`, lalu memulihkan nilai
+  aslinya; helper `src/lib/hideBackground.js` dipakai juga oleh panel konteks Mode 2/3.
+- **F-09** Service worker memakai `offline.html` sebagai cadangan navigasi (dulu `index.html`, sehingga
+  navigasi offline berakhir dengan papan kosong).
+- **F-17** Pemanasan cache saat start dan sesudah `/api/cache/flush` (`server/prewarm.js`): pengguna pertama
+  tidak lagi menanggung cold start ±5 detik; `PREWARM=0` mematikannya.
+- **F-21** `build.target: 'es2020'` + `cssTarget` eksplisit dan pemberitahuan `nomodule` di `index.html`
+  untuk peramban lama.
+
+Gerbang: **641 tes**, lint 0, axe 3/3, bundle 170,1 kB gzip (terbesar 87,2 kB), cakupan baris 97,03 %,
+smoke lolos. Bukti browser: `?sentra=linge` membuka Linge, memilih Bebesan menulis
+`?sentra=bebesan`, dialog perlebar membuat latar inert + `aria-hidden` dan memulihkannya, prewarm
+`4/4` saat start & sesudah flush.
+
+### Bundel III — data & jaringan (F-30, F-10, F-11, F-19, F-22, `chronicByHazard`)
+
+Tidak ada ambang, level, atau skor yang diubah — yang disatukan hanya **sumber** dan **jalur**.
+
+- **F-30** ARI dihitung **satu kali**: `src/domain/antecedentIndex.js` dipakai klien (`weatherService`)
+  dan server (`server/openMeteo.js`, `server/antecedent.js` meneruskan fungsi yang sama). Dulu ada dua
+  salinan rumus. Nilai tidak berubah (diuji terhadap rumus lama).
+- **`chronicByHazard`** tidak lagi mengambil daftar bahaya dari `rows[0]`; kini digabung dari seluruh
+  baris (`summarizeChronicByHazard`). Sebelumnya, bahaya kronis yang hanya aktif di sentra selain
+  sentra pertama hilang dari ringkasan agregat.
+- **F-10** Semua permintaan jaringan punya batas waktu: `fetchWithTimeout` (8 dtk) untuk 14 panggilan
+  API di klien, dan `fetchWithRetry` Open-Meteo kini membatalkan percobaan yang menggantung.
+- **F-11** `Strict-Transport-Security`, `Permissions-Policy`, `Cross-Origin-Resource-Policy`, dan
+  `Content-Security-Policy` (`default-src 'none'`) pada semua respons API; resep CSP halaman ada di
+  `docs/deploy/STATIC-SERVER.md`.
+- **F-19** `X-Frame-Options` DENY → **SAMEORIGIN** (iframe sah dari situs sendiri tidak lagi diblokir),
+  dan balasan untuk permintaan tulis tidak lagi memasang `Access-Control-Allow-Origin: *`
+  (`jsonWrite` + `Vary: Origin`).
+- **F-22** `scripts/csp-hash.mjs` menghitung hash SRI skrip inline `index.html` dan mencetak header CSP
+  siap tempel — CSP bisa dipasang tanpa `'unsafe-inline'` untuk skrip.
+
+Gerbang: **648 tes**, lint 0, axe 3/3, bundle 170,3 kB gzip (terbesar 87,5 kB), smoke lolos.
+
+### Bundel IV — tata letak & mutu tes (F-27, F-28, F-29, F-38)
+
+Tidak ada aturan risiko, data, atau alur yang berubah: yang dirapikan adalah **cara** tata letak
+ditulis dan **cara** ia diuji.
+
+- **F-27** 54 literal hex → **12**, semuanya definisi token. Palet baru `--lm-shadow*`, `--lm-scrim*`,
+  `--lm-warn-*` di `LivingMapDesktop.css`; fallback ganda pada `var()` yang sudah punya definisi
+  dibuang sehingga satu warna hanya punya satu sumber.
+- **F-29** Skala breakpoint resmi: 760/761, **1100**, 1180, 1280, 1440, 1600, **1700**. Batas
+  `max-width: 1099px`/`1699px` → `1100px`/`1700px`: dulu lebar tepat 1100 dan 1700 px jatuh ke tata
+  letak yang salah selama 1 px. Terbukti di papan desktop (1700 px: panel kanan 412 → 352 px;
+  1100 px: ringkasan pintar beralih). Peta Hidup tetap identik di 8 lebar uji.
+- **F-28** 56 → **36** `!important` di `theme-directions.css` (dua blok label tersembunyi, 20 deklarasi,
+  diganti selector kelas ganda). Sisanya override tema **Langit** untuk komponen yang tampil di
+  mobile — di luar lingkup "desktop saja" dan sengaja dibiarkan, dijaga tes anggaran agar tak bertambah.
+- **F-38** `tests/helpers/css.js` mengurai CSS menjadi peta aturan+deklarasi. Di
+  `tests/livingMapDesktop.test.js`, 57 pemeriksaan CSS berbasis regex → **2** (keduanya memeriksa
+  **urutan** deklarasi, yang tidak bisa diurai jadi peta). `tests/helpers/jsx-hooks.mjs` +
+  `tests/domComponents.test.js` menambah lima uji **render nyata** (`react-dom/server`) untuk
+  `EmptyState`, `InstrumentPanel`, dan `MetricChip`: yang diperiksa peran ARIA, label, angka id-ID,
+  dan keadaan kosong — bukan teks sumber.
+- `tests/sprintC4.test.js` — anggaran yang hanya boleh turun: hex Living Map ≤ 14, `!important` ≤ 38,
+  breakpoint ⊆ skala resmi, uji regex-CSS ≤ 13, dan tidak boleh ada `var(--color-*)` tanpa definisi.
+- **Koreksi dokumen (F-14)** `docs/deploy/STATIC-SERVER.md` masih menyuruh `try_files $uri $uri/ /index.html`.
+  Dengan baris itu `/halaman-tidak-ada` dibalas **200** dan `error_page 404` tak pernah terpakai.
+  Diganti `=404` (Caddy: tanpa fallback ke `index.html`), plus perintah `curl` untuk memastikannya.
+
+Gerbang: **659 tes**, lint 0, axe 3/3, bundle 170,4 kB gzip (terbesar 87,5 kB), cakupan 97 %+,
+smoke lolos. Bukti browser: `evidence/verify-b4.mjs` (peta identik di 8 lebar, papan desktop
+berubah hanya pada 1100/1700 px, konsol bersih).
+
+**Versi**: 2.2.6 → **2.3.0** (bundel I–IV). Sisa satu temuan: **F-32** (dua UI desktop paralel)
+menunggu keputusan produk. F-05 dan F-16 tetap *sebagian* sampai kredensial Earthdata tersedia dan
+host sandbox diterima MAGMA.
+
 ## [2.2.6] — 2026-10-24 — Karat endemik (F-04) + halaman desktop tidak lagi kosong 2 detik (F-06)
 
 Setelah Sprint A–B, `worst` semua sentra tetap "bahaya" setiap hari. Diukur ulang: **15/15 sentra**

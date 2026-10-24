@@ -78,8 +78,8 @@ export async function fetchAllAlerts(cachedGet) {
     LOCATIONS.map(async (loc) => {
       const w = await cachedGet(loc.id)
       const precip = w.precipitation.map((p) => p.value ?? 0)
-      const rain24 = precip.slice(-24).reduce((a, b) => a + b, 0)
-      const rain72 = precip.slice(-72).reduce((a, b) => a + b, 0)
+      // Audit F-30 — satu rumus ARI (dipakai juga oleh klien), bukan salinan rumus.
+      const { ari24: rain24, ari72: rain72 } = antecedentIndex(precip, precip.length - 1)
       const gusts = w.wind_gusts_10m.map((g) => g.value ?? 0)
       const gustMax = Math.max(...gusts, 0)
       const lw = w.leaf_wetness_probability.map((x) => x.value ?? 0)

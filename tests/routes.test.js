@@ -28,8 +28,13 @@ test('tokenMatches: sama → true; beda panjang/isi/tipe → false', () => {
 
 test('SECURITY_HEADERS & CAP_HEADERS memuat header wajib', () => {
   assert.equal(SECURITY_HEADERS['X-Content-Type-Options'], 'nosniff')
-  assert.equal(SECURITY_HEADERS['X-Frame-Options'], 'DENY')
+  // Sprint C·III (F-19): DENY memblokir iframe sah dari situs sendiri → SAMEORIGIN.
+  assert.equal(SECURITY_HEADERS['X-Frame-Options'], 'SAMEORIGIN')
   assert.equal(SECURITY_HEADERS['Referrer-Policy'], 'no-referrer')
+  // Sprint C·III (F-11): header yang sebelumnya tidak ada.
+  assert.match(SECURITY_HEADERS['Strict-Transport-Security'], /max-age=\d+/)
+  assert.match(SECURITY_HEADERS['Permissions-Policy'], /geolocation=\(\)/)
+  assert.match(SECURITY_HEADERS['Content-Security-Policy'], /default-src 'none'/)
   assert.match(CAP_HEADERS['Content-Type'], /cap\+xml/)
   assert.equal(CAP_HEADERS['X-Content-Type-Options'], 'nosniff')
 })
@@ -41,7 +46,7 @@ test('createHandler: jalur tak dikenal → 404 JSON dengan header keamanan', asy
   assert.equal(res.status, 404)
   assert.match(res.headers['Content-Type'], /application\/json/)
   assert.equal(res.headers['X-Content-Type-Options'], 'nosniff')
-  assert.equal(res.headers['X-Frame-Options'], 'DENY')
+  assert.equal(res.headers['X-Frame-Options'], 'SAMEORIGIN')
   assert.equal(res.headers['Cache-Control'], 'no-store')
   assert.deepEqual(JSON.parse(res.body), { error: 'not found' })
 })

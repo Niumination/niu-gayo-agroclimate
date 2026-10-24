@@ -1,7 +1,7 @@
 /**
  * Sprint A audit 23 Okt 2026 — enam perbaikan dengan bukti.
  *
- * F-01 Living Map punya jalan masuk & keluar (bukan hanya ?tampilan=peta-hidup)
+ * F-01 (ditutup F-32) Peta Hidup kini satu-satunya UI desktop; papan diarsipkan
  * F-02 isi panel bawah yang ringkas tidak lagi dapat difokus keyboard
  * F-03 POST /api/cache/flush butuh token/host lokal (bukan terbuka)
  * F-07 judul h1 desktop + nama aksesibel memuat teks yang terlihat
@@ -23,30 +23,26 @@ const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8')
 
 const APP = read('src/App.jsx')
-const BOARD = read('src/pages/DesktopBoard.jsx')
 const MAP = read('src/pages/LivingMapDesktop.jsx')
 const HEADER = read('src/components/DesktopHeader.jsx')
 const SCHEMATIC = read('src/components/SchematicMap.jsx')
 
-// ── F-01 ────────────────────────────────────────────────────────────────────────
-test('F-01: Living Map punya jalan masuk dari papan dan jalan keluar dari peta', () => {
-  // Masuk: tombol di kartu Aksi cepat + item palet, keduanya memanggil prop yang sama.
-  assert.match(BOARD, /onOpenLivingMap/, 'papan tidak menerima handler peta hidup')
-  assert.match(BOARD, /aria-label="Buka peta hidup"/, 'tombol peta hidup tanpa nama aksesibel')
-  assert.match(BOARD, /id: 'aksi-peta-hidup'/, 'palet papan tidak memuat aksi peta hidup')
-
-  // Keluar: tombol teks di pil "Peta skematik" + item palet peta.
-  assert.match(MAP, /onOpenBoard/, 'peta tidak menerima handler kembali')
-  assert.match(MAP, /lm-view-back/, 'tombol kembali tidak dirender')
-  assert.match(MAP, /id: 'action-board'/, 'palet peta tidak memuat aksi kembali')
-
-  // Keduanya disambungkan App ke satu fungsi yang juga memperbarui URL.
-  assert.match(APP, /showLivingMap\(true\)/, 'App tidak membuka peta dari papan')
-  assert.match(APP, /showLivingMap\(false\)/, 'App tidak menutup peta')
-  assert.match(APP, /history\.pushState/, 'perpindahan tampilan tidak tercatat di riwayat peramban')
-  assert.match(APP, /addEventListener\('popstate'/, 'tombol Kembali peramban tidak disinkronkan')
-  // Parameter lama tetap sah untuk tautan langsung.
-  assert.match(APP, /get\('tampilan'\) === 'peta-hidup'/, 'tautan ?tampilan=peta-hidup tidak lagi didukung')
+// ── F-01 / F-32 ─────────────────────────────────────────────────────────────────
+test('F-32: Peta Hidup satu-satunya UI desktop; tidak ada lagi jalan keluar ke papan', () => {
+  // Keputusan produk 2026-10-24: papan lima bagian diarsipkan, Peta Hidup jadi UI utama.
+  assert.match(APP, /<LivingMapDesktop/, 'App tidak merender Peta Hidup')
+  assert.doesNotMatch(APP, /<DesktopBoard|pages\/DesktopBoard\.jsx/, 'App masih merujuk papan yang sudah diarsipkan')
+  assert.doesNotMatch(APP, /showLivingMap|livingMapPreview/, 'saklar dua tampilan masih ada')
+  // Parameter lama tetap diterima (tidak lagi mengubah apa pun) agar tautan lama tidak rusak.
+  assert.match(APP, /`\?tampilan=peta-hidup`/, 'tautan lama tidak dijelaskan di komentar')
+  // Peta tidak lagi menyediakan tombol kembali ke papan.
+  assert.doesNotMatch(MAP, /onOpenBoard/, 'peta masih menerima handler kembali ke papan')
+  assert.doesNotMatch(MAP, /lm-view-back/, 'tombol kembali ke papan masih dirender')
+  // Arsip disimpan di luar src/ agar tidak ikut dibundel.
+  assert.ok(
+    fs.existsSync(path.join(ROOT, 'archive/DesktopBoard-2026-10-24.jsx.txt')),
+    'arsip papan tidak ada',
+  )
 })
 
 // ── F-02 ────────────────────────────────────────────────────────────────────────
@@ -140,7 +136,7 @@ test('F-07: judul h1 desktop ada dan nama aksesibel memuat teks yang terlihat', 
   assert.match(RAIL, /<span className="sr-only"> — \{LEVEL_LABEL\[level\]/, 'level sentra tidak diucapkan lagi')
   assert.doesNotMatch(STRIP, /aria-label=\{hourText\(hour\)\}/, 'strip jam masih memakai aria-label lama')
   assert.match(STRIP, /sr-only"> — suhu/, 'satuan strip jam tidak diucapkan')
-  assert.doesNotMatch(BOARD, /aria-label="Buka palet perintah \(⌘K\)"/, 'tombol pintasan masih menimpa teksnya')
+  assert.doesNotMatch(MAP, /aria-label="Buka palet perintah \(⌘K\)"/, 'tombol pintasan masih menimpa teksnya')
 
   // Dua tombol legenda peta: aksi ditulis sebagai teks, bukan aria-label pengganti.
   assert.doesNotMatch(SCHEMATIC, /aria-label=\{`\$\{on \? 'Sembunyikan' : 'Tampilkan'\} \$\{label\}`\}/, 'aria-label legenda masih menimpa teks')

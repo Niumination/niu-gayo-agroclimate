@@ -152,7 +152,7 @@ html[data-arah='langit'] .desk-zone-link.is-active .desk-zone-pill {
   text-transform: none;
 }
 
-@media (min-width: 1440px) and (max-width: 1699px) {
+@media (min-width: 1440px) and (max-width: 1700px) {
   .desk.niu-desktop-board { --desk-insp-width: 352px; }
 }
 @media (min-width: 1440px) {
@@ -186,7 +186,7 @@ html[data-arah='langit'] .desk-zone-link.is-active .desk-zone-pill {
     overflow: auto;
   }
 }
-@media (max-width: 1099px) {
+@media (max-width: 1100px) {
   .desk-shortcuts { font-size: 11px; }
   .desk-shortcuts-full { display: none; }
   .desk-shortcuts-compact { display: inline; }
@@ -385,7 +385,7 @@ html[data-arah='langit'] .niu-map-controls button:hover { background: rgb(255 25
 }
 
 /* Pada ≤1099 px, rincian tetap dipasang inline di bawah baris bahaya terpilih. */
-@media (max-width: 1099px) {
+@media (max-width: 1100px) {
   .desk[data-insp='buka'] > .desk-insp { display: none; }
   .niu-inline-inspector { display: block; margin-top: 12px; }
   .niu-inline-inspector [role='region'] { width: 100%; }

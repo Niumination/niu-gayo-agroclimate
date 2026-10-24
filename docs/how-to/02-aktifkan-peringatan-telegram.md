@@ -68,7 +68,29 @@ Kebijakan lengkap ada di [../reference/THRESHOLDS.md](../reference/THRESHOLDS.md
 
 Mengubah angka-angka ini berarti mengubah `src/domain/alert.js` **dan** tabel di `reference/THRESHOLDS.md` §13–14 bersamaan, lalu jalankan `npm test`.
 
-## 6. Bila bermasalah
+## 6. Alarm kesehatan sumber data (F-05/F-16)
+
+Cron yang sama (`scripts/alerts-cron.mjs`) juga memeriksa `/healthz` setelah siklus peringatan.
+Bila ada sumber yang `degraded`, belum pernah dimuat, atau datanya lebih tua dari **6 jam**,
+satu pesan ringkas dikirim ke topik cron yang sama:
+
+```
+Niu — 2 sumber data bermasalah
+• imerg (degraded): semua sentra memakai fallback model ECMWF
+• volcano (degraded): HTTP 403 — MAGMA menolak host ini
+Status: http://127.0.0.1:7455/healthz
+```
+
+Aturan yang perlu diketahui sebelum mengubah:
+
+- **Anti-bising**: pesan hanya dikirim bila daftar masalahnya *berubah*, atau bila masalah yang
+  sama masih ada setelah **6 jam** (`COOLDOWN_H` di `src/domain/sourceHealth.js`).
+- **Tanpa token** (`TELEGRAM_BOT_TOKEN` kosong), alarm hanya dicatat di log — tidak menggagalkan cron.
+- `--dry-run` mencetak pesan yang *akan* dikirim tanpa mengirim dan tanpa menyimpan keadaan.
+- Keadaan terakhir disimpan di `server/data/source-alert-state.json` (bisa dipindah lewat
+  `SOURCE_ALERT_STATE`). Hapus berkas itu bila ingin alarm berikutnya langsung terkirim.
+
+## 7. Bila bermasalah
 
 | Gejala | Penyebab tersering |
 |---|---|

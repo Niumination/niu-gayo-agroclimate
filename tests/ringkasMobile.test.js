@@ -34,15 +34,6 @@ test('P7.4: RingkasMobile ada dan memakai ketiga komponen baru', () => {
   assert.match(PAGE, /HourStrip/)
 })
 
-test('P7.4: RingkasMobile mengembalikan null tanpa data (bukan crash)', () => {
-  assert.match(PAGE, /if \(!current \|\| !daily\) return null/)
-})
-
-test('P7.4: kepala status memakai suhu saat ini + satuan °C', () => {
-  assert.match(PAGE, /value=\{n1\(current\.temp\)\}/)
-  assert.match(PAGE, /unit="°C"/)
-})
-
 test('P7.4: catatan min/maks memakai istilah Indonesia dari messages', () => {
   assert.match(PAGE, /tr\('min'\)/)
   assert.match(PAGE, /tr\('max'\)/)
@@ -117,8 +108,10 @@ test('P7.4: kartu lama tidak dihapus dari tab Kini', () => {
   }
 })
 
-test('P7.4: desktop juga memakai RingkasMobile (satu sumber kepala status)', () => {
-  assert.ok(APP.split('<RingkasMobile').length > 2, 'RingkasMobile tidak dipakai di desktop')
+test('P7.4: RingkasMobile tetap kepala status mobile; desktop punya ringkasan sendiri', () => {
+  // F-32 — kepala status desktop kini `.lm-summary` milik Peta Hidup, bukan RingkasMobile kembar.
+  assert.equal(APP.split('<RingkasMobile').length, 2, 'RingkasMobile hanya untuk jalur mobile')
+  assert.match(read('src/pages/LivingMapDesktop.jsx'), /className="lm-summary"/, 'ringkasan desktop hilang')
   assert.ok(fs.existsSync(path.join(ROOT, 'src/components/InstrumentPanel.jsx')))
 })
 

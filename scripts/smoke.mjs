@@ -70,14 +70,15 @@ try {
   // POST dry-run siklus peringatan (tanpa Telegram)
   const r = await fetch(`${base}/api/alerts/run?dryRun=1`, { method: 'POST', headers: { 'x-cron-token': 'smoke' }, signal: AbortSignal.timeout(120_000) })
   const b = await r.json()
-  console.log(`${r.ok ? '✓' : '✗'} ${r.status} POST /api/alerts/run?dryRun=1 → keputusan=${b.decided?.length ?? '?'} terkirim=${b.summary?.sent ?? '?'}`)
+  console.log(`${r.ok ? '✓' : '✗'} ${r.status} POST /api/alerts/run?dryRun=1 → keputusan=${b.decided?.length ?? '?'} draft=${b.summary?.planned ?? '?'} kirim=${b.summary?.sent ?? '?'} (${b.summary?.mode ?? '?'})`)
   if (!r.ok) failed++
 
   // Audit 2026-10 (F-13): header keamanan wajib ada pada semua respons.
   const hz = await fetch(`${base}/healthz`)
-  const needHeaders = { 'x-content-type-options': 'nosniff', 'x-frame-options': 'DENY', 'referrer-policy': 'no-referrer' }
+  // Sprint C·III (F-19): XFO berubah DENY → SAMEORIGIN agar iframe dari situs sendiri tetap sah.
+  const needHeaders = { 'x-content-type-options': 'nosniff', 'x-frame-options': 'SAMEORIGIN', 'referrer-policy': 'no-referrer' }
   const missing = Object.entries(needHeaders).filter(([k, v]) => hz.headers.get(k) !== v)
-  console.log(`${missing.length ? '✗' : '✓'} header keamanan ${missing.length ? `HILANG: ${missing.map(([k]) => k).join(', ')}` : 'nosniff + DENY + no-referrer ada'}`)
+  console.log(`${missing.length ? '✗' : '✓'} header keamanan ${missing.length ? `HILANG: ${missing.map(([k]) => k).join(', ')}` : 'nosniff + SAMEORIGIN + no-referrer ada'}`)
   if (missing.length) failed++
 
   // Operasional: POST /api/cache/flush harus 200 { ok: true }.

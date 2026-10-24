@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { parse, value, values, decls, keyframes } from './helpers/css.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (p) => readFileSync(join(root, p), 'utf8')
@@ -16,13 +17,13 @@ test('Living Map: satu sumber data, tanpa fetch/endpoint/tulis baru', () => {
   assert.match(jsx, /getAgroClimateData|data\?\.hourly/, 'memakai data hasil komposisi App/service')
 })
 
-test('Living Map: tetap di balik cabang desktop dan tidak mengganti default', () => {
+test('Living Map: satu-satunya UI desktop, mobile tidak tersentuh', () => {
   const app = read('src/App.jsx')
-  assert.match(app, /'tampilan'\) === 'peta-hidup'/, 'pratinjau memakai flag eksplisit')
-  assert.match(app, /new URLSearchParams\(window\.location\.search\)/)
-  assert.match(app, /<DesktopBoard/, 'DesktopBoard tetap ada')
+  // F-32 — papan lima bagian diarsipkan; Peta Hidup dirender untuk setiap desktop berdata.
+  assert.match(app, /const desktopLayout = data && \(\n\s*<LivingMapDesktop/, 'peta dirender sebagai layout desktop')
+  assert.doesNotMatch(app, /<DesktopBoard|pages\/DesktopBoard\.jsx/, 'App tidak boleh lagi merujuk papan')
   assert.match(app, /<MobileTabShell/, 'jalur mobile tetap utuh')
-  assert.match(app, /const desktopLayout = data && \(livingMapPreview \?/, 'pemilihan hanya di cabang desktop berdata')
+  assert.match(app, /<Suspense fallback=\{<LivingMapBoot \/>\}>/, 'kerangka ruang tetap jadi cadangan')
 })
 
 test('Living Map: peta memakai SchematicMap dan layer hanya visibilitas', () => {
@@ -41,13 +42,14 @@ test('Living Map: peta memakai SchematicMap dan layer hanya visibilitas', () => 
 test('Living Map: tiga mode panel berurutan 1→2→3→1 dengan lebar yang benar', () => {
   const jsx = read('src/pages/LivingMapDesktop.jsx')
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   assert.match(jsx, /MODE_NEXT = \{ '1': '2', '2': '3', '3': '1' \}/)
-  assert.match(css, /\.lm-context-mode-3 \{[^}]*min\(900px/, 'Mode 3 hingga 900 px')
+  assert.match(value(cssRules, '.lm-context-mode-3', 'width'), /min\(900px/, 'Mode 3 hingga 900 px')
   // Aturan responsif tidak boleh menimpa mode: Mode 2 harus tetap terlebar.
-  assert.match(css, /\.lm-context\.lm-context-mode-2 \{ width: min\(1200px, 100vw\)/, 'Mode 2 tetap terlebar di layar sempit')
-  assert.match(css, /\.lm-context\.lm-context-mode-3 \{ width: min\(760px/, 'Mode 3 tetap lebih lebar dari Mode 1 di layar sempit')
-  assert.match(css, /\.lm-context-mode-2 \{[^}]*min\(1200px/, 'Mode 2 hingga 1200 px')
-  assert.match(css, /\.lm-context \{[^}]*min\(390px/, 'Mode 1 lebih sempit dari Mode 3')
+  assert.equal(value(cssRules, '.lm-context.lm-context-mode-2', 'width'), 'min(1200px, 100vw)', 'Mode 2 tetap terlebar di layar sempit')
+  assert.match(value(cssRules, '.lm-context.lm-context-mode-3', 'width'), /^min\(760px/, 'Mode 3 tetap lebih lebar dari Mode 1 di layar sempit')
+  assert.match(value(cssRules, '.lm-context-mode-2', 'width'), /min\(1200px/, 'Mode 2 hingga 1200 px')
+  assert.match(value(cssRules, '.lm-context', 'width'), /min\(390px/, 'Mode 1 lebih sempit dari Mode 3')
   assert.match(jsx, /role=\{isModal \? 'dialog' : undefined\}/, 'hanya mode terlebar menjadi dialog modal')
   assert.match(jsx, /aria-modal=\{isModal \? 'true' : undefined\}/)
   assert.match(jsx, /event\.key === 'Escape'[\s\S]{0,80}setDrawerMode\('1'\)/, 'Escape menurunkan mode')
@@ -55,8 +57,9 @@ test('Living Map: tiga mode panel berurutan 1→2→3→1 dengan lebar yang bena
 
 test('Living Map: label peta dan kontrol peta mengikuti spesifikasi glass/transparan', () => {
   const css = read('src/pages/LivingMapDesktop.css')
-  assert.match(css, /\.lm-map-credit \{[^}]*backdrop-filter: blur\(12px\)/, 'label peta transparan + blur')
-  assert.match(css, /\.lm-map-credit \{[^}]*background: color-mix\(/, 'label peta memakai latar transparan')
+  const cssRules = parse(css)
+  assert.equal(value(cssRules, '.lm-map-credit', 'backdrop-filter'), 'blur(12px)', 'label peta transparan + blur')
+  assert.match(value(cssRules, '.lm-map-credit', 'background'), /^color-mix\(/, 'label peta memakai latar transparan')
   const controls = css.match(/html body \.niu-map-card--bare \.niu-map-controls button \{([^}]*)\}/)
   assert.ok(controls, 'aturan idle kontrol peta ada')
   assert.match(controls[1], /background: transparent/)
@@ -64,16 +67,27 @@ test('Living Map: label peta dan kontrol peta mengikuti spesifikasi glass/transp
   const row = css.match(/\n\.niu-map-toolrow \{([^}]*)\}/)
   assert.ok(row, 'baris alat peta ada')
   assert.match(row[1], /background: transparent/, 'baris alat transparan saat idle')
-  assert.match(css, /\.niu-map-toolrow:hover,[\s\S]{0,80}background: var\(--lm-card\)/, 'baris alat solid saat hover/fokus')
-  assert.match(css, /--lm-bottom-height/, 'posisi kontrol mengikuti tinggi panel bawah')
-  assert.match(css, /--lm-toolrow-height/, 'tinggi baris alat diukur dan dipakai tata letak')
+  assert.equal(value(cssRules, '.niu-map-toolrow:hover', 'background'), 'var(--lm-card)', 'baris alat solid saat hover')
+  assert.equal(value(cssRules, '.niu-map-toolrow:focus-within', 'background'), 'var(--lm-card)', 'baris alat solid saat fokus')
+  assert.ok(cssRules.some((d) => d.value.includes('var(--lm-bottom-height')), 'posisi kontrol mengikuti tinggi panel bawah')
+  assert.ok(cssRules.some((d) => d.value.includes('var(--lm-toolrow-height')), 'tinggi baris alat diukur dan dipakai tata letak')
 })
 
 test('Living Map: panel bawah ringkas saat idle dan terbuka saat hover/fokus', () => {
   const css = read('src/pages/LivingMapDesktop.css')
-  assert.match(css, /\.lm-bottom-panel \{[^}]*max-height: 58px/, 'idle ringkas')
-  assert.match(css, /\.lm-bottom-panel:hover,[\s\S]{0,200}\.lm-bottom-panel:focus-within,[\s\S]{0,160}max-height: min\(320px, 46vh, calc\(var\(--lm-shell-height/, 'hover/fokus membuka, dibatasi tinggi shell')
-  assert.match(css, /backdrop-filter: blur\(16px\)/, 'panel terbuka memakai blur')
+  const cssRules = parse(css)
+  assert.equal(value(cssRules, '.lm-bottom-panel', 'max-height'), '58px', 'idle ringkas')
+  for (const keadaan of [':hover', ':focus-within', '.is-open']) {
+    assert.match(
+      value(cssRules, `.lm-bottom-panel${keadaan}`, 'max-height'),
+      /min\(320px, 46vh, calc\(var\(--lm-shell-height/,
+      `panel ${keadaan} membuka, dibatasi tinggi shell`,
+    )
+  }
+  assert.ok(
+    cssRules.some((d) => d.selector.includes('.lm-bottom-panel:hover') && d.prop === 'backdrop-filter'),
+    'panel terbuka memakai blur',
+  )
   const jsx = read('src/pages/LivingMapDesktop.jsx')
   assert.match(jsx, /aria-expanded=\{Boolean\(openPanels\.weather/, 'toggle mengumumkan keadaan')
   assert.match(jsx, /aria-pressed=\{pinnedPanels\.weather\}/)
@@ -91,16 +105,19 @@ test('Living Map: reuse komponen domain, bukan salinan kartu', () => {
 test('Living Map: panel konteks di-portal hanya pada mode modal', () => {
   const jsx = read('src/pages/LivingMapDesktop.jsx')
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   assert.match(jsx, /createPortal\(/, 'mode modal dirender lewat portal ke body')
   assert.match(jsx, /isModal && typeof document !== 'undefined'\s*\? createPortal/, 'hanya mode modal yang di-portal')
   assert.match(jsx, /document\.body\s*\n?\s*\)/, 'target portal adalah document.body')
   // Token tema harus juga tersedia untuk panel yang keluar dari .living-map-shell.
-  assert.match(css, /\.living-map-shell,\n\.lm-context \{/, 'token warna diwarisi panel portal')
+  for (const sel of ['.living-map-shell', '.lm-context']) {
+    assert.equal(value(cssRules, sel, '--lm-solid'), 'var(--color-tanah-kartu)', `token warna diwarisi panel portal (${sel})`)
+  }
   // Tombol perlebar harus punya label teks + ikon, bukan glyph samar.
   assert.match(jsx, /className="lm-mode-button min-h-11"/)
   assert.match(jsx, /lm-mode-button-label/)
   assert.match(jsx, /<modeMeta\.Icon aria-hidden="true"/)
-  assert.match(css, /\.lm-mode-button \{[^}]*min-width: 44px/, 'tombol mode tetap target 44 px')
+  assert.equal(value(cssRules, '.lm-mode-button', 'min-width'), '44px', 'tombol mode tetap target 44 px')
 })
 
 test('Living Map: fokus kembali ke pemicu saat panel ditutup', () => {
@@ -112,17 +129,22 @@ test('Living Map: fokus kembali ke pemicu saat panel ditutup', () => {
 
 test('Living Map: footer pratinjau setipis teks dan mengikuti tema', () => {
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   const app = read('src/App.jsx')
-  assert.match(app, /niu-footer-livingmap/, 'footer pratinjau memakai kelas sendiri')
-  assert.match(app, /livingMapPreview\s*\n?\s*\? 'niu-footer-livingmap'/, 'kelas hanya pada mode Living Map')
-  assert.match(css, /\.niu-footer-livingmap \{[^}]*padding: 4px 12px/, 'padding tipis')
-  assert.match(css, /\.niu-footer-livingmap \{[^}]*font-size: var\(--text-caption/, 'ukuran mengikuti caption')
-  assert.match(css, /html\[data-arah='langit'\] \.niu-footer-livingmap/, 'warna mengikuti tema Langit')
+  // F-08 hanya untuk desktop; mobile wajib tetap memakai kelas 2.2.6.
+  assert.match(app, /className=\{isDesktop\s*\n?\s*\? 'niu-footer-livingmap'/, 'footer desktop memakai kelas sendiri')
+  assert.match(app, /'border-t border-ink\/10 dark:border-mist\/10 py-4 text-center text-caption text-ink-muted dark:text-mist-subtle'/, 'kelas footer mobile dipertahankan')
+  assert.equal(value(cssRules, '.niu-footer-livingmap', 'padding'), '4px 12px', 'padding tipis')
+  assert.match(value(cssRules, '.niu-footer-livingmap', 'font-size'), /var\(--text-caption/, 'ukuran mengikuti caption')
+  assert.ok(decls(cssRules, "html[data-arah='langit'] .niu-footer-livingmap").length > 0, 'warna mengikuti tema Langit')
   // Audit F-08 (23 Okt 2026): target 44 px di dalam baris footer 26 px membuat tombol
   // menjorok 9 px ke luar layar dan halaman selalu bisa digulir. WCAG 2.2 SC 2.5.8
   // mensyaratkan 24 px untuk target sebaris — itulah nilai yang dikunci sekarang.
-  assert.match(css, /\.niu-footer-livingmap button \{[^}]*min-height: 24px/, 'tautan footer memakai target 24 px')
-  assert.doesNotMatch(css, /\.niu-footer-livingmap button \{[^}]*margin-block: -14px/, 'trik margin negatif tidak boleh kembali')
+  assert.equal(value(cssRules, '.niu-footer-livingmap button', 'min-height'), '24px', 'tautan footer memakai target 24 px')
+  assert.ok(
+    !values(cssRules, '.niu-footer-livingmap button', 'margin-block').some((v) => v.startsWith('-')),
+    'trik margin negatif tidak boleh kembali',
+  )
 })
 
 test('Pratinjau: tahan iframe sandbox (origin opaque) dan tidak pernah blank', () => {
@@ -145,10 +167,11 @@ test('Pratinjau: tahan iframe sandbox (origin opaque) dan tidak pernah blank', (
 test('Living Map: tinggi shell mengikuti banner/header, panel bawah tetap terlihat', () => {
   const jsx = read('src/pages/LivingMapDesktop.jsx')
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   assert.match(jsx, /--lm-shell-height/, 'tinggi dihitung dari posisi aktual')
   assert.match(jsx, /window\.innerHeight - top - footerH/, 'menyisakan ruang footer')
-  assert.match(css, /height: var\(--lm-shell-height/, 'CSS memakai variabel tinggi')
-  assert.match(css, /min-height: 420px/, 'batas bawah aman untuk layar pendek')
+  assert.ok(cssRules.some((d) => d.prop === 'height' && d.value.includes('var(--lm-shell-height')), 'CSS memakai variabel tinggi')
+  assert.ok(cssRules.some((d) => d.prop === 'min-height' && d.value === '420px'), 'batas bawah aman untuk layar pendek')
 })
 
 test('Living Map: target sentuh dan fokus terlihat', () => {
@@ -158,12 +181,14 @@ test('Living Map: target sentuh dan fokus terlihat', () => {
   assert.match(jsx, /tabIndex=\{activePanel === panel\.id \? 0 : -1\}/, 'roving tabindex pada tab')
   assert.match(jsx, /aria-selected=\{activePanel === panel\.id\}/)
   const css = read('src/pages/LivingMapDesktop.css')
-  assert.match(css, /focus-visible/, 'gaya fokus untuk kontrol peta')
-  assert.match(css, /prefers-reduced-motion/, 'hormati reduced motion')
+  const cssRules = parse(css)
+  assert.ok(cssRules.some((d) => d.selector.includes(':focus-visible')), 'gaya fokus untuk kontrol peta')
+  assert.ok(cssRules.some((d) => d.media.some((m) => m.includes('prefers-reduced-motion'))), 'hormati reduced motion')
 })
 
 test('Living Map: skala teks ringkas hanya di permukaan peta (desktop)', () => {
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   const base = css.match(/\.living-map-shell,\n\.lm-context \{([\s\S]*?)\n\}/)
   assert.ok(base, 'blok token dasar ada')
   // Port React sempat memakai skala global 16/14/12 → label & tab meluber di panel 390 px.
@@ -172,14 +197,19 @@ test('Living Map: skala teks ringkas hanya di permukaan peta (desktop)', () => {
   assert.match(base[1], /--text-caption: 0\.6875rem/, 'caption 11 px')
   // Token global tidak boleh diubah: mobile & DesktopBoard tetap 16 px.
   const index = read('src/index.css')
-  assert.match(index, /--text-body: 1rem;/)
-  assert.doesNotMatch(index, /--text-body: 0\.875rem/, 'skala global tidak ikut mengecil')
+  const indexRules = parse(index)
+  assert.ok(
+    indexRules.some((d) => d.prop === '--text-body' && d.value === '1rem'),
+    'skala teks global tetap 1 rem',
+  )
+  assert.ok(!indexRules.some((d) => d.prop === '--text-body' && d.value === '0.875rem'), 'skala global tidak ikut mengecil')
   // Kontrol formulir tetap 16 px agar tidak memicu zoom.
-  assert.match(css, /\.living-map-shell input,[\s\S]{0,200}font-size: 1rem/, 'kontrol formulir kembali ke 16 px')
+  assert.equal(value(cssRules, '.living-map-shell input', 'font-size'), '1rem', 'kontrol formulir kembali ke 16 px')
 })
 
 test('Living Map: Mode 2 & 3 berlatar pejal, bukan kaca', () => {
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   const mode3 = css.match(/\.lm-context-mode-3 \{([^}]*)\}/)
   const mode2 = css.match(/\.lm-context-mode-2 \{([^}]*)\}/)
   assert.ok(mode3 && mode2)
@@ -187,14 +217,14 @@ test('Living Map: Mode 2 & 3 berlatar pejal, bukan kaca', () => {
     assert.match(block, /background: var\(--lm-solid\)/, `${name} memakai permukaan pejal`)
     assert.match(block, /backdrop-filter: none/, `${name} tanpa blur`)
   }
-  assert.match(css, /--lm-solid: var\(--color-tanah-kartu/, 'Mode pejal Tanah')
-  assert.match(css, /--lm-solid: var\(--color-langit-kartu/, 'Mode pejal Langit')
+  assert.ok(cssRules.some((d) => d.prop === '--lm-solid' && d.value === 'var(--color-tanah-kartu)'), 'Mode pejal Tanah')
+  assert.ok(cssRules.some((d) => d.prop === '--lm-solid' && d.value === 'var(--color-langit-kartu)'), 'Mode pejal Langit')
   // Mode 1 tetap kaca tembus pandang (satu-satunya mode transparan).
   const base = css.match(/\n\.lm-context \{\n\s{2}position: absolute([\s\S]*?)\n\}/)
   assert.ok(base && /background: var\(--lm-glass-panel\)/.test(base[1] || ''), 'Mode 1 tetap kaca')
   assert.match(base[1] || '', /backdrop-filter: blur\(20px\) saturate\(1\.06\)/, 'Mode 1 memakai blur')
-  assert.match(css, /--lm-glass-panel: color-mix\(in srgb, var\(--color-tanah-kartu[^)]*\) 58%/, 'kaca Tanah 58 %')
-  assert.match(css, /--lm-glass-panel: color-mix\(in srgb, var\(--color-langit-kartu[^)]*\) 70%/, 'kaca Langit 70 %')
+  assert.ok(cssRules.some((d) => d.prop === '--lm-glass-panel' && /color-mix\(in srgb, var\(--color-tanah-kartu.*\) 58%/.test(d.value)), 'kaca Tanah 58 %')
+  assert.ok(cssRules.some((d) => d.prop === '--lm-glass-panel' && /color-mix\(in srgb, var\(--color-langit-kartu.*\) 70%/.test(d.value)), 'kaca Langit 70 %')
 })
 
 test('Living Map: arah Langit memakai latar & garis tema asli, bukan palet sendiri', () => {
@@ -210,16 +240,17 @@ test('Living Map: arah Langit memakai latar & garis tema asli, bukan palet sendi
 
 test('Living Map: strip tab membungkus dan panel konteks tidak menimpa dua panel', () => {
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   const tabs = css.match(/\.lm-context-tabs \{[^}]*\}/)
   assert.ok(tabs)
   assert.match(tabs[0], /flex: none/, 'baris tab tidak menyusut (dulu terpotong 28 px)')
   assert.match(tabs[0], /flex-wrap: wrap/, 'tab membungkus, tidak terpotong di kanan')
   assert.doesNotMatch(tabs[0], /overflow-x: auto/, 'tidak ada tab tersembunyi di luar layar')
   // Panel konteks berhenti di atas baris alat + dua panel, pada semua mode non-dialog.
-  assert.match(css, /\.lm-context \{[\s\S]{0,400}bottom: calc\(var\(--lm-bottom-height, 58px\) \+ 30px\)/, 'panel berhenti di atas dua panel bawah')
+  assert.equal(value(cssRules, '.lm-context', 'bottom'), 'calc(var(--lm-bottom-height, 58px) + 30px)', 'panel berhenti di atas dua panel bawah')
   // Baris alat dibatasi lebarnya supaya tidak pernah masuk ke kolom panel.
-  assert.match(css, /\.niu-map-toolrow \{[^}]*max-width: calc\(100% - 428px\)/, 'baris alat menyisakan kolom panel')
-  assert.match(css, /\.lm-context-mode-3 \{[\s\S]{0,200}bottom: calc\(var\(--lm-bottom-height/, 'Mode 3 juga berhenti di atas dua panel')
+  assert.equal(value(cssRules, '.niu-map-toolrow', 'max-width'), 'calc(100% - 428px)', 'baris alat menyisakan kolom panel')
+  assert.match(value(cssRules, '.lm-context-mode-3', 'bottom'), /^calc\(var\(--lm-bottom-height/, 'Mode 3 juga berhenti di atas dua panel')
   // Dua panel lurus memenuhi halaman, tidak mengikuti lebar panel konteks.
   const dock = css.match(/\n\.lm-bottom \{([\s\S]*?)\n\}/)
   assert.ok(dock, 'aturan dok bawah ada')
@@ -230,8 +261,25 @@ test('Living Map: strip tab membungkus dan panel konteks tidak menimpa dua panel
   assert.doesNotMatch(dock[1], /max-width:/, 'dok tidak dibatasi lebar maksimum')
   assert.doesNotMatch(dock[1], /margin-inline:\s*auto/, 'dok tidak dipusatkan')
   // Mode 2 tetap dialog layar penuh, jadi dok disembunyikan.
-  assert.match(css, /\.living-map-shell\[data-mode='2'\] \.lm-bottom[\s\S]{0,80}display: none/)
-  assert.doesNotMatch(css, /\[data-mode='3'\] \.lm-bottom[\s\S]{0,80}display: none/, 'Mode 3 tidak perlu menyembunyikan dok')
+  assert.ok(
+    cssRules.some(
+      (d) =>
+        d.prop === 'display' &&
+        d.value === 'none' &&
+        d.selector.split(',').map((x) => x.trim()).includes(".living-map-shell[data-mode='2'] .lm-bottom"),
+    ),
+    'Mode 2 menyembunyikan dok',
+  )
+  assert.ok(
+    !cssRules.some(
+      (d) =>
+        d.prop === 'display' &&
+        d.value === 'none' &&
+        d.selector.includes("[data-mode='3']") &&
+        d.selector.split(',').map((x) => x.trim()).endsWith('.lm-bottom'),
+    ),
+    'Mode 3 tidak perlu menyembunyikan dok',
+  )
 })
 
 test('Living Map: catatan data peta tidak menimpa baris alat', () => {
@@ -273,6 +321,7 @@ test('Living Map: blur bertahan di bundel produksi (urutan prefix CSS)', () => {
   const css = read('src/pages/LivingMapDesktop.css')
   // Lightning CSS membuang properti standar bila `-webkit-` ditulis sesudahnya,
   // sehingga seluruh efek kaca hilang di build. Prefixed harus lebih dulu.
+  // Urutan deklarasi tidak bisa diurai jadi peta properti, jadi diperiksa apa adanya.
   assert.doesNotMatch(css, /(?<!-webkit-)backdrop-filter:[^;]+;\n\s*-webkit-backdrop-filter/, 'properti standar tidak boleh mendahului -webkit-')
   assert.match(css, /-webkit-backdrop-filter: blur\(12px\);\n\s*backdrop-filter: blur\(12px\);/, 'label peta tetap ber-blur setelah build')
 })
@@ -280,6 +329,7 @@ test('Living Map: blur bertahan di bundel produksi (urutan prefix CSS)', () => {
 test('Living Map: tombol perlebar panel bawah membuka dialog tengah', () => {
   const jsx = read('src/pages/LivingMapDesktop.jsx')
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   // Tombol ada di kedua panel, dengan label aksi dan aria-haspopup.
   assert.match(jsx, /lm-panel-expand[^>]*aria-haspopup="dialog"[^>]*aria-label="Perlebar panel waktu dan prakiraan"/, 'tombol perlebar prakiraan')
   assert.match(jsx, /lm-panel-expand[^>]*aria-haspopup="dialog"[^>]*aria-label="Perlebar panel kebun dan musim"/, 'tombol perlebar kebun')
@@ -287,14 +337,22 @@ test('Living Map: tombol perlebar panel bawah membuka dialog tengah', () => {
   // Dialog di-portal ke body dan berpusat seperti pop-up pencarian.
   assert.match(jsx, /createPortal\(\s*<div\s+className="lm-panel-modal-layer"/, 'dialog di-portal ke body')
   assert.match(jsx, /role="dialog"[\s\S]{0,120}aria-modal="true"/, 'dialog modal')
-  assert.match(css, /\.lm-panel-modal-layer \{[^}]*position: fixed[^}]*place-items: center/, 'lapisan dialog memusatkan isi')
-  assert.match(css, /\.lm-panel-modal \{[^}]*width: min\(920px/, 'lebar dialog terbatas')
+  assert.equal(value(cssRules, '.lm-panel-modal-layer', 'position'), 'fixed', 'lapisan dialog melayang')
+  assert.equal(value(cssRules, '.lm-panel-modal-layer', 'place-items'), 'center', 'lapisan dialog memusatkan isi')
+  assert.match(value(cssRules, '.lm-panel-modal', 'width'), /^min\(920px/, 'lebar dialog terbatas')
   // Escape menutup dan fokus kembali ke tombol asal.
   assert.match(jsx, /event\.key === 'Escape'[\s\S]{0,80}setExpandedPanel\(null\)/, 'Escape menutup dialog')
   assert.match(jsx, /expandRef\.current\[expandedPanel\]/, 'fokus kembali ke tombol perlebar')
   // Token tema diulang karena dialog berada di luar .living-map-shell.
-  assert.match(css, /\.lm-panel-modal-layer \{[^}]*--lm-solid: var\(--color-tanah-kartu/, 'token Tanah di lapisan dialog')
-  assert.match(css, /html\[data-arah='langit'\] \.lm-panel-modal-layer[\s\S]{0,200}--lm-solid: var\(--color-langit-kartu/, 'token Langit di lapisan dialog')
+  assert.ok(
+    cssRules.some((d) => d.selector.includes('.lm-panel-modal-layer') && d.prop === '--lm-solid' && d.value === 'var(--color-tanah-kartu)'),
+    'token Tanah di lapisan dialog',
+  )
+  assert.equal(
+    value(cssRules, "html[data-arah='langit'] .lm-panel-modal-layer", '--lm-solid'),
+    'var(--color-langit-kartu)',
+    'token Langit di lapisan dialog',
+  )
 })
 
 test('Living Map: tidak ada prakiraan per jam ganda di panel konteks', () => {
@@ -310,10 +368,11 @@ test('Living Map: tidak ada prakiraan per jam ganda di panel konteks', () => {
 
 test('Living Map: tombol zoom peta benar-benar di tengah', () => {
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   const button = css.match(/html body \.niu-map-card--bare \.niu-map-controls button \{([^}]*)\}/)
   assert.ok(button)
   assert.match(button[1], /justify-content: center/, 'ikon & label di tengah tombol')
-  assert.match(css, /html body \.niu-map-card--bare \.niu-map-zoom button \{ padding: 0;/, 'tombol zoom tanpa padding samping')
+  assert.equal(value(cssRules, 'html body .niu-map-card--bare .niu-map-zoom button', 'padding'), '0', 'tombol zoom tanpa padding samping')
 })
 
 test('Living Map: panel konteks Mode 1 & kartu sentra terpilih = kaca yang memadat saat fokus', () => {
@@ -367,7 +426,7 @@ test('Living Map: gerak ringan fase 1–2 dan batas permukaannya', () => {
 
   // Semua animasi memakai transform/opacity dan punya versi diam.
   for (const name of ['lm-live-ping', 'lm-sonar', 'lm-scan', 'lm-bar-grow']) {
-    assert.match(css, new RegExp(`@keyframes ${name}`), `keyframes ${name} ada`)
+    assert.ok(keyframes(css).includes(name), `keyframes ${name} ada`)
   }
   const reduceBlock = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)'))
   assert.match(reduceBlock, /\.niu-pin-sonar \{ animation: none; opacity: 0; \}/, 'sonar diam saat reduce')
@@ -399,7 +458,7 @@ test('Living Map: glyph cuaca fase 3 hanya di panel desktop', () => {
   assert.doesNotMatch(wmo, /return 'salju'/, 'tidak ada glyph salju')
 
   // Gerak satu kali jalan, bukan animasi abadi.
-  assert.match(css, /@keyframes lm-glyph-in/, 'glyph punya animasi masuk sekali')
+  assert.ok(keyframes(css).includes('lm-glyph-in'), 'glyph punya animasi masuk sekali')
   const reduceBlock = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)'))
   assert.match(reduceBlock, /\.niu-condition-icon \{ animation: none; opacity: 1; transform: none; \}/, 'glyph diam saat reduce')
 })
@@ -408,6 +467,7 @@ test('Living Map: gerak internal glyph cuaca hanya di desktop, statis jadi defau
   const icons = read('src/icons/index.jsx')
   const ringkas = read('src/pages/RingkasMobile.jsx')
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
 
   assert.match(icons, /export function WeatherIcon\(\{ name, className = 'h-6 w-6', motion = false \}\)/, 'gerak opt-in, default diam')
   assert.match(icons, /data-weather-motion=\{motion \? 'live' : undefined\}/, 'penanda gerak di svg')
@@ -415,9 +475,9 @@ test('Living Map: gerak internal glyph cuaca hanya di desktop, statis jadi defau
     assert.match(icons, new RegExp(`className="${cls}"`), `bagian ${cls} hilang`)
   }
   assert.match(ringkas, /motion=\{showCondition\}/, 'hanya chip desktop yang meminta gerak')
-  assert.match(css, /animation: lm-wx-spin 24s linear infinite/, 'matahari 24 dtk')
-  assert.match(css, /animation: lm-wx-rain 1\.6s/, 'hujan 1,6 dtk')
-  assert.match(css, /data-weather-motion='live'/, 'gerak dibatasi glyph opt-in')
+  assert.ok(cssRules.some((d) => d.prop === 'animation' && /lm-wx-spin 24s linear infinite/.test(d.value)), 'matahari 24 dtk')
+  assert.ok(cssRules.some((d) => d.prop === 'animation' && /lm-wx-rain 1\.6s/.test(d.value)), 'hujan 1,6 dtk')
+  assert.ok(cssRules.some((d) => d.selector.includes("data-weather-motion='live'")), 'gerak dibatasi glyph opt-in')
 
   const reduceBlock = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)'))
   assert.match(reduceBlock, /\.niu-condition-icon\[data-weather-motion='live'\] > \* \{ animation: none !important; \}/, 'gerak internal diam saat reduce')
@@ -425,19 +485,20 @@ test('Living Map: gerak internal glyph cuaca hanya di desktop, statis jadi defau
 
 test('Living Map: angka suhu tidak terpotong di layar pendek', () => {
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
   const media = css.slice(css.indexOf('@media (max-height: 780px)'))
   assert.ok(media.length > 0, 'ada aturan tinggi viewport')
   assert.match(media, /\.lm-context \.niu-status-value,[\s\S]*font-size: clamp\(50px, 7\.6dvh, 88px\) !important/, 'angka mengikuti tinggi viewport')
   assert.match(media, /\.lm-context \[data-niu-card='status'\] \{ padding-top: 10px !important; padding-bottom: 10px !important; \}/, 'padding kartu dirapatkan')
   assert.match(media, /\.lm-context \.lm-context-content \{ padding-top: 12px; padding-bottom: 12px; \}/, 'padding isi panel dirapatkan')
-  assert.match(css, /\.niu-condition-chip \{/, 'chip kondisi memakai inline-flex')
+  assert.equal(value(cssRules, '.niu-condition-chip', 'display'), 'inline-flex', 'chip kondisi memakai inline-flex')
 })
 
 test('Living Map: status kesegaran data dan catatan sentra tanpa data', () => {
   const header = read('src/components/DesktopHeader.jsx')
   const fresh = read('src/lib/dataFreshness.js')
-  const map = read('src/components/SchematicMap.jsx')
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
 
   // U2 — chip hanya berubah untuk Living Map; papan desktop lain tetap seperti semula.
   assert.match(header, /const freshness = live && minutes != null \? dataFreshness\(minutes\) : null/, 'tier hanya saat live')
@@ -446,48 +507,38 @@ test('Living Map: status kesegaran data dan catatan sentra tanpa data', () => {
   assert.match(header, /dataFreshness\(minutes\)/, 'memakai modul kesegaran')
   assert.match(fresh, /value < FRESH_LIMIT_MIN \? 'fresh' : value < STALE_LIMIT_MIN \? 'aging' : 'stale'/, 'tiga tingkat')
   assert.match(fresh, /note: tier === 'stale' \? 'mungkin tertunda' : null/, 'catatan hanya saat basi')
-  assert.match(css, /\.niu-header-desktop \.niu-age\[data-freshness='aging'\]/, 'gaya tingkat aging ada')
+  assert.ok(decls(cssRules, ".niu-header-desktop .niu-age[data-freshness='aging']").length > 0, 'gaya tingkat aging ada')
 
-  // U4 — catatan muncul hanya bila lapisan risiko aktif dan ≥3 sentra tanpa data.
-  // F-06 (24 Okt 2026): level 15 sentra kini menyusul setelah konten utama, jadi saat masih
-  // dimuat (`levelsPending`) hitungannya dipaksa 0 — data sedang dimuat, bukan hilang.
-  assert.match(map, /const missingCount = layers\?\.risk === false \|\| levelsPending \? 0 : sentra\.filter\(\(location\) => location\.worst === 'n\/a'\)\.length/, 'hitung sentra tanpa data')
-  assert.match(map, /\{bare && missingCount >= 3 && \(/, 'ambang tiga sentra')
-  assert.match(map, /sentra belum punya data · coba muat ulang/, 'teks penjelasan')
-  assert.match(css, /\.niu-map-data-note \{/, 'gaya catatan peta ada')
+  // U4 — catatan muncul hanya bila lapisan risiko aktif dan ≥3 sentra tanpa data;
+  // ambang, hitungan, dan teksnya dibuktikan lewat render di `tests/domLivingMap.test.js`
+  // (termasuk keadaan `levelsPending` yang dulu dipaksa 0 oleh F-06).
+  assert.ok(decls(cssRules, '.niu-map-data-note').length > 0, 'gaya catatan peta ada')
 })
 
 test('Living Map: chip legenda sekaligus tombol lapisan (U3)', () => {
-  const map = read('src/components/SchematicMap.jsx')
+  // Perilaku legenda (peran grup, aria-pressed, label Sembunyikan/Tampilkan, fallback
+  // statis) dibuktikan dengan render sungguhan di `tests/domLivingMap.test.js`.
+  // Di sini tinggal bagian yang memang soal lembar gaya.
   const css = read('src/pages/LivingMapDesktop.css')
-
-  // Legenda memakai state `layers` yang sama dengan tombol baris alat.
-  assert.match(map, /const legendToggle = \(id, label, content\) => \{/, 'helper toggle legenda ada')
-  assert.match(map, /legendToggle\('risk', 'warna risiko', riskLegend\)/, 'kelompok warna = lapisan risiko')
-  assert.match(map, /legendToggle\('hotspots', 'titik panas', hotspotLegend\)/, 'chip hotspot = lapisan hotspot')
-  assert.match(map, /aria-pressed=\{on\}/, 'status tekan mengikuti layers')
-  assert.match(map, /onClick=\{\(\) => onLayerChange\(id\)\}/, 'klik memakai handler layer yang sama')
-  assert.match(map, /Sembunyikan' : 'Tampilkan'/, 'label aksi Sembunyikan/Tampilkan')
-  assert.match(map, /role="group" aria-label="Legenda peta/, 'legenda adalah grup kontrol, bukan catatan')
-
-  // Tanpa handler layer (papan desktop biasa) legenda tetap statis.
-  assert.match(map, /if \(!interactive\) return <span key=\{id\}/, 'fallback statis')
+  const cssRules = parse(css)
 
   // Gaya: chip redup saat lapisan mati.
-  assert.match(css, /\.niu-map-legend-toggle\[aria-pressed='false'\] \{ opacity: 0\.42; \}/, 'keadaan mati diredupkan')
-  assert.match(css, /\.niu-map-legend-toggle:hover,[\s\S]{0,80}\.niu-map-legend-toggle:focus-visible/, 'hover/fokus terlihat')
+  assert.equal(value(cssRules, ".niu-map-legend-toggle[aria-pressed='false']", 'opacity'), '0.42', 'keadaan mati diredupkan')
+  assert.ok(decls(cssRules, '.niu-map-legend-toggle:hover').length > 0, 'hover terlihat')
+  assert.ok(decls(cssRules, '.niu-map-legend-toggle:focus-visible').length > 0, 'fokus terlihat')
 })
 
 test('Living Map: gerak hemat (pause tab latar) + ikon & simpul yang hidup', () => {
   const jsx = read('src/pages/LivingMapDesktop.jsx')
   const map = read('src/components/SchematicMap.jsx')
   const css = read('src/pages/LivingMapDesktop.css')
+  const cssRules = parse(css)
 
   // P0 — animasi berhenti saat tab tidak terlihat.
   assert.match(jsx, /root\.classList\.toggle\('is-lm-paused', document\.hidden\)/, 'kelas pause mengikuti document.hidden')
   assert.match(jsx, /addEventListener\('visibilitychange', sync\)/, 'mendengar visibilitychange')
   assert.match(jsx, /removeEventListener\('visibilitychange', sync\)/, 'listener dilepas saat unmount')
-  assert.match(css, /html\.is-lm-paused \*,[\s\S]{0,140}animation-play-state: paused !important/, 'CSS menghentikan animasi')
+  assert.equal(value(cssRules, 'html.is-lm-paused *', 'animation-play-state'), 'paused !important', 'CSS menghentikan animasi')
 
   // P0 — ikon Lucide di shell mengikuti tebal glyph Niu (1,7), bukan 2.
   assert.doesNotMatch(jsx, /strokeWidth=\{2\}/, 'tidak ada ikon 2 px di shell Living Map')
@@ -495,16 +546,18 @@ test('Living Map: gerak hemat (pause tab latar) + ikon & simpul yang hidup', () 
 
   // P1 — hotspot berdenyut, dibatasi tiga yang terdekat.
   assert.match(map, /className=\{index < 3 \? 'niu-map-hotspot' : undefined\}/, 'hanya tiga hotspot terdekat beranimasi')
-  assert.match(css, /@keyframes lm-hotspot-ping/, 'keyframes hotspot ada')
-  assert.match(css, /\.niu-map-hotspot \{[^}]*animation: lm-hotspot-ping 6s/, 'denyut 6 dtk')
+  assert.ok(keyframes(css).includes('lm-hotspot-ping'), 'keyframes hotspot ada')
+  assert.match(value(cssRules, '.niu-map-hotspot', 'animation'), /^lm-hotspot-ping 6s/, 'denyut 6 dtk')
 
   // P1 — cincin radius gunung api berputar pelan, hanya di peta bare.
   assert.match(map, /className=\{bare \? 'niu-volcano-ring' : undefined\}/, 'cincin gunung api dapat kelas')
-  assert.match(css, /@keyframes lm-ring-rotate/, 'keyframes rotasi ada')
-  assert.match(css, /\.niu-volcano-ring \{[^}]*animation: lm-ring-rotate 40s linear/, 'rotasi 40 dtk linear')
+  assert.ok(keyframes(css).includes('lm-ring-rotate'), 'keyframes rotasi ada')
+  assert.match(value(cssRules, '.niu-volcano-ring', 'animation'), /^lm-ring-rotate 40s linear/, 'rotasi 40 dtk linear')
 
   // Reduced motion: keduanya diam.
-  assert.match(css, /\.niu-map-hotspot, \.niu-volcano-ring \{ animation: none; \}/, 'dimatikan saat reduced motion')
+  for (const sel of ['.niu-map-hotspot', '.niu-volcano-ring']) {
+    assert.ok(values(cssRules, sel, 'animation').includes('none'), `dimatikan saat reduced motion (${sel})`)
+  }
 })
 
 test('Living Map: roving tabindex pada pin peta (U1)', () => {

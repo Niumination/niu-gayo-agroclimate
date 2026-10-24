@@ -145,7 +145,10 @@ test('manifest: id, mode standalone, warna tema, ikon lengkap', () => {
   }
   const raw = read('dist/manifest.webmanifest')
   const m = JSON.parse(raw)
-  assert.equal(m.id, '/niu/')
+  // Audit F-12 (Sprint C) — id dulu '/niu/' padahal start_url '/', sehingga identitas
+  // instalasi PWA tidak pernah cocok dengan scope. Sekarang id wajib sama dengan start_url.
+  assert.equal(m.id, m.start_url, 'id manifest harus sama dengan start_url')
+  assert.equal(m.id, '/')
   assert.equal(m.name, 'Niu — Cuaca & Peringatan Dini Tanah Gayo')
   assert.equal(m.short_name, 'Niu')
   assert.equal(m.display, 'standalone')
@@ -183,7 +186,14 @@ test('service worker: memuat offline.html sebagai cadangan navigasi', () => {
   // sw.js yang tersalin dari public/ mungkin hanya berisi register. Gabungkan keduanya.
   const sw = [
     fs.existsSync(path.join(ROOT, 'dist', 'sw.js')) ? read('dist/sw.js') : '',
-    fs.existsSync(path.join(ROOT, 'dist', 'workbox-efbd304a.js')) ? read('dist/workbox-efbd304a.js') : '',
+    (() => {
+      // Audit F-18 — nama berkas workbox berubah setiap rilis (hash 8 hex). Cari polanya,
+      // jangan mengunci satu nama.
+      const dir = path.join(ROOT, 'dist')
+      if (!fs.existsSync(dir)) return ''
+      const wb = fs.readdirSync(dir).find((f) => /^workbox-[0-9a-f]{8}\.js$/.test(f))
+      return wb ? read(`dist/${wb}`) : ''
+    })(),
     fs.existsSync(path.join(ROOT, 'public', 'sw.js')) ? read('public/sw.js') : '',
   ].join('\n')
   assert.match(sw, /offline\.html/, 'cadangan navigasi offline belum terdaftar')
@@ -217,7 +227,7 @@ test('InstallHint: ada jalur Android (prompt) & iOS (panduan), tombol tutup berl
 })
 
 test('AppBar: tanpa kode model teknis di layar', () => {
-  for (const f of ['src/components/AppBar.jsx', 'src/pages/DesktopBoard.jsx']) {
+  for (const f of ['src/components/AppBar.jsx', 'src/pages/LivingMapDesktop.jsx']) {
     assert.equal(/ecmwf_ifs025/.test(read(f)), false, `${f} masih menampilkan ecmwf_ifs025`)
   }
 })

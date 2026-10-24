@@ -1,15 +1,15 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react'
 import AppBar from './components/AppBar'
 import DesktopHeader from './components/DesktopHeader'
 import BottomNav from './components/BottomNav'
 import MobileTabShell from './components/MobileTabShell'
 import LocationRail from './components/LocationRail'
 import RingkasMobile from './pages/RingkasMobile.jsx'
-import DesktopSummaryBar from './components/niu/DesktopSummaryBar.jsx'
-import DesktopHazardInspector from './components/niu/DesktopHazardInspector.jsx'
-import HourStrip from './components/niu/HourStrip.jsx'
-import DesktopBoard from './pages/DesktopBoard.jsx'
-import LivingMapDesktop from './pages/LivingMapDesktop.jsx'
+// F-32 — Peta Hidup adalah SATU-SATUNYA UI desktop; papan lima bagian diarsipkan
+// (`archive/DesktopBoard-2026-10-24.jsx.txt`). Chunk tetap dipisah (audit F-20) supaya
+// pengguna mobile tidak mengunduhnya, dan `LivingMapBoot` tinggal di chunk utama agar
+// ruang final sudah tercadang saat chunk menyusul.
+const LivingMapDesktop = lazy(() => import('./pages/LivingMapDesktop.jsx'))
 import LivingMapBoot from './components/LivingMapBoot.jsx'
 import InstallHint from './pwa/InstallHint.jsx'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
@@ -33,6 +33,7 @@ import { getAgroClimateData } from './services/weatherService'
 import { t } from './i18n/messages'
 import { prefs, applyTheme, effectiveTheme } from './lib/prefs'
 import { dataAge } from './lib/dataAge'
+import { readLocationId, withSentra } from './lib/locationUrl'
 import { useBreakpoint } from './lib/useBreakpoint'
 import AppSkeleton, { useDelayedVisible } from './components/Skeleton'
 import EmptyState from './components/EmptyState'
@@ -55,36 +56,28 @@ function migrateDesktopLayoutPreferences() {
 
 export default function App() {
   const isDesktop = useBreakpoint()
-  // Dua tampilan desktop: papan lima bagian (bawaan) dan Living Map.
-  // `?tampilan=peta-hidup` tetap sah untuk tautan langsung dan pengujian, tetapi
-  // pengguna kini dapat berpindah lewat tombol di papan dan tombol kembali di peta
-  // (audit F-01: fitur sebelumnya tidak punya jalan masuk sama sekali).
-  const readView = useCallback(() => (
-    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tampilan') === 'peta-hidup'
-      ? 'map'
-      : 'board'
-  ), [])
-  const [desktopView, setDesktopView] = useState(readView)
-  const showLivingMap = useCallback((next) => {
-    setDesktopView(next ? 'map' : 'board')
-    if (typeof window === 'undefined' || !window.history?.pushState) return
-    const url = new URL(window.location.href)
-    if (next) url.searchParams.set('tampilan', 'peta-hidup')
-    else url.searchParams.delete('tampilan')
-    // pushState (bukan replaceState) agar tombol Kembali peramban mengembalikan tampilan sebelumnya.
-    window.history.pushState({ tampilan: next ? 'peta-hidup' : null }, '', url)
-    window.scrollTo({ top: 0 })
-  }, [])
+  // F-32 — hanya ada satu tampilan desktop. `?tampilan=peta-hidup` tetap diterima supaya
+  // tautan lama tidak rusak, tetapi tidak lagi mengubah apa pun.
   useEffect(() => {
-    const onPop = () => setDesktopView(readView())
+    const onPop = () => {
+      // Audit F-24 — tombol Kembali/Maju peramban ikut memulihkan sentra dari URL.
+      if (typeof window === 'undefined') return
+      const id = readLocationId(window.location.search, null, new Set(LOCATIONS.map((l) => l.id)))
+      if (!id) return
+      const loc = LOCATIONS.find((l) => l.id === id)
+      if (loc) setSelectedLocation((prev) => (prev?.id === loc.id ? prev : loc))
+    }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
-  }, [readView])
-  const livingMapPreview = isDesktop && desktopView === 'map'
+  }, [])
 
   // Persistensi wilayah terpilih (localStorage)
+  // Audit F-24 — tautan yang dibagikan membawa sentra: `?sentra=<id>` menang atas
+  // pilihan tersimpan, supaya penerima tautan melihat sentra yang sama dengan pengirim.
   const [selectedLocation, setSelectedLocation] = useState(() => {
-    const savedId = prefs.getLocationId()
+    const valid = new Set(LOCATIONS.map((l) => l.id))
+    const fromUrl = typeof window !== 'undefined' ? readLocationId(window.location.search, null, valid) : null
+    const savedId = fromUrl || prefs.getLocationId()
     return LOCATIONS.find((l) => l.id === savedId) || LOCATIONS[0]
   })
   const [highlightedLocationId, setHighlightedLocationId] = useState(null)
@@ -251,6 +244,13 @@ export default function App() {
     prefs.setLocationId(loc.id)
     setSelectedLocation(loc)
     if (!isDesktop) setTab('now')
+    // Audit F-24 — ganti alamat tanpa menambah riwayat (memilih sentra bukan navigasi halaman),
+    // sehingga tautan yang disalin/dibagikan menunjuk sentra yang sedang dilihat.
+    if (typeof window !== 'undefined' && window.history?.replaceState) {
+      const next = withSentra(window.location.href, loc.id)
+      const now = `${window.location.pathname}${window.location.search}${window.location.hash}`
+      if (next !== now) window.history.replaceState({ ...window.history.state, sentra: loc.id }, '', next)
+    }
   }, [isDesktop])
 
   // Data grafik hujan 24 jam (mm/jam)
@@ -361,145 +361,8 @@ export default function App() {
     </>
   )
 
-  /* ---------- Layout desktop ---------- */
-  /* ---------- Desktop P7.5 — lima zona di dalam papan kerja ---------- */
-  const goZone = (id) => {
-    document.getElementById(`zona-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  const dRingkas = data && (
-    <div className="niu-desktop-summary">
-      <DesktopSummaryBar
-        hazards={data.hazards}
-        onOpenRisk={() => goZone('risiko')}
-        onSelectHazard={(id) => {
-          setSelHaz(id)
-          setInspectorOpen(true)
-        }}
-      />
-      <HourStrip hours={data.hourly?.slice(0, 12) ?? []} interactive className="niu-desktop-hourstrip" />
-      <div className="niu-desktop-summary-grid">
-        <RingkasMobile
-          current={data.current}
-          daily={data.daily}
-          location={selectedLocation}
-          modelElevation={data.modelElevation}
-          hazards={data.hazards}
-          hourly={data.hourly}
-          tr={tr}
-          showAttention={false}
-          showHours={false}
-          className="niu-desktop-weather"
-        />
-        <AirQualityCard airQuality={data.airQuality} tr={tr} />
-      </div>
-      <div className="niu-desktop-summary-extras">
-        <CoffeeAdvisory coffee={data.coffee} tr={tr} />
-      </div>
-    </div>
-  )
-
-  const dRamalan = data && (
-    <div className="niu-desktop-forecast">
-      <div className="niu-desktop-forecast-top">
-        {rainPanel}
-        <DisasterWarning disaster={data.disaster} dailyRainSum={data.daily.rainSum} location={selectedLocation} tr={tr} />
-      </div>
-      <div className="niu-desktop-climate-grid">
-        <SeasonalBanner seasonal={data.disaster?.seasonal} tr={tr} />
-        <ClimateBanner drought={data.drought} tr={tr} />
-      </div>
-      <HourlyForecast hourly={data.hourly} tr={tr} variant="desktop" />
-    </div>
-  )
-
-  const desktopSelectedHazard = data?.hazards?.results?.find((hazard) => hazard.id === selHaz)
-    ?? data?.hazards?.results?.find((hazard) => hazard.level === data?.hazards?.worst)
-    ?? data?.hazards?.results?.[0]
-    ?? null
-  const inlineHazardInspector = inspectorOpen && desktopSelectedHazard ? (
-    <DesktopHazardInspector
-      selected={desktopSelectedHazard}
-      location={selectedLocation}
-      onClose={() => {
-        setInspectorOpen(false)
-        window.requestAnimationFrame(() => {
-          const rows = [...document.querySelectorAll('[data-hazard-row]')]
-          const selectedRow = rows.find((row) => row.getAttribute('data-hazard-row') === desktopSelectedHazard.id)
-          ;(selectedRow || document.getElementById('zona-risiko'))?.focus()
-        })
-      }}
-      inline
-    />
-  ) : null
-
-  const dRisiko = data && (
-    <div className="niu-desktop-risk">
-      <HazardPanel
-        hazards={data.hazards}
-        location={selectedLocation}
-        tr={tr}
-        onAbout={openAbout}
-        onSelect={(id) => {
-          setSelHaz(id)
-          setInspectorOpen(true)
-        }}
-        selectedId={selHaz ?? data.hazards?.worst ?? desktopSelectedHazard?.id}
-        inlineDetail={inlineHazardInspector}
-      />
-      <div className="niu-risk-focus-grid">
-        <DroughtCard drought={data.drought} tr={tr} />
-        <StormCard hazards={data.hazards} />
-        <FloodCard hazards={data.hazards} flood={data.flood} />
-        <TemperatureCard hazards={data.hazards} />
-        <QuakeCard hazards={data.hazards} />
-        <VolcanoCard hazards={data.hazards} volcano={data.volcano} />
-        <FireDangerCard fireDanger={data.fireDanger} tr={tr} />
-        <ExternalReportsCard externalReports={data.externalReports} />
-      </div>
-    </div>
-  )
-
-  const dSentra = data && (
-    <div className="niu-desktop-locations">
-      {/* F-04/F-06 — papan desktop memakai level AKUT, sama dengan bilah ringkasannya.
-          Tanpa ini, tab "Sentra" menulis "Bahaya" sementara bilah menulis "Waspada".
-          Peta mobile tetap memakai `worst` (bawaan) karena tidak melewati cabang ini. */}
-      <SchematicMap
-        hazardsAll={data.hazardsAll}
-        levelsPending={hazardsAllPending}
-        levelKey="worstAcute"
-        selectedLocation={selectedLocation}
-        highlightedLocationId={highlightedLocationId}
-        onHighlightLocation={setHighlightedLocationId}
-        onSelectLocation={onSelectLocation}
-        hotspots={data.fireDanger?.hotspots?.nearest ?? []}
-      />
-      <EmergencyContacts location={selectedLocation} hazard={data.hazards?.active?.[0]?.id ?? '*'} />
-    </div>
-  )
-
-  const dArsip = data && (
-    <div className="niu-desktop-archive space-y-4">
-      <DisasterHistoryCard history={data.disaster?.disasterHistory} location={selectedLocation} tr={tr} />
-      <section data-niu-card="about-guide" className="rounded-tanah-kartu border border-tanah-garis bg-tanah-kartu p-4 dark:rounded-langit-kartu dark:border-langit-garis dark:bg-langit-kartu">
-        <h2 className="text-body font-semibold text-tanah-tinta dark:text-langit-tinta">Tentang data &amp; batasan</h2>
-        <p className="mt-1 text-body-sm leading-relaxed text-tanah-tinta-isi dark:text-langit-tinta-isi">
-          Ambang, sumber, dan catatan keterbatasan tiap bahaya dijelaskan di panel ini. Niu adalah
-          informasi pendukung keputusan, bukan peringatan dini resmi.
-        </p>
-        <button
-          type="button"
-          onClick={() => setAboutOpen(true)}
-          className="mt-3 inline-flex min-h-11 items-center rounded-pil border border-tanah-garis-kuat px-4 text-body-sm font-semibold text-tanah-aksen hover:bg-tanah-terbenam dark:border-langit-garis-kuat dark:text-langit-aksen dark:hover:bg-langit-terbenam"
-        >
-          Buka tentang data &amp; batasan
-        </button>
-      </section>
-    </div>
-  )
-
-  const desktopLayout = data && (livingMapPreview ? (
+  /* ---------- Layout desktop: satu tampilan (Peta Hidup) ---------- */
+  const desktopLayout = data && (
     <LivingMapDesktop
       location={selectedLocation}
       data={data}
@@ -521,33 +384,8 @@ export default function App() {
       tr={tr}
       selectedHazardId={selHaz}
       onSelectHazard={setSelHaz}
-      onOpenBoard={() => showLivingMap(false)}
     />
-  ) : (
-    <DesktopBoard
-      hazards={data.hazards}
-      hazardsAll={data.hazardsAll}
-      location={selectedLocation}
-      highlightedLocationId={highlightedLocationId}
-      onHighlightLocation={setHighlightedLocationId}
-      onSelectLocation={onSelectLocation}
-      onOpenLocationPicker={openLocationPicker}
-      inspectorOpen={inspectorOpen}
-      onInspectorOpenChange={setInspectorOpen}
-      onOpenReport={openReportDialog}
-      reportOpen={reportDialogOpen}
-      onReportOpenChange={setReportDialogOpen}
-      onOpenShare={openShareOptions}
-      onRefresh={() => loadData(selectedLocation)}
-      onToggleTheme={cycleTheme}
-      onAbout={openAbout}
-      tr={tr}
-      selectedHazardId={selHaz}
-      onSelectHazard={setSelHaz}
-      onOpenLivingMap={() => showLivingMap(true)}
-      sections={{ ringkas: dRingkas, ramalan: dRamalan, risiko: dRisiko, sentra: dSentra, arsip: dArsip }}
-    />
-  ))
+  )
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -561,7 +399,7 @@ export default function App() {
       {/* P2 — pengumuman pembaruan data untuk pembaca layar */}
       <div role="status" aria-live="polite" className="sr-only">{liveMsg}</div>
       {isDesktop ? (
-        <DesktopHeader {...headerProps} live={livingMapPreview} />
+        <DesktopHeader {...headerProps} live />
       ) : (
         <AppBar selectedLocation={selectedLocation} {...headerProps} />
       )}
@@ -647,13 +485,13 @@ export default function App() {
           {/* Audit F-07 — halaman desktop tidak punya judul tingkat satu. Cukup satu,
               tersembunyi secara visual, dan ikut berubah saat sentra diganti. */}
           <h1 className="sr-only">
-            {livingMapPreview
-              ? `Peta hidup cuaca dan peringatan dini sentra ${selectedLocation?.name ?? 'Aceh Tengah'}`
-              : `Cuaca dan peringatan dini sentra ${selectedLocation?.name ?? 'Aceh Tengah'}`}
+            {`Peta hidup cuaca dan peringatan dini sentra ${selectedLocation?.name ?? 'Aceh Tengah'}`}
           </h1>
           {/* F-06 — sebelum data pertama tiba, ruang final sudah dicadangkan (bukan <main> 3 px).
               Tidak ditampilkan saat galat, agar pesan kesalahan tidak terlihat seperti "memuat". */}
-          {desktopLayout ?? (error ? null : <LivingMapBoot />)}
+          {desktopLayout
+            ? <Suspense fallback={<LivingMapBoot />}>{desktopLayout}</Suspense>
+            : (error ? null : <LivingMapBoot />)}
         </main>
       ) : (
         <>
@@ -669,7 +507,9 @@ export default function App() {
         </>
       )}
 
-      <footer className={livingMapPreview
+      {/* Footer tipis hanya untuk Peta Hidup (desktop). Mobile tetap memakai kelas lamanya:
+          audit F-08 memperbaiki gulir 9 px di desktop, bukan mengubah tampilan mobile. */}
+      <footer className={isDesktop
         ? 'niu-footer-livingmap'
         : 'border-t border-ink/10 dark:border-mist/10 py-4 text-center text-caption text-ink-muted dark:text-mist-subtle'}>
         Niu Gayo Agro-Climate &bull; {tr('footer')} &bull;{' '}

@@ -106,6 +106,24 @@ export function toIsoWib(local) {
  * Ringkasan 15 sentra (untuk /api/hazards?location=all, cron alert, peta skematik).
  * @param {(id:string)=>Promise<object>} getter biasanya getHazardsForLocation terbungkus cache
  */
+/**
+ * Audit (Sprint C·III) — `chronicByHazard` dulu dibangun dari `rows[0].chronic` saja: bahaya
+ * kronis yang aktif di sentra lain (tetapi bukan sentra pertama) hilang dari ringkasan agregat.
+ * Sekarang kunci = gabungan bahaya kronis **seluruh** baris.
+ * @param {Array<{id: string, chronic?: string[]}>} rows
+ * @returns {Record<string, string[]>}
+ */
+export function summarizeChronicByHazard(rows) {
+  const map = {}
+  for (const r of rows ?? []) {
+    for (const h of r?.chronic ?? []) {
+      if (!map[h]) map[h] = []
+      map[h].push(r.id)
+    }
+  }
+  return map
+}
+
 export async function getHazardsAll(getter, { concurrency = 4, locations = LOCATIONS } = {}) {
   const rows = []
   const queue = locations.map((l) => l.id)
@@ -133,7 +151,8 @@ export async function getHazardsAll(getter, { concurrency = 4, locations = LOCAT
     degradedCount: rows.filter((r) => r.degraded).length,
     worst: worstRow ? { id: worstRow.id, name: worstRow.name, level: worstRow.worst, active: worstRow.active } : null,
     worstAcute: worstAcuteRow ? { id: worstAcuteRow.id, name: worstAcuteRow.name, level: worstAcuteRow.worstAcute, active: worstAcuteRow.active } : null,
-    chronicByHazard: Object.fromEntries((rows[0]?.chronic ?? []).map((h) => [h, rows.filter((r) => (r.chronic ?? []).includes(h)).map((r) => r.id)])),
+    // Audit (Sprint C·III) — lihat summarizeChronicByHazard().
+    chronicByHazard: summarizeChronicByHazard(rows),
     activeByHazard: byHazard,
     locations: rows.map(({ hazards, ...r }) => r),
     _full: rows, // dengan hasil lengkap per bahaya (dipakai cron alert; dibuang oleh route publik)

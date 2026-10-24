@@ -208,12 +208,27 @@ export async function submitReport(report) {
   return { saved: entry, relayed: relay.ok, relayError: relay.ok ? undefined : relay.error }
 }
 
+/**
+ * Audit F-37 — `parse_mode: 'Markdown'` membuat `*`, `_`, '`', `[`, `]` di catatan warga
+ * ditafsirkan sebagai markup. Catatan berisi `*` atau `_` bisa membuat Telegram menolak
+ * pesan (400) atau memotong teks. Semua bagian dinamis di-escape lebih dulu.
+ */
+export function escapeMarkdown(value) {
+  return String(value ?? '').replace(/([_*`[\]])/g, '\\$1')
+}
+
 async function relayTelegram(report) {
   const token = readToken('TELEGRAM_BOT_TOKEN')
   const chatId = readToken('TELEGRAM_HOME_CHANNEL')
   const topicId = readToken('TELEGRAM_CRON_THREAD_ID') || '55'
   if (!token || !chatId) return { ok: false, error: 'TELEGRAM_BOT_TOKEN/TELEGRAM_HOME_CHANNEL tidak tersedia' }
-  const text = `📍 *Laporan warga* — ${report.location}\nJenis: ${report.type}${reportDetail(report)}${report.note ? `\nCatatan: ${report.note}` : ''}\nWaktu: ${report.timestamp}`
+  const text = [
+    '📍 *Laporan warga* — ' + escapeMarkdown(report.location),
+    'Jenis: ' + escapeMarkdown(report.type),
+    escapeMarkdown(reportDetail(report).replace(/^\n/, '')),
+    report.note ? 'Catatan: ' + escapeMarkdown(report.note) : null,
+    'Waktu: ' + escapeMarkdown(report.timestamp),
+  ].filter(Boolean).join('\n')
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',

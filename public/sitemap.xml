@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Audit F-13 — satu halaman publik; sitemap ini menggantikan 404 yang dulu terjadi. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://cuaca.abstract.biz.id/</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://cuaca.abstract.biz.id/?tampilan=peta-hidup</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

@@ -1,3 +1,15 @@
+/**
+ * ARSIP — papan lima bagian desktop.
+ *
+ * Diarsipkan pada 2026-10-24 atas keputusan produk **F-32**: Peta Hidup
+ * (`src/pages/LivingMapDesktop.jsx`) menjadi satu-satunya UI desktop.
+ *
+ * Berkas ini disimpan sebagai .txt agar tidak ikut di-lint/di-bundel. Isinya utuh:
+ * kalau keputusan itu dibalik, cukup pindahkan kembali ke src/pages/DesktopBoard.jsx
+ * dan pulihkan pemanggilannya di src/App.jsx (lihat CHANGELOG 2.3.1 untuk daftar
+ * perubahan yang harus dibalik).
+ */
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import CommandPalette from '../components/niu/CommandPalette.jsx'
 import DesktopHazardInspector from '../components/niu/DesktopHazardInspector.jsx'

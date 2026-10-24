@@ -24,11 +24,18 @@ export function buildForecastUrl(location) {
   return `https://api.open-meteo.com/v1/forecast?${params.toString()}`
 }
 
-export async function fetchWithRetry(url, { fetchImpl = fetch, retries = 2, signal } = {}) {
+// Audit F-10 — batas waktu per percobaan. Tanpa ini, koneksi yang menggantung membuat
+// `fetchForecast` menunggu tanpa akhir dan seluruh dashboard berhenti di kerangka.
+const FORECAST_TIMEOUT_MS = 8000
+
+export async function fetchWithRetry(url, { fetchImpl = fetch, retries = 2, signal, timeoutMs = FORECAST_TIMEOUT_MS } = {}) {
   let lastErr
   for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
+    const combined = signal || controller.signal
     try {
-      const resp = await fetchImpl(url, { signal })
+      const resp = await fetchImpl(url, { signal: combined })
       if (!resp.ok) throw new Error(`Gagal mengambil data cuaca: HTTP ${resp.status}`)
       return await resp.json()
     } catch (err) {
@@ -37,6 +44,8 @@ export async function fetchWithRetry(url, { fetchImpl = fetch, retries = 2, sign
       if (attempt < retries) {
         await new Promise((r) => setTimeout(r, 2 ** attempt * 500)) // eksponensial: 500ms, 1s
       }
+    } finally {
+      clearTimeout(timer)
     }
   }
   throw lastErr

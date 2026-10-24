@@ -186,7 +186,14 @@ export async function runAlertCycle(all, { now = new Date().toISOString(), dryRu
     messages: messages.length,
     sent,
     skipped: messages.length - batch.length,
-    summary: summarizeCycle(sent.map((a) => ({ alert: a }))),
+    // Audit F-33 — `dry-run` tidak mengirim apa pun. Dulu ringkasan tetap menulis
+    // `sent: 2`, sehingga log/smoke seolah-olah ada 2 pesan terkirim.
+    summary: {
+      ...summarizeCycle(sent.map((a) => ({ alert: a }))),
+      planned: sent.length,
+      sent: dryRun ? 0 : sent.length,
+      mode: dryRun ? 'dry-run' : 'live',
+    },
     errors,
     dryRun,
   }

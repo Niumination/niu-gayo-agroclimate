@@ -1,6 +1,10 @@
 import React from 'react'
 
-/** Palet tema (bukan slate/rose) + teks ≥ 12 px & kontras AA — paket P1 fase design/UX. */
+/**
+ * Audit F-23 — dulu hanya ada satu boundary di akar: satu panel gagal = seluruh aplikasi
+ * diganti halaman galat. Varian `compact` menggantikan *panel itu saja*; sisanya tetap hidup.
+ * Palet tema (bukan slate/rose) + teks ≥ 12 px & kontras AA — paket P1 fase design/UX.
+ */
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
@@ -16,6 +20,21 @@ export default class ErrorBoundary extends React.Component {
   }
 
   render() {
+    if (this.state.hasError && this.props.compact) {
+      return (
+        <div role="alert" data-boundary="panel" className="lm-boundary-panel text-body-sm">
+          <p className="font-semibold">Bagian ini gagal dimuat.</p>
+          <p className="text-caption">Sisa halaman tetap bisa dipakai.</p>
+          <button
+            type="button"
+            className="min-h-11 px-3 rounded-lg border border-ink/20 dark:border-mist/25 font-semibold"
+            onClick={() => this.setState({ hasError: false, message: null })}
+          >
+            Coba lagi
+          </button>
+        </div>
+      )
+    }
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-surface text-ink flex items-center justify-center p-6 dark:bg-soil dark:text-mist">

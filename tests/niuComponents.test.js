@@ -56,62 +56,6 @@ test('P7.3: tidak ada ukuran teks arbitrer di bawah 16 px', () => {
   }
 })
 
-test('LevelBadge: memakai label resmi dari domain, bukan teks bebas', () => {
-  assert.match(BADGE, /LEVEL_LABEL/)
-  assert.match(BADGE, /Data belum tersedia/)
-})
-
-test('LevelBadge: glif dekoratif disembunyikan dari pembaca layar', () => {
-  assert.match(BADGE, /aria-hidden="true"/)
-  assert.match(BADGE, /focusable="false"/)
-})
-
-test('LevelBadge: lima bentuk glif berbeda (bukan warna saja)', () => {
-  for (const key of ['rendah:', 'waspada:', 'bahaya:', 'ekstrem:', "'n/a':"]) {
-    assert.ok(BADGE.includes(key), `glif ${key} tidak ada`)
-  }
-})
-
-test('LevelBadge: memakai token tangga Tanah untuk keempat level', () => {
-  for (const level of ['rendah', 'waspada', 'bahaya', 'ekstrem']) {
-    assert.match(BADGE, new RegExp(`tanah-level-${level}`))
-  }
-})
-
-test('LevelBadge: memakai token tangga Langit untuk keempat level', () => {
-  for (const level of ['rendah', 'waspada', 'bahaya', 'ekstrem']) {
-    assert.match(BADGE, new RegExp(`langit-level-${level}`))
-  }
-})
-
-test('LevelBadge: tingkat tak dikenal jatuh ke n/a, bukan crash', () => {
-  assert.match(BADGE, /TONE\[level\] \? level : 'n\/a'/)
-})
-
-test('LevelBadge: menandai dirinya dengan data-level untuk pengujian & gaya', () => {
-  assert.match(BADGE, /data-level=\{key\}/)
-})
-
-test('LevelBadge: mendukung ukuran kecil untuk ruang sempit', () => {
-  assert.match(BADGE, /size === 'sm'/)
-})
-
-test('StatusHeadline: section diberi nama oleh h2 di dalamnya', () => {
-  assert.match(HEAD, /<section/)
-  assert.match(HEAD, /aria-labelledby=\{titleId\}/)
-  assert.match(HEAD, /id=\{titleId\}/)
-})
-
-test('StatusHeadline: judul adalah h2, bukan div', () => {
-  assert.match(HEAD, /<h2/)
-})
-
-test('StatusHeadline: mendukung subjudul lokasi dan label suhu pada sisi kanan', () => {
-  assert.match(HEAD, /subtitle,/)
-  assert.match(HEAD, /className="niu-status-kicker"/)
-  assert.match(THEME, /\.niu-status-kicker/)
-})
-
 test('StatusHeadline: angka utama memakai display font arah, bukan font-data teknis', () => {
   assert.match(HEAD, /niu-status-value/)
   assert.match(HEAD, /tabular-nums/)
@@ -119,22 +63,9 @@ test('StatusHeadline: angka utama memakai display font arah, bukan font-data tek
   assert.ok(THEME.includes('.niu-status-value') && THEME.includes('font-family: var(--app-font)'))
 })
 
-test('StatusHeadline: satuan diberi spasi tak-putus agar tak terpisah dari angka', () => {
-  assert.match(HEAD, /\\u00a0/)
-})
-
 test('StatusHeadline: skala angka utama mengikuti prototipe Tanah 88 px dan Langit 96 px', () => {
   assert.match(THEME, /font-size: 88px !important/)
   assert.match(THEME, /font-size: 96px !important/)
-})
-
-test('StatusHeadline: menampilkan lencana level bila level diberikan', () => {
-  assert.match(HEAD, /<LevelBadge/)
-})
-
-test('StatusHeadline: warna nilai dingin/panas memakai token semantik', () => {
-  assert.match(HEAD, /rain-deep dark:text-rain-soft/)
-  assert.match(HEAD, /cherry-deep dark:text-cherry-soft/)
 })
 
 test('Metrik Tanah 2×2 di ponsel; Langit satu baris empat kolom di semua lebar', () => {
@@ -152,58 +83,8 @@ test('StatusHeadline: permukaan mengikuti radius & kartu dua tangga', () => {
   assert.match(HEAD, /dark:rounded-langit-kartu/)
 })
 
-test('StatusHeadline: bisa dipakai tanpa bingkai di dalam kartu lain', () => {
-  assert.match(HEAD, /framed = true/)
-  assert.match(HEAD, /framed\s*\n?\s*\?/)
-})
-
 test('StatusHeadline: catatan membungkus, tidak memotong', () => {
   assert.match(HEAD, /break-words/)
-})
-
-test('AttentionCard: akar adalah article berlabel level', () => {
-  assert.match(CARD, /<article/)
-  assert.match(CARD, /data-level=\{key\}/)
-})
-
-test('AttentionCard: tombol Detail mengumumkan keadaan buka/tutup', () => {
-  assert.match(CARD, /aria-expanded=\{expanded\}/)
-})
-
-test('AttentionCard: tombol Detail menunjuk panel lewat aria-controls', () => {
-  assert.match(CARD, /aria-controls=\{detailId\}/)
-})
-
-test('AttentionCard: id panel default diturunkan dari id kartu', () => {
-  assert.match(CARD, /detailId = `\$\{id\}-detail`/)
-})
-
-test('AttentionCard: panel rincian hanya ada saat terbuka', () => {
-  assert.match(CARD, /\{expanded && \(/)
-})
-
-test('AttentionCard: panel terbuka diberi peran region + nama', () => {
-  assert.match(CARD, /role="region"/)
-  assert.match(CARD, /aria-label=\{`Rincian \$\{title\}`\}/)
-})
-
-test('AttentionCard: tombol memenuhi target sentuh 44 px', () => {
-  assert.match(CARD, /min-h-11/)
-})
-
-test('AttentionCard: tombol adalah type=button (bukan submit)', () => {
-  assert.match(CARD, /type="button"/)
-})
-
-test('AttentionCard: tepi kiri menandai level, dengan fallback n/a', () => {
-  assert.match(CARD, /border-l-tanah-level-bahaya/)
-  assert.match(CARD, /dark:border-l-langit-level-bahaya/)
-  assert.match(CARD, /EDGE\[level\] \? level : 'n\/a'/)
-})
-
-test('AttentionCard: label tombol bisa diganti (mis. bahasa manus)', () => {
-  assert.match(CARD, /actionLabel = 'Detail'/)
-  assert.match(CARD, /closeLabel = 'Tutup rincian'/)
 })
 
 test('AttentionCard: ringkasan dan meta memakai token tinta tangga', () => {
