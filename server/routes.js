@@ -101,7 +101,13 @@ export function createHandler(ctx) {
           const p = peek('alerts:all')
           const v = p?.value ?? null
           const st = v?.staleness
-          if (!st) return { state: 'belum-dimuat' }
+          if (!st) {
+            // 2.3.3 — `alerts:all` hanya terisi bila ada yang membuka /api/alerts; UI tidak
+            // memanggilnya dan cron memakai /api/alerts/run. Tanpa cadangan ini F-05 bisu
+            // selamanya (sumber dilaporkan "belum-dimuat" padahal GES DISC bisa mati).
+            const probe = ctx.imergProbe?.tick()
+            return probe ? { ...probe } : { state: 'belum-dimuat' }
+          }
           const alasan = (v?.locations ?? []).map((l) => l?.antecedent?.fallbackReason).find(Boolean)
           const semuaFallback = st.imergCount === 0
           return {
@@ -137,7 +143,7 @@ export function createHandler(ctx) {
           cache: cacheStats(),
           features: { hazardsEnabled: HAZARDS_ON, firmsKey: !!FIRMS_MAP_KEY, telegram: !!readToken('TELEGRAM_BOT_TOKEN'), cronToken: !!process.env.ALERTS_CRON_TOKEN },
           sources,
-          health: assessSources(sources),
+          health: assessSources(sources, { uptimeSec: process.uptime() }),
         })
       }
       if (path === '/api/weather') {

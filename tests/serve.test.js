@@ -45,32 +45,41 @@ test('serve.py: SPA fallback hanya untuk navigasi; cache entry point ketat dan a
   assert.match(root.headers.get('cache-control') || '', /no-cache/)
   assert.match(root.headers.get('x-content-type-options') || '', /nosniff/)
 
-  const route = await fetch(`${base}/risiko/aktif`, { headers: { Accept: 'text/html' } })
-  assert.equal(route.status, 200)
-  assert.match(await route.text(), /id="root"/)
+  // F-14 — aplikasi tidak punya rute path (semua keadaan di query string), jadi alamat
+  // tak dikenal TIDAK boleh dilayani index.html, termasuk untuk navigasi peramban.
+  // Sebelum ini `/risiko/aktif` dibalas 200 + index.html dan 404.html tak pernah terlihat
+  // oleh pengunjung sungguhan (hanya curl/bot yang tidak mengirim `Accept: text/html`).
 
   const missingAsset = await fetch(`${base}/assets/missing.js`, { headers: { Accept: '*/*' } })
   assert.equal(missingAsset.status, 404)
   assert.match(missingAsset.headers.get('cache-control') || '', /no-cache/)
 
   // Audit F-14 — alamat yang salah dibalas halaman 404 milik aplikasi, bukan bawaan Python,
-  // dan statusnya tetap 404. Navigasi peramban (Accept: text/html) tetap dianggap rute SPA
-  // (aplikasi tidak punya rute path; keadaan ada di query string) — jadi jalur extensionless
-  // untuk permintaan *bukan* dokumen inilah yang wajib menampilkan halaman 404.
+  // dan statusnya tetap 404 untuk SEMUA klien: curl (tanpa Accept), bot, dan peramban
+  // (Accept: text/html). Yang terakhir inilah yang dulu lolos dan membuat F-14 tetap
+  // terbuka meski `curl -sI` sudah 404.
   fs.writeFileSync(path.join(dist, '404.html'), '<!doctype html><html><body>Halaman ini tidak ada</body></html>')
-  const notFound = await fetch(`${base}/halaman-tidak-ada`)
-  assert.equal(notFound.status, 404)
-  assert.match(notFound.headers.get('content-type') || '', /text\/html/)
-  assert.match(await notFound.text(), /Halaman ini tidak ada/)
+  for (const accept of [undefined, '*/*', 'text/html,application/xhtml+xml']) {
+    const r = await fetch(`${base}/halaman-tidak-ada`, accept ? { headers: { Accept: accept } } : undefined)
+    assert.equal(r.status, 404, `alamat salah harus 404 (Accept: ${accept ?? 'tidak ada'})`)
+    assert.match(r.headers.get('content-type') || '', /text\/html/)
+    assert.match(await r.text(), /Halaman ini tidak ada/)
+  }
 
   const asset404 = await fetch(`${base}/assets/tidak-ada.js`)
   assert.equal(asset404.status, 404)
   assert.doesNotMatch(await asset404.text(), /Halaman ini tidak ada/)
 
-  // Rute SPA yang sah tidak pernah jadi 404.
-  const spaRoute = await fetch(`${base}/halaman-tidak-ada`, { headers: { Accept: 'text/html' } })
-  assert.equal(spaRoute.status, 200)
-  assert.match(await spaRoute.text(), /id="root"/)
+  // Akar situs tetap aplikasi, dengan atau tanpa header Accept.
+  for (const accept of [undefined, 'text/html']) {
+    const root2 = await fetch(base, accept ? { headers: { Accept: accept } } : undefined)
+    assert.equal(root2.status, 200)
+    assert.match(await root2.text(), /id="root"/)
+  }
+  // Query string tidak mengubah apa pun: keadaan aplikasi hidup di sana.
+  const query = await fetch(`${base}/?sentra=linge`, { headers: { Accept: 'text/html' } })
+  assert.equal(query.status, 200)
+  assert.match(await query.text(), /id="root"/)
 
   const sw = await fetch(`${base}/sw.js`)
   assert.equal(sw.status, 200)

@@ -1,8 +1,9 @@
 # Server statis: 404, robots, sitemap
 
 Aplikasi ini hanya menyajikan **API** dari Node (`server/index.js`). Berkas `dist/` dilayani
-server statis terpisah (nginx/Caddy/Cloudflare). Dua temuan audit (F-13, F-14) tidak bisa
-ditutup dari sisi aplikasi saja — konfigurasi di bawah ini yang membuatnya berlaku.
+server statis terpisah — di produksi saat ini **`scripts/serve.py`** (lihat bagiannya di bawah),
+dengan nginx/Caddy sebagai alternatif. Dua temuan audit (F-13, F-14) bergantung pada server
+mana pun yang dipakai; konfigurasi di bawah ini yang membuatnya berlaku.
 
 ## nginx
 
@@ -56,19 +57,46 @@ niu.example.id {
 2. biarkan Cloudflare, tetapi tambahkan baris `Sitemap: https://cuaca.abstract.biz.id/sitemap.xml`
    lewat *Bulk Redirects/Rules → Transform* agar konsisten dengan `public/robots.txt`.
 
+## Server statis milik repo: `scripts/serve.py` (dipakai produksi)
+
+Selain nginx/Caddy, repo punya server statis sendiri untuk `dist/` — inilah yang dipakai
+host produksi (`PORT`, `NIU_DIST_DIR`). Perilakunya sejak 2.3.3:
+
+- **Akar situs** (`/`, `/index.html`) → `index.html`, HTTP 200, `Cache-Control: no-cache`.
+- **Alamat tak dikenal** (tanpa akhiran berkas) → `404.html` milik aplikasi, **HTTP 404 untuk
+  semua klien** — termasuk peramban yang mengirim `Accept: text/html`. Aplikasi ini tidak punya
+  rute path (semua keadaan ada di query string), jadi tidak ada alasan melayani `index.html`
+  untuk alamat yang salah.
+- **Aset hilang** (`.js`, `.css`, gambar, font) → 404 polos, bukan HTML.
+- **`/sw.js`, `/registerSW.js`** → `no-cache, no-store, must-revalidate`; aset ber-hash →
+  `immutable`.
+
+Sejarah singkat: versi pertama F-14 hanya mengembalikan `404.html` untuk permintaan **tanpa**
+`Accept: text/html`, sehingga `curl -sI` melaporkan 404 padahal peramban tetap mendapat
+aplikasi dengan status 200. Itu persis kebalikan dari maksud temuannya. Sekarang tidak ada
+cabang "navigasi" sama sekali; `tests/serve.test.js` menguji ketiga jenis klien.
+
 ## Verifikasi setelah menerapkan
 
 ```bash
-curl -sI https://cuaca.abstract.biz.id/halaman-tidak-ada | head -5      # harus 404 + text/html
-curl -s  https://cuaca.abstract.biz.id/halaman-tidak-ada | grep -c 'Halaman ini tidak ada'  # 1
-curl -s  https://cuaca.abstract.biz.id/sitemap.xml | head -3            # XML urlset
-curl -sI https://cuaca.abstract.biz.id/ | head -1                       # harus 200 (akar situs)
-curl -sI https://cuaca.abstract.biz.id/robots.txt | head -1             # harus 200
-curl -s  https://cuaca.abstract.biz.id/halaman-tidak-ada | grep -c 'Halaman ini tidak ada'  # 1
-
-Kalau `curl -sI /halaman-tidak-ada` mengembalikan **200**, berarti masih ada fallback
-`try_files … /index.html` — hapus baris itu (aplikasi ini tidak memakai rute path).
+# 1. Semua klien harus melihat 404 — peramban juga.
+for accept in 'text/html,application/xhtml+xml' '*/*' ''; do
+  curl -s -o /dev/null -w "%{http_code} (Accept: ${accept:-tanpa header})\n" \
+    -H "Accept: $accept" https://cuaca.abstract.biz.id/halaman-tidak-ada   # 404, 404, 404
+done
+curl -s -H 'Accept: text/html' https://cuaca.abstract.biz.id/halaman-tidak-ada | grep -c 'Halaman ini tidak ada'  # 1
+curl -s https://cuaca.abstract.biz.id/assets/tidak-ada.js | grep -c 'Halaman ini tidak ada'                      # 0
+curl -s https://cuaca.abstract.biz.id/sitemap.xml | head -3            # XML urlset
+curl -sI https://cuaca.abstract.biz.id/ | head -1                      # 200 (akar situs)
+curl -sI https://cuaca.abstract.biz.id/robots.txt | head -1            # 200
 ```
+
+`npm run verify:deployment -- https://… --expect=<SHA>` menjalankan pemeriksaan yang sama
+(404 untuk tiga jenis klien, aset 404 polos, robots, sitemap) — sejak 2.3.3, supaya F-14
+tidak bisa "hijau" lagi padahal terbuka.
+
+Kalau permintaan dengan `Accept: text/html` mengembalikan **200**, berarti masih ada fallback
+ke `index.html` — di nginx itu `try_files … /index.html`, di `serve.py` cabang "navigasi" lama.
 
 ## CSP untuk halaman HTML (F-11 + F-22)
 

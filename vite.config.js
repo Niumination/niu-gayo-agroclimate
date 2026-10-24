@@ -44,17 +44,35 @@ export default defineConfig({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         navigationPreload: true,
-        // Audit F-09 (Sprint C·II) — offline.html di-precache tetapi tidak pernah dipakai:
-        // navigasi offline dulu dijawab index.html, yang lalu gagal memuat `/api/*` dan
-        // menampilkan papan kosong. Sekarang kerangka offline yang jelas yang disajikan.
-        navigateFallback: '/offline.html',
-        // Sprint C·I (F-14) — tanpa denylist, service worker menjawab SETIAP navigasi
-        // (termasuk alamat yang salah) dengan index.html, sehingga public/404.html tidak
-        // pernah tampil bagi pengunjung yang sudah pernah membuka situs. Hanya akar situs
-        // (pathname '/') yang dilayani dari cache; alamat lain dibiarkan ke jaringan supaya
-        // server statis bisa menjawab 404 bermerek.
-        navigateFallbackDenylist: [/^\/.+/],
+        // vite-plugin-pwa mengisi `navigateFallback: 'index.html'` bila nilainya tidak ada —
+        // itulah yang membuat service worker menjawab SEMUA navigasi dengan aplikasi. Setel
+        // `null` secara eksplisit; cadangan offline ditangani route NetworkFirst di bawah.
+        navigateFallback: null,
+        // F-09 × F-14 (diperbaiki 2.3.3) — dua perbaikan sebelumnya saling meniadakan:
+        // `navigateFallback: '/offline.html'` hanya menangani navigasi yang LOLOS denylist,
+        // sedangkan denylist `/^\/.+/` (dipasang untuk F-14) menolak semua alamat selain ''
+        // kecuali akar — dan akar sendiri selalu dilayani dari precache. Hasilnya
+        // `offline.html` tidak pernah tampil, dan navigasi offline ke `/?sentra=linge`
+        // (pola tautan utama aplikasi ini) berakhir di halaman galat peramban.
+        //
+        // Sekarang tidak ada `navigateFallback` sama sekali. Navigasi ditangani
+        // NetworkFirst: daring selalu ke jaringan (alamat salah tetap 404 bermerek dari
+        // server, bukan index.html), luring memakai salinan yang tersimpan, dan bila belum
+        // ada salinan barulah `offline.html` dari precache disajikan lewat `precacheFallback`.
         runtimeCaching: [
+          {
+            // Hanya navigasi dokumen; API punya aturannya sendiri di bawah.
+            urlPattern: ({ request, url }) => request.mode === 'navigate' && !url.pathname.startsWith('/api/'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages-cache',
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 16, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              // Hanya jawaban sehat yang disimpan: 404/5xx tidak boleh jadi "halaman offline".
+              cacheableResponse: { statuses: [200] },
+              precacheFallback: { fallbackURL: '/offline.html' },
+            },
+          },
           {
             // Proxy API: network-first, fallback cache saat offline
             urlPattern: ({ url }) => url.pathname.includes('/api/'),

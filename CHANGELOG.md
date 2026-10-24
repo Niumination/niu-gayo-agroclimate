@@ -1,5 +1,74 @@
 # Changelog
 
+## [2.3.3] — 2026-10-24 — Empat koreksi setelah pemeriksaan penerapan 2.3.2
+
+Pemeriksaan ulang atas hasil penerapan 2.3.2 menemukan tiga hal yang **tidak tertangkap** oleh
+paket sebelumnya. Semuanya sudah diperbaiki di sini, dengan uji regresi masing-masing.
+
+1. **Halaman 404 tidak pernah terlihat oleh peramban (F-14 masih terbuka).**
+   `scripts/serve.py` — server statis yang dipakai produksi — hanya menyajikan `public/404.html`
+   untuk permintaan **tanpa** `Accept: text/html`; permintaan peramban justru dilayani
+   `index.html` dengan status **200**. Artinya `curl -sI` melaporkan 404 (dan begitulah cara
+   paket 2.3.2 diverifikasi), tetapi pengunjung yang salah ketik alamat tetap melihat aplikasi —
+   kebalikan dari maksud temuan. Aplikasi ini tidak punya rute path (semua keadaan ada di query
+   string), jadi cabang "navigasi" itu dihapus: alamat tak dikenal kini **404 untuk semua klien**,
+   aset hilang tetap 404 polos.
+   `scripts/verify-deployment.mjs` sekarang ikut memeriksa 404 untuk tiga jenis klien
+   (`Accept: text/html`, `*/*`, tanpa header), aset 404 polos, `robots.txt`, dan `sitemap.xml` —
+   supaya kesalahan yang sama tidak bisa lolos lagi sebagai "hijau".
+
+2. **`/healthz` melaporkan alarm palsu setiap server mulai (kesehatan sumber).**
+   `src/domain/sourceHealth.js` — `belum-dimuat` tidak lagi otomatis dianggap masalah. Sumber
+   yang memang **dimuat saat diminta** (`alerts`, `airQuality`, `fireDanger`, `petabencana`)
+   dicatat di `health.idle`; hanya **sumber inti** (`hazards`, `bmkgNowcast`, `quakes`, `flood`,
+   `volcano`, `hotspots`, `imerg`) yang kosong **setelah masa pemanasan 10 menit** (`WARMUP_MIN`)
+   yang masuk `health.problems`. Di produksi 2.3.2, lima sumber lazy membuat `health.ok=false`
+   terus-menerus dan alarm Telegram akan berbunyi pada setiap restart.
+
+3. **Status IMERG tidak akan pernah berbunyi (F-05 tetap bisu).**
+   `server/imergProbe.js` (baru) — status IMERG dulu hanya dibaca dari `alerts:all`, cache yang
+   **tidak pernah terisi** di produksi: UI tidak memanggil `/api/alerts` dan cron memakai
+   `/api/alerts/run` (mengevaluasi bahaya, bukan agregat alerts). Akibatnya `sources.imerg`
+   selamanya `belum-dimuat`, dan alarm F-05 tidak akan berbunyi walaupun GES DISC mati total.
+   Probe memeriksa **satu** sentra sekali per 6 jam di latar (tidak menahan respons `/healthz`),
+   hasilnya dipakai `srcImerg()` bila `alerts:all` kosong.
+
+4. **Navigasi offline dan F-14 saling meniadakan (F-09).**
+   Bundel I memasang `navigateFallbackDenylist: [/^\/.+/]` untuk F-14, sedangkan bundel II
+   memasang `navigateFallback: '/offline.html'` untuk F-09. Denylist menolak semua alamat selain
+   akar, dan akar selalu dilayani dari precache — jadi `offline.html` **tidak pernah tampil**,
+   dan navigasi luring ke `/?sentra=linge` (pola tautan utama aplikasi ini) berakhir di halaman
+   galat peramban. Selain itu `vite-plugin-pwa` mengisi `navigateFallback: 'index.html'` bila
+   nilainya tidak ada, sehingga menghapus opsi itu diam-diam mengembalikan bug F-14.
+   Sekarang: `navigateFallback: null` eksplisit + satu route **NetworkFirst** untuk navigasi
+   dokumen dengan `precacheFallback: '/offline.html'` dan `cacheableResponse: { statuses: [200] }`.
+   Daring: alamat salah tetap 404 dari server (juga saat SW aktif). Luring: halaman tersimpan
+   disajikan; alamat yang belum pernah dibuka mendapat `offline.html`.
+   Diuji di peramban sungguhan: daring `/` 200, `/?sentra=linge` 200, `/halaman-tidak-ada` **404**;
+   luring `/` 200, `/?sentra=linge` 200, alamat asing → "Niu sedang offline".
+
+Tambahan kecil:
+
+- `scripts/.hermes-tmp.7WlD6R` (berkas sementara 0 byte yang ikut terkomit) dihapus;
+  pola `.hermes-tmp.*` masuk `.gitignore`.
+- `docs/deploy/STATIC-SERVER.md` — bagian verifikasi yang pagarnya rusak (paragraf penjelas
+  tertelan di dalam blok `bash`) diperbaiki, baris `curl` ganda dihapus, dan ada bagian baru
+  tentang `scripts/serve.py` sebagai server statis produksi.
+- `docs/reference/ENDPOINT-API.md` + `docs/how-to/02-aktifkan-peringatan-telegram.md` —
+  aturan `health.problems` vs `health.idle`, masa pemanasan, dan probe IMERG.
+- Uji: `tests/serve.test.js` menguji tiga jenis klien; `tests/sprintC6.test.js` +4 uji
+  (sumber lazy bukan masalah, sumber inti setelah pemanasan, cadangan probe di `/healthz`,
+  perilaku `createImergProbe`); `tests/sprintC2.test.js` +1 uji yang mengunci konfigurasi
+  navigasi SW **dan** isi `dist/sw.js` hasil build (tidak ada `NavigationRoute`, ada
+  `PrecacheFallbackPlugin`). **640 tes**.
+
+Gerbang: 640 tes lolos, lint 0, build ✓, bundle 163,8 kB gzip, axe 3/3, smoke/i18n/kontras/tipografi ✓.
+`check:coverage` tetap merah seperti sebelumnya (90,0 % vs ambang 95 %; ambang tidak diturunkan).
+
+**Masih di luar kode:** F-05 (egress GES DISC + token Earthdata di host) dan F-16 (IP host
+diblokir PVMBG) — keduanya kini terlihat di `health.problems` dan akan memicu alarm.
+
+
 ## [2.3.2] — 2026-10-24 — Alarm kesehatan sumber & uji DOM untuk komponen inti (F-05, F-16, F-38)
 
 Dua temuan data (F-05 IMERG, F-16 MAGMA) tidak bisa ditutup dari sisi aplikasi — keduanya butuh

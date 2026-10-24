@@ -2,8 +2,9 @@
 """Serve this checkout's dist/ as a production SPA.
 
 NIU_DIST_DIR may override the default for an explicitly managed deployment.
-HTML navigations fall back to index.html; unknown addresses get the app's own
-404.html (still HTTP 404); missing assets and API paths stay plain 404.
+The app has no path routes (all state lives in the query string), so unknown
+addresses get the app's own 404.html with HTTP 404 for every client, browser
+included; missing assets and API paths stay plain 404.
 Unhashed entry points are revalidated; fingerprinted assets are immutable.
 """
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -49,30 +50,24 @@ class SPAHandler(SimpleHTTPRequestHandler):
                 self.path = requested.rstrip("/") + "/index.html" if requested != "/" else "/index.html"
 
         if not target.exists() or target.is_dir():
-            # Only browser document navigations (extensionless paths) are SPA routes.
-            # A missing .js/.css/image or /api/* must never receive index.html with HTTP 200.
-            accept = self.headers.get("Accept", "")
-            is_navigation = (
-                "text/html" in accept
-                and not Path(requested).suffix
-                and not requested.startswith("/api/")
-            )
-            if is_navigation:
-                if not (ROOT / "index.html").is_file():
-                    return self.send_error(503, "Built application is missing; run npm run build")
-                self.path = "/index.html"
+            # Audit F-14 — aplikasi ini TIDAK punya rute path: seluruh keadaan ada di query
+            # string (?sentra=…, ?tampilan=…). Karena itu alamat tak dikenal harus 404 untuk
+            # SEMUA klien, termasuk peramban. Sebelum ini cabang "navigasi" melayani
+            # index.html untuk `Accept: text/html`, sehingga pengunjung yang salah ketik
+            # alamat melihat aplikasi dengan status 200 dan public/404.html praktis hanya
+            # terlihat oleh curl/bot — persis kebalikan dari maksud F-14
+            # (lihat docs/deploy/STATIC-SERVER.md: "alamat tak dikenal HARUS 404").
+            if requested in ("/", "/index.html") and not (ROOT / "index.html").is_file():
+                return self.send_error(503, "Built application is missing; run npm run build")
+            notFound = ROOT / "404.html"
+            if notFound.is_file() and not Path(requested).suffix:
+                self.path = "/404.html"
+                self._not_found = True
+                self._requested_path = "/404.html"
             else:
-                # Audit F-14 — alamat yang salah dulu dibalas halaman bawaan Python
-                # berbahasa Inggris. Sekarang halaman 404 milik aplikasi disajikan,
-                # tetap dengan status 404 (indeks tidak pernah menelan alamat salah).
-                # Permintaan aset (.js/.css/gambar) tetap mendapat 404 polos.
-                notFound = ROOT / "404.html"
-                if notFound.is_file() and not Path(requested).suffix:
-                    self.path = "/404.html"
-                    self._not_found = True
-                    self._requested_path = "/404.html"
-                else:
-                    return self.send_error(404, "File not found")
+                # Aset ber-hash yang hilang (.js/.css/gambar) tetap 404 polos: klien yang
+                # meminta berkas tidak perlu HTML, dan tidak boleh menerima index.html.
+                return self.send_error(404, "File not found")
 
         return super().send_head()
 

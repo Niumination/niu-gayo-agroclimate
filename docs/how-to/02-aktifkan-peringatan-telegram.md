@@ -71,8 +71,8 @@ Mengubah angka-angka ini berarti mengubah `src/domain/alert.js` **dan** tabel di
 ## 6. Alarm kesehatan sumber data (F-05/F-16)
 
 Cron yang sama (`scripts/alerts-cron.mjs`) juga memeriksa `/healthz` setelah siklus peringatan.
-Bila ada sumber yang `degraded`, belum pernah dimuat, atau datanya lebih tua dari **6 jam**,
-satu pesan ringkas dikirim ke topik cron yang sama:
+Bila ada sumber yang `degraded`, datanya lebih tua dari **6 jam**, atau sebuah **sumber inti**
+belum pernah dimuat setelah masa pemanasan, satu pesan ringkas dikirim ke topik cron yang sama:
 
 ```
 Niu — 2 sumber data bermasalah
@@ -85,6 +85,15 @@ Aturan yang perlu diketahui sebelum mengubah:
 
 - **Anti-bising**: pesan hanya dikirim bila daftar masalahnya *berubah*, atau bila masalah yang
   sama masih ada setelah **6 jam** (`COOLDOWN_H` di `src/domain/sourceHealth.js`).
+- **Sumber lazy tidak memicu alarm** (sejak 2.3.3): `alerts`, `airQuality`, `fireDanger`, dan
+  `petabencana` memang baru dimuat saat ada yang membukanya, jadi dicatat di `health.idle`, bukan
+  `health.problems`. Sumber inti (`hazards`, `bmkgNowcast`, `quakes`, `flood`, `volcano`,
+  `hotspots`, `imerg`) wajib terisi; bila masih kosong **10 menit** setelah proses hidup, itu baru
+  masalah (`WARMUP_MIN`). Tanpa pemisahan ini, setiap server mulai ulang mengirim alarm palsu
+  "5 sumber bermasalah" — persis yang terjadi pada 2.3.2.
+- **IMERG diperiksa sendiri** (`server/imergProbe.js`): status tidak lagi bergantung pada ada
+  tidaknya pengunjung yang membuka `/api/alerts`, yang di produksi tidak pernah terisi. Probe
+  memeriksa satu sentra sekali per 6 jam di latar, jadi alarm F-05 benar-benar bisa berbunyi.
 - **Tanpa token** (`TELEGRAM_BOT_TOKEN` kosong), alarm hanya dicatat di log — tidak menggagalkan cron.
 - `--dry-run` mencetak pesan yang *akan* dikirim tanpa mengirim dan tanpa menyimpan keadaan.
 - Keadaan terakhir disimpan di `server/data/source-alert-state.json` (bisa dipindah lewat

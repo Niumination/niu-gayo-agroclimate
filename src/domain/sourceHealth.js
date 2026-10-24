@@ -6,16 +6,30 @@
  * memberi tahu siapa pun. `/healthz` sudah memuat keadaan per sumber; modul ini
  * mengubahnya menjadi **daftar masalah** yang bisa dipakai alarm.
  *
- * Aturan (disepakati di rencana audit):
+ * Aturan (disepakati di rencana audit, diperbaiki 2.3.3 setelah pemeriksaan produksi):
  *  - sumber `degraded` → masalah;
  *  - data lebih tua dari `staleHours` (bawaan 6 jam) → masalah;
- *  - `belum-dimuat` → masalah (server baru hidup atau cache kosong).
+ *  - `belum-dimuat` → masalah **hanya** untuk sumber inti dan setelah masa pemanasan.
+ *
+ * Mengapa `belum-dimuat` tidak otomatis masalah: sebagian sumber memang **dimuat saat
+ * diminta** (lazy), bukan saat proses hidup — `alerts`, `alerts/imerg` (lewat probe,
+ * lihat server/imergProbe.js), `airQuality`, `fireDanger`, `petabencana`. Sebelum
+ * perbaikan ini, `/healthz` di produksi menyatakan `ok: false` dengan lima sumber
+ * "belum pernah dimuat" padahal tidak ada yang rusak, dan alarm Telegram berbunyi
+ * setiap kali server dimulai ulang. Pemanasan (`WARMUP_MIN`) memisahkan "baru hidup"
+ * dari "gagal memuat".
  *
  * Murni: tanpa jaringan, tanpa jam global, tanpa tulis berkas.
  */
 
 export const STALE_HOURS = 6
 export const COOLDOWN_H = 6
+
+/** Sumber yang WAJIB terisi tanpa perlu ada pengguna; kosong setelah pemanasan = masalah. */
+export const CORE_SOURCES = ['hazards', 'bmkgNowcast', 'quakes', 'flood', 'volcano', 'hotspots', 'imerg']
+
+/** Masa tenggang setelah proses hidup sebelum `belum-dimuat` pada sumber inti dianggap masalah. */
+export const WARMUP_MIN = 10
 
 const JAM = 3_600_000
 
@@ -29,10 +43,23 @@ function umurJam(retrievedAt, now) {
 /**
  * @param {Record<string, {state?: string, error?: string, retrievedAt?: string|null, imergCount?: number}>} sources
  *   Bentuk `sources` dari `/healthz`.
- * @returns {{ok: boolean, checkedAt: string, staleHours: number, problems: Array<{id: string, state: string, ageHours: number|null, reason: string}>}}
+ * @param {{now?: Date|string, staleHours?: number, coreSources?: string[], uptimeSec?: number, warmupMin?: number}} [opsi]
+ * @returns {{ok: boolean, checkedAt: string, staleHours: number,
+ *   problems: Array<{id: string, state: string, ageHours: number|null, reason: string}>,
+ *   idle: Array<{id: string, reason: string}>}}
  */
-export function assessSources(sources = {}, { now = new Date(), staleHours = STALE_HOURS } = {}) {
+export function assessSources(sources = {}, {
+  now = new Date(),
+  staleHours = STALE_HOURS,
+  coreSources = CORE_SOURCES,
+  uptimeSec = Infinity,
+  warmupMin = WARMUP_MIN,
+} = {}) {
+  const inti = new Set(coreSources)
   const problems = []
+  const idle = []
+  const lewatPemanasan = !Number.isFinite(uptimeSec) || uptimeSec >= warmupMin * 60
+
   for (const [id, s] of Object.entries(sources)) {
     if (!s || typeof s !== 'object') continue
     const state = s.state ?? 'ok'
@@ -40,13 +67,23 @@ export function assessSources(sources = {}, { now = new Date(), staleHours = STA
     const alasan = []
 
     if (state === 'degraded') alasan.push(s.error || 'sumber melaporkan degradasi')
-    if (state === 'belum-dimuat') alasan.push('belum pernah dimuat')
     if (ageHours !== null && ageHours > staleHours) alasan.push(`data berumur ${Math.round(ageHours)} jam`)
+
+    if (state === 'belum-dimuat') {
+      if (inti.has(id) && lewatPemanasan) {
+        alasan.push(`belum pernah dimuat setelah ${Math.round((Number.isFinite(uptimeSec) ? uptimeSec : warmupMin * 60) / 60)} menit`)
+      } else {
+        // Bukan masalah: sumber lazy atau proses masih memanas. Tetap dicatat supaya
+        // tidak hilang dari pandangan operator.
+        idle.push({ id, reason: inti.has(id) ? 'menunggu pemanasan' : 'dimuat saat diminta' })
+        continue
+      }
+    }
 
     if (!alasan.length) continue
     problems.push({ id, state, ageHours, reason: alasan.join('; ') })
   }
-  return { ok: problems.length === 0, checkedAt: new Date(now).toISOString(), staleHours, problems }
+  return { ok: problems.length === 0, checkedAt: new Date(now).toISOString(), staleHours, problems, idle }
 }
 
 /** Tanda tangan stabil untuk anti-bising: id+state masalah, terurut. */
@@ -75,11 +112,13 @@ export function shouldNotifySourceHealth(prev, signature, { now = new Date(), co
 export function renderSourceHealth(health, { url = '' } = {}) {
   if (!health || health.ok) return ''
   const baris = health.problems.map((p) => `• ${p.id} (${p.state}): ${p.reason}`)
+  const catatan = (health.idle ?? []).length
+    ? [`(${health.idle.length} sumber lain belum dimuat — wajar, dimuat saat diminta)`]
+    : []
   return [
     `Niu — ${health.problems.length} sumber data bermasalah`,
     ...baris,
-    url ? `Status: ${url}` : '',
-  ]
-    .filter(Boolean)
-    .join('\n')
+    ...catatan,
+    ...(url ? [`Status: ${url}`] : []),
+  ].join('\n')
 }

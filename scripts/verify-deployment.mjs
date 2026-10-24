@@ -107,6 +107,46 @@ for (const asset of ['/sw.js', '/registerSW.js', '/manifest.webmanifest']) {
   }
 }
 
+// F-13/F-14 — halaman statis. Tanpa blok ini, `verify:deployment` tetap hijau walau
+// alamat yang salah dibalas index.html dengan HTTP 200 (persis yang terjadi pada 2.3.2:
+// `curl -sI` 404, tetapi peramban mendapat aplikasi). Karena itu uji di sini memakai
+// header `Accept: text/html` seperti peramban sungguhan.
+async function expectStatus(url, label, { status, accept, mustContain, mustNotContain } = {}) {
+  try {
+    const response = await fetch(url, {
+      cache: 'no-store',
+      redirect: 'manual',
+      headers: { 'Cache-Control': 'no-cache, no-store', ...(accept ? { Accept: accept } : {}) },
+      signal: AbortSignal.timeout(15_000),
+    })
+    const body = await response.text()
+    const want = status ?? 200
+    if (response.status !== want) return fail(`${label}: HTTP ${response.status}, harus ${want}`)
+    if (mustContain && !mustContain.test(body)) return fail(`${label}: isi tidak memuat ${mustContain}`)
+    if (mustNotContain && mustNotContain.test(body)) return fail(`${label}: isi tidak boleh memuat ${mustNotContain}`)
+    return pass(`${label}: HTTP ${response.status}`)
+  } catch (error) {
+    return fail(`${label}: ${error.message}`)
+  }
+}
+
+const hilang = `/halaman-tidak-ada-${Date.now()}`
+for (const accept of ['text/html,application/xhtml+xml', '*/*', undefined]) {
+  await expectStatus(new URL(hilang, base), `404 bermerek (Accept: ${accept ?? 'tanpa header'})`, {
+    status: 404,
+    accept,
+    mustContain: /Halaman ini tidak ada/,
+    mustNotContain: /id="root"/,
+  })
+}
+await expectStatus(new URL(`/assets/tidak-ada-${Date.now()}.js`, base), 'aset hilang → 404 polos', {
+  status: 404,
+  accept: '*/*',
+  mustNotContain: /Halaman ini tidak ada/,
+})
+await expectStatus(new URL('/robots.txt', base), 'robots.txt', { mustContain: /Sitemap:/ })
+await expectStatus(new URL('/sitemap.xml', base), 'sitemap.xml', { mustContain: /<urlset/ })
+
 const healthRes = await fetchChecked(new URL(`/healthz?${nonce}`, base), '/healthz')
 if (healthRes) {
   let health
@@ -122,6 +162,11 @@ if (healthRes) {
       if (status?.state === 'degraded' || status?.fresh === false) {
         warnings.push(`${source}: ${status.state}${status.fresh === false ? ', memakai data terakhir' : ''}${status.error ? ` — ${status.error}` : ''}`)
       }
+    }
+    // 2.3.3 — daftar masalah yang dipakai alarm; cetak apa adanya supaya operator tahu
+    // apa yang akan berbunyi, bukan hanya "ada peringatan".
+    for (const problem of health.health?.problems ?? []) {
+      warnings.push(`masalah (${problem.state}): ${problem.id} — ${problem.reason}`)
     }
   }
 }

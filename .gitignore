@@ -8,3 +8,7 @@ server/data/
 
 # Browser gerbang a11y (CI memasangnya di sini)
 .cache/
+
+# Berkas sementara agen (jangan pernah dikomit)
+.hermes-tmp.*
+*.hermes-tmp

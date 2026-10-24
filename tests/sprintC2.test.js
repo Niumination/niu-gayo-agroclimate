@@ -173,6 +173,29 @@ test('F-09: service worker memakai offline.html sebagai cadangan navigasi', () =
   assert.doesNotMatch(sw, /createHandlerBoundToURL\("\/index\.html"\)/, 'index.html bukan lagi cadangan navigasi')
 })
 
+test('F-09 × F-14: navigasi NetworkFirst, index.html tidak pernah menelan alamat salah', () => {
+  // Dua perbaikan ini dulu saling meniadakan: `navigateFallback` tidak pernah terpakai
+  // (denylist F-14 menolak semua alamat selain akar, dan akar dilayani precache), sehingga
+  // offline.html mati — dan navigasi luring ke `/?sentra=linge` berakhir di halaman galat
+  // peramban. Konfigurasi sekarang: tanpa navigateFallback, navigasi lewat NetworkFirst
+  // dengan cadangan precache ke offline.html.
+  // Komentar menjelaskan riwayat; yang dinilai hanya kode.
+  const cfg = readFileSync(path.join(ROOT, 'vite.config.js'), 'utf8').replace(/^\s*\/\/.*$/gm, '')
+  assert.match(cfg, /navigateFallback:\s*null/, 'navigateFallback harus null (bawaan plugin = index.html)')
+  assert.doesNotMatch(cfg, /navigateFallback:\s*['"]/, 'navigateFallback berupa string berarti index.html/berkas lain akan menelan alamat salah')
+  assert.match(cfg, /request\.mode === 'navigate'/, 'hanya navigasi dokumen yang ditangani route ini')
+  assert.match(cfg, /precacheFallback:\s*\{\s*fallbackURL:\s*'\/offline\.html'\s*\}/, 'cadangan offline.html lewat precacheFallback')
+  assert.match(cfg, /cacheableResponse:\s*\{\s*statuses:\s*\[200\]\s*\}/, 'hanya jawaban 200 yang disimpan — 404 tidak boleh jadi halaman')
+
+  const swPath = path.join(ROOT, 'dist', 'sw.js')
+  if (!existsSync(swPath)) return console.log('skip: dist/sw.js belum ada')
+  const sw = readFileSync(swPath, 'utf8')
+  assert.doesNotMatch(sw, /createHandlerBoundToURL/, 'tidak ada handler index.html untuk navigasi')
+  assert.doesNotMatch(sw, /new e\.NavigationRoute|NavigationRoute\(/, 'tidak ada NavigationRoute: alamat salah harus sampai ke server')
+  assert.match(sw, /pages-cache/, 'cache halaman terpisah dari cache API')
+  assert.match(sw, /PrecacheFallbackPlugin/, 'cadangan offline.html terpasang di bundel')
+})
+
 test('F-20: dua tampilan desktop dipecah ke chunk terpisah', () => {
   const dir = path.join(ROOT, 'dist', 'assets')
   if (!existsSync(dir)) return console.log('skip: dist/assets belum ada')

@@ -47,6 +47,8 @@ import { parseEnabled } from '../src/domain/hazards/index.js'
 import { LOCATIONS } from '../src/data/locations.js'
 import { createHandler } from './routes.js'
 import { createPrewarm, schedulePrewarm } from './prewarm.js'
+import { createImergProbe } from './imergProbe.js'
+import { getImergAri } from './imerg.js'
 
 const VALID_LOCATIONS = new Set(LOCATIONS.map((l) => l.id)) // Fase 0.2: satu sumber kebenaran (src/data/locations.js)
 
@@ -136,6 +138,15 @@ const prewarm = createPrewarm({
   hazardsAllGet, bmkgGet, quakesAllGet, floodGet,
 })
 
+// F-05 (2.3.3) — IMERG hanya muncul di `alerts:all`, yang tidak pernah diisi oleh UI
+// maupun cron. Probe memeriksa satu sentra di latar (6 jam sekali) supaya `/healthz`
+// tetap bisa melaporkan keadaan GES DISC/Earthdata tanpa menunggu ada yang membuka
+// /api/alerts.
+const imergProbe = createImergProbe({
+  fetchAri: (location) => getImergAri(location.lat, location.lon),
+  location: LOCATIONS[0],
+})
+
 // F-09: perakitan konteks untuk router (server/routes.js) — dependensi eksplisit, tanpa variabel implisit.
 const handler = createHandler({
   VALID_LOCATIONS, LOCATIONS, peek, cacheStats, clearCache,
@@ -146,7 +157,7 @@ const handler = createHandler({
   SPI_BASELINE, computeSpi, assessDrought, seasonalInfoExtended, climateOutlook, disasterHistory,
   readFeed, runAlertCycle, toCapXml,
   validateReport, rateLimited, submitReport, recentReports, clientIp,
-  PKG_VERSION, BUILD_INFO, HAZARDS_ON, FIRMS_MAP_KEY, readToken,
+  PKG_VERSION, BUILD_INFO, HAZARDS_ON, FIRMS_MAP_KEY, readToken, imergProbe,
   onCacheCleared: () => { prewarm('flush').catch(() => {}) },
 })
 

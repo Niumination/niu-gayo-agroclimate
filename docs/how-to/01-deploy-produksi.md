@@ -57,7 +57,10 @@ curl -s http://127.0.0.1:7455/healthz | head -c 400
 python3 scripts/serve.py &
 ```
 
-`scripts/serve.py` menyajikan `dist/` dengan *fallback* `index.html` untuk rute SPA. Arahkan Cloudflare Tunnel: hostname `cuaca.abstract.biz.id` → `http://127.0.0.1:7444`, lalu tambahkan aturan path `/api/*` dan `/healthz` → `http://127.0.0.1:7455`.
+`scripts/serve.py` menyajikan `dist/`: akar situs → `index.html`, sedangkan **alamat tak dikenal → `404.html`
+dengan status 404 untuk semua klien** (aplikasi tidak punya rute path — semua keadaan ada di query string;
+lihat `docs/deploy/STATIC-SERVER.md`). Arahkan Cloudflare Tunnel: hostname `cuaca.abstract.biz.id` →
+`http://127.0.0.1:7444`, lalu tambahkan aturan path `/api/*` dan `/healthz` → `http://127.0.0.1:7455`.
 
 ## 5. Verifikasi rilis
 
