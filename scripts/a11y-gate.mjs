@@ -9,7 +9,12 @@
  *
  * Skrip ini menyalakan tiruan produksi lokal — `dist/` dilayani seperti host
  * statis, `/api/*` diteruskan ke `server/index.js` — lalu menjalankan axe-core
- * di tiga permukaan yang paling sering berubah:
+ * di tiga permukaan × tiga lebar layar = sembilan audit. Tiga lebar itu dipilih
+ * mengikuti satu-satunya UI desktop (Peta Hidup): 1920 = Mode 1 penuh, 1440 =
+ * Mode 2 (> 1200), 1100 = Mode 2 sempit (≤ 1200). Mode 3 (≤ 900) tidak diaudit
+ * karena breakpoint itu milik tata letak tablet/HP yang sudah punya uji sendiri.
+ *
+ * Permukaan yang paling sering berubah:
  *   1. Peta hidup — Tanah     /
  *   2. Peta hidup — Langit    /?tampilan=peta-hidup  (localStorage tema gelap)
  *   3. sentra dari URL   /?sentra=linge
@@ -83,6 +88,17 @@ const SURFACES = [
 ]
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+
+/**
+ * Lebar yang diaudit. Sebelum 2.3.4 hanya 1920×1080, sehingga panel yang hanya
+ * muncul di Mode 2 (≤ 1200 px) — tempat tombol perlebar & strip jam berubah
+ * bentuk — tidak pernah diperiksa axe.
+ */
+const VIEWPORTS = [
+  { width: 1920, height: 1080, label: '1920' },
+  { width: 1440, height: 900, label: '1440' },
+  { width: 1100, height: 800, label: '1100' },
+]
 
 function buildInfoVersion() {
   try { return JSON.parse(readFileSync(path.join(ROOT, 'dist', 'build-info.json'), 'utf8')).version } catch { return null }
@@ -251,11 +267,13 @@ try {
   browser = await puppeteer.launch({
     executablePath: chrome.path,
     args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
-    defaultViewport: { width: 1920, height: 1080 },
+    defaultViewport: { width: VIEWPORTS[0].width, height: VIEWPORTS[0].height },
   })
 
-  for (const surface of SURFACES) {
+  for (const viewport of VIEWPORTS) for (const surface of SURFACES) {
+    const label = `${surface.name} @${viewport.label}`
     const page = await browser.newPage()
+    await page.setViewport({ width: viewport.width, height: viewport.height })
     if (surface.prepare) await page.evaluateOnNewDocument(surface.prepare)
     const errors = []
     page.on('pageerror', (e) => errors.push(String(e).slice(0, 200)))
@@ -278,7 +296,7 @@ try {
       await buka()
     } catch (err) {
       failures += 1
-      console.error(`✗ ${surface.name}: gagal dibuka — ${err.message.split('\n')[0]}`)
+      console.error(`✗ ${label}: gagal dibuka — ${err.message.split('\n')[0]}`)
       await page.close()
       continue
     }
@@ -299,10 +317,10 @@ try {
     }, AXE_TAGS)
 
     if (violations.length === 0) {
-      console.log(`✓ ${surface.name}: 0 pelanggaran axe`)
+      console.log(`✓ ${label}: 0 pelanggaran axe`)
     } else {
       failures += violations.length
-      console.error(`✗ ${surface.name}: ${violations.length} pelanggaran axe`)
+      console.error(`✗ ${label}: ${violations.length} pelanggaran axe`)
       for (const v of violations) {
         console.error(`  · [${v.impact}] ${v.id} — ${v.help} (${v.nodes.length} simpul)`)
         for (const n of v.nodes) console.error(`      ${n}`)
@@ -310,7 +328,7 @@ try {
     }
     if (errors.length) {
       failures += 1
-      console.error(`✗ ${surface.name}: ${errors.length} galat runtime`)
+      console.error(`✗ ${label}: ${errors.length} galat runtime`)
       for (const e of errors.slice(0, 5)) console.error(`  · ${e}`)
     }
     await page.close()
@@ -320,7 +338,10 @@ try {
     console.error(`\n✗ gerbang a11y gagal: ${failures} masalah`)
     process.exitCode = 1
   } else {
-    console.log(`\n✓ gerbang a11y lolos — ${SURFACES.length} permukaan bersih (axe ${AXE_TAGS.join(', ')})`)
+    console.log(
+      `\n✓ gerbang a11y lolos — ${SURFACES.length * VIEWPORTS.length} audit bersih ` +
+        `(${SURFACES.length} permukaan × lebar ${VIEWPORTS.map((v) => v.label).join('/')} · axe ${AXE_TAGS.join(', ')})`,
+    )
   }
 } catch (err) {
   console.error(`✗ gerbang a11y error: ${err.message}`)

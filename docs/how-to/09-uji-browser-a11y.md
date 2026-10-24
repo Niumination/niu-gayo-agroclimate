@@ -3,7 +3,7 @@
 **Kuadran:** how-to (tugas) · **Audiens:** maintainer/penguji · **Terkait:** paket **P6** (`docs/dev/11-RENCANA-DESIGN-UX.md`)
 
 Sejak **F-39** (audit 23 Okt 2026) repo ini punya gerbang a11y **berbasis browser** yang ikut CI: `npm run check:a11y` (`scripts/a11y-gate.mjs`). Gerbang ini menyalakan tiruan produksi lokal — `dist/` dilayani seperti host statis, `/api/*` diteruskan ke `server/index.js` — lalu menjalankan axe-core (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`) di tiga permukaan: **Peta hidup · Tanah** (`/`), **Peta hidup · Langit**, dan **Peta hidup · sentra dari
-URL** (`/?sentra=linge`). Sejak F-32 (2.3.1) Peta Hidup adalah satu-satunya UI desktop, jadi permukaan
+URL** (`/?sentra=linge`) — masing-masing pada **tiga lebar**: **1920** (Mode 1 penuh), **1440** (Mode 2 lebar), dan **1100** (Mode 2 sempit, ≤ 1200 px). Sejak 2.3.4 itu **9 audit**; sebelumnya hanya 1920, sehingga panel yang berubah bentuk di Mode 2 tidak pernah diperiksa axe. Sejak F-32 (2.3.1) Peta Hidup adalah satu-satunya UI desktop, jadi permukaan
 "papan" dihapus. Satu pelanggaran = build gagal.
 
 Gerbang itu menutup celah yang dulu lolos dari semua pemeriksaan statis: tiga temuan Sprint A (label ganda, fokus masuk ke panel terlipat, target sentuh < 24 px) hanya muncul setelah halaman benar-benar dirender, sehingga `npm test`, `check:contrast`, dan `check:typography` semuanya hijau.
@@ -33,11 +33,15 @@ CHROME_PATH="$PWD/$(find .cache/browsers -type f -name chrome-headless-shell | h
 Keluaran lulus terlihat seperti ini:
 
 ```
-✓ Peta hidup — Tanah: 0 pelanggaran axe
-✓ Peta hidup — Langit: 0 pelanggaran axe
-✓ Peta hidup — sentra dari URL: 0 pelanggaran axe
-✓ gerbang a11y lolos — 3 permukaan bersih (axe wcag2a, wcag2aa, wcag21a, wcag21aa)
+✓ Peta hidup — Tanah @1920: 0 pelanggaran axe
+✓ Peta hidup — Tanah @1440: 0 pelanggaran axe
+✓ Peta hidup — Tanah @1100: 0 pelanggaran axe
+✓ Peta hidup — Langit @1920: 0 pelanggaran axe
+…
+✓ gerbang a11y lolos — 9 audit bersih (3 permukaan × lebar 1920/1440/1100 · axe wcag2a, wcag2aa, wcag21a, wcag21aa)
 ```
+
+Lebar mengikuti satu-satunya UI desktop: **Mode 1** (> 1200 px), **Mode 2** (≤ 1200 px), **Mode 3** (≤ 900 px). Mode 3 tidak diaudit di sini karena tata letak itu milik tablet/HP yang sudah punya uji sendiri; bila breakpoint desktop berubah, ubah `VIEWPORTS` di `scripts/a11y-gate.mjs` **dan** tabel di bawah.
 
 ## 2. Pemeriksaan tambahan: pa11y-ci (halaman per halaman)
 
@@ -91,7 +95,7 @@ Selain axe, periksa manual empat hal yang tidak bisa dilihat mesin:
 
 | Tahap | Ambang | Aksi bila gagal |
 |---|---|---|
-| Sekarang | 0 pelanggaran `wcag2aa`/`wcag21aa`/`wcag22aa` di 4 tab × 2 tema | perbaiki sebelum rilis |
+| Sekarang | 0 pelanggaran `wcag2aa`/`wcag21aa`/`wcag22aa` di 3 permukaan × 3 lebar (1920/1440/1100) × 2 tema | perbaiki sebelum rilis |
 | Setelah stabil | tambahkan `pa11y-ci` untuk 320 px + 1280 px | simpan keluaran sebagai bukti di laporan |
 | Berkelanjutan | jalankan tiap rilis (checklist rilis) | catat tren di CHANGELOG/issue |
 

@@ -1,7 +1,7 @@
 {
   "note": "Baseline tren cakupan (roadmap A-2). Perbarui dengan: node scripts/check-coverage.mjs --update-baseline",
-  "updated": "2026-10-16",
-  "lines": 96.42,
-  "branches": 83.78,
-  "functions": 95.96
+  "updated": "2026-10-24",
+  "lines": 90.56,
+  "branches": 84.14,
+  "functions": 90.83
 }

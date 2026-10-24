@@ -91,3 +91,37 @@ test('DOM · MetricChip: nilai dan satuan tidak pernah tertukar', async () => {
     'tone mengubah tampilan chip',
   )
 })
+
+// ── 2.3.4 — ClimateBanner: satu-satunya banner iklim yang dulu hanya diuji via regex ──
+test('DOM · ClimateBanner: peran status, ringkasan terkurasi, dan tombol terlipat', async () => {
+  const { default: ClimateBanner } = await import('../src/components/ClimateBanner.jsx')
+  const html = render(h(ClimateBanner, { now: new Date('2026-10-24T00:00:00Z'), tr }))
+  assert.match(html, /role="status"/, 'pembaca layar mengumumkan banner saat muncul')
+  assert.match(html, /data-niu-banner="climate"/)
+  assert.match(html, /<h[1-6][^>]*>|<span class="font-semibold">Perkiraan iklim musiman</)
+  assert.match(html, /Kemarau dapat berlangsung lebih panjang/, 'ringkasan dari data terkurasi ikut dirender')
+  assert.match(html, /rilis 2026-10-13/, 'tanggal rilis BMKG tampil, bukan tanggal hari ini')
+  assert.match(html, /aria-expanded="false"/, 'rincian mulai terlipat')
+  assert.doesNotMatch(html, /Angka dan istilah teknis/, 'rincian tidak membocor sebelum dibuka')
+  assert.doesNotMatch(html, /undefined|\[object Object\]|NaN/, 'tidak ada nilai kosong yang bocor ke layar')
+})
+
+test('DOM · ClimateBanner: nada tinggi memakai garis cherry, bukan nada aman', async () => {
+  const { default: ClimateBanner } = await import('../src/components/ClimateBanner.jsx')
+  const html = render(h(ClimateBanner, { now: new Date('2026-10-24T00:00:00Z'), tr }))
+  assert.match(html, /border-cherry\/30/, 'nada "tinggi" = garis waspada (cherry)')
+  assert.doesNotMatch(html, /border-leaf\/30/)
+})
+
+test('DOM · ClimateBanner: melewati masa berlaku → judul & catatan berubah, bukan diam-diam basi', async () => {
+  const { default: ClimateBanner } = await import('../src/components/ClimateBanner.jsx')
+  const dalam = render(h(ClimateBanner, { now: new Date('2026-10-24T00:00:00Z'), tr }))
+  const lewat = render(h(ClimateBanner, { now: new Date('2026-12-01T00:00:00Z'), tr }))
+  assert.match(dalam, /Perkiraan iklim musiman/)
+  assert.doesNotMatch(dalam, /perlu pembaruan/)
+  assert.match(lewat, /Perkiraan iklim — perlu pembaruan/)
+  assert.match(lewat, /Informasi prakiraan musim perlu diperbarui/)
+  assert.match(lewat, /border-husk\/30/, 'nada turun ke "sedang" saat data kedaluwarsa')
+  // Catatan "berlaku sampai …" hanya tampil setelah rincian dibuka; isinya dijaga
+  // `tests/climate.test.js`, jadi di sini cukup judul + nada yang diverifikasi.
+})

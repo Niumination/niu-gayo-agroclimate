@@ -81,7 +81,9 @@ jobs:
       # (docs/how-to/09-uji-browser-a11y.md). Tiga temuan Sprint A — label ganda,
       # fokus masuk ke panel terlipat, target sentuh < 24 px — lolos dari semua
       # gerbang statis karena hanya muncul setelah halaman dirender. Sekarang axe-core
-      # berjalan di tiga permukaan (Papan, Peta Tanah, Peta Langit); 1 pelanggaran = gagal.
+      # berjalan di tiga permukaan × tiga lebar (1920/1440/1100) sejak 2.3.4; 1 pelanggaran = gagal.
+      # Lebar 1100 penting: di Mode 2 (≤ 1200 px) letak tombol perlebar panel & strip jam berubah,
+      # dan itulah bentuk yang tidak pernah diaudit saat gerbangnya masih 1920 saja.
       # Browser dipasang ke .cache/browsers (gitignored) dan path-nya diberikan lewat CHROME_PATH
       # supaya gerbang tidak pernah "lolos" karena diam-diam melewati pemeriksaan.
       # Versi browser diturunkan dari puppeteer-core, bukan ditulis tangan: Chrome 131 +
@@ -94,5 +96,5 @@ jobs:
           npx --yes @puppeteer/browsers install "chrome-headless-shell@$VERSION" --path .cache/browsers
           echo "CHROME_PATH=$PWD/$(find .cache/browsers -type f -name chrome-headless-shell | head -1)" >> "$GITHUB_ENV"
 
-      - name: Gerbang aksesibilitas browser (axe-core · 3 permukaan)
+      - name: Gerbang aksesibilitas browser (axe-core · 3 permukaan × 3 lebar)
         run: npm run check:a11y

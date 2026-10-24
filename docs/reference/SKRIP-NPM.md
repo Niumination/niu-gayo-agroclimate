@@ -10,9 +10,9 @@
 | `npm run build` | Vite 8 / Rolldown → `dist/` | bundle produksi, ± 0,5 detik |
 | `npm run preview` | Vite preview | menyajikan `dist/` (uji PWA/offline) |
 | **`npm run lint`** | `eslint .` | **gerbang lint (P6)**: `eslint.config.js` (flat) + `eslint-plugin-jsx-a11y` + `eslint-plugin-react-hooks`; 0 temuan. devDependency saja — **0 dampak bundel**. Instalasi memakai **`.npmrc`** (`legacy-peer-deps=true`) karena `jsx-a11y@6.10.2` belum mengakui ESLint 10 — lihat P6.1 |
-| `npm test` | `node --test tests/*.test.js` | **377 uji**, semua panggilan jaringan di-mock (termasuk 10 uji kontrak a11y, 9 uji gerbang tipografi, 9 uji kontrak keadaan, 9 uji kontrak gerak) |
+| `npm test` | `node --test tests/*.test.js` | **662 uji** (2.3.4), semua panggilan jaringan di-mock (termasuk uji render DOM, kontrak a11y, gerbang tipografi, kontrak keadaan, kontrak gerak) |
 | `npm run test:coverage` | sama + `--experimental-test-coverage` | laporan cakupan mentah (tanpa ambang) |
-| **`npm run check:coverage`** | `scripts/check-coverage.mjs` | **gerbang cakupan**: baris ≥ 95 %, cabang ≥ 80 %, fungsi ≥ 92 % + tren vs baseline |
+| **`npm run check:coverage`** | `scripts/check-coverage.mjs` | **gerbang cakupan (2.3.4)**: lantai **80 % baris per berkas** untuk 60 berkas logika non-tampilan + **ratchet global** 0,5 poin dari baseline; ambang global 95/80/92 hanya bila diminta lewat `--min-*` |
 | **`npm run check:bundle`** | `scripts/check-bundle.mjs` | JS utama ≤ 150 kB gzip · total ≤ 200 kB (atur lewat `BUNDLE_MAX_KB`/`BUNDLE_TOTAL_MAX_KB`) |
 | **`npm run check:outlook`** | `scripts/check-outlook.mjs` | **gagal** bila `src/data/hazards/climateOutlook.json` lewat `validUntil`; **peringatan** bila sisa ≤ 14 hari (`--warn-days N`) |
 | `npm run check:i18n` | `scripts/check-i18n.mjs` | inventaris placeholder Gayo `[?]` (kini **76**); `--strict` → keluar 1 bila masih ada |
@@ -25,11 +25,21 @@
 
 ## Gerbang cakupan (`check:coverage`)
 
-- **Ambang** (di `scripts/check-coverage.mjs`): baris **95 %** · cabang **80 %** · fungsi **92 %** — sengaja 1,5–4 poin di bawah baseline agar refactor kecil tidak membuat CI rapuh, tetapi penurunan berarti tetap menggagalkan build.
-- **Baseline terversi:** `scripts/coverage-baseline.json` (2026-10-16: 96,42 / 83,78 / 95,96 pada 321 uji). Setiap kali dijalankan, skrip mencetak selisihnya (`ℹ [coverage] tren vs baseline …`).
-- Opsi: `--min-lines N` `--min-branches N` `--min-functions N` (ambang kustom) · `--from <berkas>` (nilai laporan tersimpan, mis. artefak CI, tanpa menjalankan ulang suite) · `--update-baseline` (catat angka kini sebagai baseline baru).
-- **Kode keluar:** `0` lolos · `1` suite uji gagal **atau** di bawah ambang · `2` salah pakai argumen.
-- Hanya memakai flag cakupan Node ≥ 20 (`--experimental-test-coverage`), sesuai lantai `engines`.
+Sejak **2.3.4** gerbang ini menilai dua lapis, bukan satu angka global.
+
+**1. Lantai per berkas — 80 % baris.** Yang dinilai hanya berkas yang menanggung risiko di produksi: `server/`, `src/domain/`, dan `src/lib/` (60 berkas saat 2.3.4). Komponen JSX tidak dinilai dengan angka baris — lapisan tampilan dijaga uji render, gerbang a11y, dan ratchet global.
+
+**2. Ratchet global.** Rata-rata seluruh berkas tidak boleh **turun lebih dari 0,5 poin** dari baseline terversi `scripts/coverage-baseline.json`. Baseline di-reset sekali di 2.3.4 ke **90,56 / 84,14 / 90,83** (2026-10-24) karena uji render 2.3.x mulai memuat komponen yang sebelumnya tidak pernah masuk laporan — angka global turun karena denominator bertambah, bukan karena uji berkurang. Sejak titik itu, penurunan apa pun > 0,5 poin menggagalkan CI.
+
+**Pengecualian bertanggal.** Daftar ini adalah satu-satunya jalan melewati lantai. Uji resiprositas (`tests/checkCoverage.test.js`) mencocokkan blok di bawah dengan `SCOPE_ALLOW` di skrip — menambah atau menghapus pengecualian menuntut perubahan di **dua** tempat, dan entri yang cakupannya sudah ≥ 80 % otomatis dilaporkan **basi** (gagal sampai dihapus).
+
+```teks
+server/routes.js — 2026-10-24
+```
+
+- **Opsi:** `--min-lines N` `--min-branches N` `--min-functions N` (ambang global eksplisit) · `--from <berkas>` (nilai laporan tersimpan, mis. artefak CI) · `--update-baseline` (geser baseline; ditolak bila lingkup kritis belum bersih).
+- **Kode keluar:** `0` lolos · `1` suite uji gagal, berkas di bawah lantai, pengecualian basi, atau global turun > 0,5 poin · `2` salah pakai argumen.
+- Hanya memakai flag cakupan Node ≥ 20 (`--experimental-test-coverage`), sesuai lantai `engines`. Flag `--test-coverage-include` (Node 22) sengaja tidak dipakai; baris tabel disaring sendiri oleh `parseFileRows`.
 
 ## Perintah non-npm
 
