@@ -2,7 +2,8 @@
 """Serve this checkout's dist/ as a production SPA.
 
 NIU_DIST_DIR may override the default for an explicitly managed deployment.
-HTML navigations fall back to index.html; missing assets and API paths stay 404.
+HTML navigations fall back to index.html; unknown addresses get the app's own
+404.html (still HTTP 404); missing assets and API paths stay plain 404.
 Unhashed entry points are revalidated; fingerprinted assets are immutable.
 """
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -32,6 +33,7 @@ class SPAHandler(SimpleHTTPRequestHandler):
     def send_head(self):
         requested = urlsplit(self.path).path
         self._requested_path = requested
+        self._not_found = False
         translated = Path(self.translate_path(self.path)).resolve()
 
         # Refuse any path that somehow resolves outside the selected dist root.
@@ -55,13 +57,31 @@ class SPAHandler(SimpleHTTPRequestHandler):
                 and not Path(requested).suffix
                 and not requested.startswith("/api/")
             )
-            if not is_navigation:
-                return self.send_error(404, "File not found")
-            if not (ROOT / "index.html").is_file():
-                return self.send_error(503, "Built application is missing; run npm run build")
-            self.path = "/index.html"
+            if is_navigation:
+                if not (ROOT / "index.html").is_file():
+                    return self.send_error(503, "Built application is missing; run npm run build")
+                self.path = "/index.html"
+            else:
+                # Audit F-14 — alamat yang salah dulu dibalas halaman bawaan Python
+                # berbahasa Inggris. Sekarang halaman 404 milik aplikasi disajikan,
+                # tetap dengan status 404 (indeks tidak pernah menelan alamat salah).
+                # Permintaan aset (.js/.css/gambar) tetap mendapat 404 polos.
+                notFound = ROOT / "404.html"
+                if notFound.is_file() and not Path(requested).suffix:
+                    self.path = "/404.html"
+                    self._not_found = True
+                    self._requested_path = "/404.html"
+                else:
+                    return self.send_error(404, "File not found")
 
         return super().send_head()
+
+    def send_response(self, code, message=None):
+        # Audit F-14 — penyajian 404.html melewati jalur normal, yang menulis 200.
+        # Paksa 404 hanya untuk penyajian itu.
+        if getattr(self, "_not_found", False) and code == 200:
+            code = 404
+        super().send_response(code, message)
 
     def end_headers(self):
         requested = getattr(self, "_requested_path", urlsplit(self.path).path)

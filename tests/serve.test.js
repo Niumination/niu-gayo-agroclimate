@@ -53,6 +53,25 @@ test('serve.py: SPA fallback hanya untuk navigasi; cache entry point ketat dan a
   assert.equal(missingAsset.status, 404)
   assert.match(missingAsset.headers.get('cache-control') || '', /no-cache/)
 
+  // Audit F-14 — alamat yang salah dibalas halaman 404 milik aplikasi, bukan bawaan Python,
+  // dan statusnya tetap 404. Navigasi peramban (Accept: text/html) tetap dianggap rute SPA
+  // (aplikasi tidak punya rute path; keadaan ada di query string) — jadi jalur extensionless
+  // untuk permintaan *bukan* dokumen inilah yang wajib menampilkan halaman 404.
+  fs.writeFileSync(path.join(dist, '404.html'), '<!doctype html><html><body>Halaman ini tidak ada</body></html>')
+  const notFound = await fetch(`${base}/halaman-tidak-ada`)
+  assert.equal(notFound.status, 404)
+  assert.match(notFound.headers.get('content-type') || '', /text\/html/)
+  assert.match(await notFound.text(), /Halaman ini tidak ada/)
+
+  const asset404 = await fetch(`${base}/assets/tidak-ada.js`)
+  assert.equal(asset404.status, 404)
+  assert.doesNotMatch(await asset404.text(), /Halaman ini tidak ada/)
+
+  // Rute SPA yang sah tidak pernah jadi 404.
+  const spaRoute = await fetch(`${base}/halaman-tidak-ada`, { headers: { Accept: 'text/html' } })
+  assert.equal(spaRoute.status, 200)
+  assert.match(await spaRoute.text(), /id="root"/)
+
   const sw = await fetch(`${base}/sw.js`)
   assert.equal(sw.status, 200)
   assert.match(sw.headers.get('cache-control') || '', /no-cache/)
