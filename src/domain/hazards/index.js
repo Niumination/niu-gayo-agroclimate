@@ -63,6 +63,9 @@ export function normalizeResult(mod, raw, ctx) {
     flags: r.flags ?? {},
     degraded: !!r.degraded || level === 'n/a',
     evaluatedAt: ctx?.now ?? null,
+    // F-04: bahaya kronis/endemik (mis. karat di dataran tinggi) tetap punya level sendiri,
+    // tetapi tidak boleh menjadi satu-satunya penentu "terberat" harian.
+    ...(mod.chronic ? { chronic: true } : {}),
   }
 }
 
@@ -97,13 +100,27 @@ export function evaluateAll(ctx, { enabled = null, hidden = [], interactions: wi
   results.sort((a, b) => (LEVEL_ORDER[b.level] - LEVEL_ORDER[a.level]) || (a.order - b.order))
   const active = results.filter((r) => LEVEL_ORDER[r.level] >= LEVEL_ORDER.waspada)
   const counts = { total: results.length, active: active.length, degraded: results.filter((r) => r.degraded).length, interactions: interactions.length }
-  return { results, worst: maxLevel(results.map((r) => r.level)), active, counts, interactions }
+  // F-04: `worst` sengaja TIDAK diubah (kontrak lama, dipakai mobile). `worstAcute` mengabaikan
+  // bahaya kronis sehingga papan desktop bisa menampilkan "terberat yang berubah hari ini".
+  const acute = results.filter((r) => !r.chronic)
+  const chronic = results.filter((r) => r.chronic && LEVEL_ORDER[r.level] >= LEVEL_ORDER.waspada)
+  return {
+    results,
+    worst: maxLevel(results.map((r) => r.level)),
+    worstAcute: maxLevel(acute.map((r) => r.level)),
+    chronic: chronic.map((r) => ({ id: r.id, label: r.label, level: r.level, headline: r.headline })),
+    active,
+    counts,
+    interactions,
+  }
 }
 
 /** Ringkasan sangat ringkas (untuk daftar 15 sentra / peta / arsip harian). */
 export function summarize(evaluated) {
   return {
     worst: evaluated.worst,
+    worstAcute: evaluated.worstAcute ?? null,
+    chronic: (evaluated.chronic ?? []).map((r) => r.id),
     levels: Object.fromEntries(evaluated.results.map((r) => [r.id, r.level])),
     active: evaluated.active.map((r) => ({ id: r.id, level: r.level, headline: r.headline })),
     degraded: evaluated.counts.degraded,

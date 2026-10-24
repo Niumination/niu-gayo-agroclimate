@@ -206,3 +206,31 @@ test('createHandler: /healthz melaporkan sumber imerg turunan dari /api/alerts',
   assert.equal(body.sources.imerg.fallbackCount, 15)
   assert.match(body.sources.imerg.error, /tidak dapat dijangkau/)
 })
+
+// Sprint B · F-04 — /api/hazards membawa worstAcute & chronic tanpa mengubah worst.
+test('createHandler: /api/hazards?location=all meneruskan worstAcute dan chronic (aditif)', async () => {
+  const row = { id: 'takengon', name: 'Takengon', worst: 'bahaya', worstAcute: 'waspada', active: ['karat'], chronic: ['karat'], levels: { karat: 'bahaya' }, degraded: false, counts: null, evaluatedAt: null }
+  const handler = createHandler({
+    VALID_LOCATIONS: new Set(['takengon']),
+    LOCATIONS: [{ id: 'takengon', name: 'Takengon' }],
+    HAZARDS_ON: true,
+    readToken: () => '',
+    hazardsAllGet: async () => ({
+      retrievedAt: '2026-10-24T10:00:00.000Z',
+      total: 1,
+      degradedCount: 0,
+      worst: { id: 'takengon', name: 'Takengon', level: 'bahaya', active: ['karat'] },
+      worstAcute: { id: 'takengon', name: 'Takengon', level: 'waspada', active: ['karat'] },
+      activeByHazard: { karat: ['takengon'] },
+      locations: [row],
+      _full: [],
+    }),
+    hazardsGet: async () => ({}),
+  })
+  const res = fakeRes()
+  await handler({ url: '/api/hazards?location=all', method: 'GET', headers: {} }, res)
+  const body = JSON.parse(res.body)
+  assert.equal(body.worst.level, 'bahaya', 'worst lama tidak boleh berubah')
+  assert.equal(body.worstAcute.level, 'waspada')
+  assert.deepEqual(body.locations[0].chronic, ['karat'])
+})

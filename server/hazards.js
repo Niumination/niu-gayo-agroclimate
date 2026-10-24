@@ -83,6 +83,10 @@ export async function getHazardsForLocation(id, deps = {}) {
     degraded: evaluated.counts.degraded === evaluated.counts.total,
     warnings,
     worst: evaluated.worst,
+    // F-04: aditif — `worst` tetap seperti dulu (mobile & kontrak lama), `worstAcute` mengabaikan
+    // bahaya kronis, `chronic` daftar bahaya endemik yang sedang aktif.
+    worstAcute: evaluated.worstAcute ?? null,
+    chronic: (evaluated.chronic ?? []).map((r) => r.id),
     counts: evaluated.counts,
     active: evaluated.active.map((r) => r.id),
     hazards: evaluated.results,
@@ -110,9 +114,9 @@ export async function getHazardsAll(getter, { concurrency = 4, locations = LOCAT
       const id = queue.shift()
       try {
         const v = await getter(id)
-        rows.push({ id, name: v.location?.name ?? id, worst: v.worst ?? 'n/a', active: v.active ?? [], levels: v.summary?.levels ?? {}, degraded: !!v.degraded, counts: v.counts ?? null, evaluatedAt: v.evaluatedAt ?? null, hazards: v.hazards ?? [] })
+        rows.push({ id, name: v.location?.name ?? id, worst: v.worst ?? 'n/a', worstAcute: v.worstAcute ?? v.worst ?? 'n/a', active: v.active ?? [], chronic: v.chronic ?? [], levels: v.summary?.levels ?? {}, degraded: !!v.degraded, counts: v.counts ?? null, evaluatedAt: v.evaluatedAt ?? null, hazards: v.hazards ?? [] })
       } catch (err) {
-        rows.push({ id, name: locations.find((l) => l.id === id)?.name ?? id, worst: 'n/a', active: [], levels: {}, degraded: true, error: err.message, hazards: [] })
+        rows.push({ id, name: locations.find((l) => l.id === id)?.name ?? id, worst: 'n/a', worstAcute: 'n/a', active: [], chronic: [], levels: {}, degraded: true, error: err.message, hazards: [] })
       }
     }
   })
@@ -121,12 +125,15 @@ export async function getHazardsAll(getter, { concurrency = 4, locations = LOCAT
   rows.sort((a, b) => order.get(a.id) - order.get(b.id))
   const rank = { 'n/a': -1, rendah: 0, waspada: 1, bahaya: 2, ekstrem: 3 }
   const worstRow = rows.reduce((best, r) => (!best || rank[r.worst] > rank[best.worst] ? r : best), null)
+  const worstAcuteRow = rows.reduce((best, r) => (!best || rank[r.worstAcute] > rank[best.worstAcute] ? r : best), null)
   const byHazard = Object.fromEntries(HAZARD_IDS.map((h) => [h, rows.filter((r) => rank[r.levels[h]] >= 1).map((r) => r.id)]))
   return {
     retrievedAt: new Date().toISOString(),
     total: rows.length,
     degradedCount: rows.filter((r) => r.degraded).length,
     worst: worstRow ? { id: worstRow.id, name: worstRow.name, level: worstRow.worst, active: worstRow.active } : null,
+    worstAcute: worstAcuteRow ? { id: worstAcuteRow.id, name: worstAcuteRow.name, level: worstAcuteRow.worstAcute, active: worstAcuteRow.active } : null,
+    chronicByHazard: Object.fromEntries((rows[0]?.chronic ?? []).map((h) => [h, rows.filter((r) => (r.chronic ?? []).includes(h)).map((r) => r.id)])),
     activeByHazard: byHazard,
     locations: rows.map(({ hazards, ...r }) => r),
     _full: rows, // dengan hasil lengkap per bahaya (dipakai cron alert; dibuang oleh route publik)

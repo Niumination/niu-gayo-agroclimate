@@ -1,5 +1,92 @@
 # Changelog
 
+## [2.2.6] — 2026-10-24 — Karat endemik (F-04) + halaman desktop tidak lagi kosong 2 detik (F-06)
+
+Setelah Sprint A–B, `worst` semua sentra tetap "bahaya" setiap hari. Diukur ulang: **15/15 sentra**
+`bahaya`, skor karat **100** di semuanya, arsip 18–23 Okt **64/64** pengamatan = `bahaya`.
+
+**Akar masalah** — bukan salah hitung. Model (`leafWetnessRustRisk`) memakai ambang absolut; di dataran
+tinggi Gayo daun basah **42–48 dari 48 jam** (terukur), sehingga ketiga komponen mentok dan skor selalu
+100. `leaf_wetness_probability` juga sebuah *peluang* (%), bukan durasi — lapisan penyaringan pertama
+sudah jenuh sebelum ambang mana pun bekerja.
+
+**Keputusan (Opsi C, disetujui pemilik proyek):** level dan skor **tidak diubah** — tidak ada nilai
+agronomi yang dipalsukan, tidak ada aturan risiko yang digeser. Yang berubah hanya cara membawanya.
+
+- `src/domain/hazards/rust.js` — `chronic: true` pada modul karat.
+- `src/domain/hazards/index.js` — `evaluateAll()` kini juga mengembalikan `worstAcute` (tanpa bahaya
+  kronis) dan `chronic[]`. `worst` **tetap apa adanya** (kontrak lama, dipakai mobile).
+- `server/hazards.js` — `/api/hazards` meneruskan `worstAcute`, `chronic`, `chronicByHazard`; semuanya
+  **aditif**, tidak ada field lama yang berubah bentuk.
+- `src/components/niu/DesktopSummaryBar.jsx` — desktop membaca `worstAcute`; karat tampil sebagai
+  catatan sebaris "· karat daun kopi endemik" (dengan `title` penjelas), bukan alarm harian.
+- `src/components/SchematicMap.jsx` + `LivingMapDesktop.jsx` — prop baru `levelKey` (bawaan `'worst'`);
+  **hanya** Living Map desktop yang memakai `worstAcute`. Peta mobile tidak berubah.
+- `src/pages/RingkasMobile.jsx` — prop opsional `worstLevel`; hanya desktop yang mengirimkannya,
+  sehingga badge panel konteks tidak lagi bertentangan dengan bilah ringkasan.
+
+**Hasil terukur (live lokal 15 sentra):** `worst` tetap `bahaya` 12 + `ekstrem` 3;
+`worstAcute` menjadi **`waspada` 12 + `ekstrem` 3** — peta dan bilah akhirnya membedakan sentra.
+Screenshot sebelumnya (semua pin cokelat seragam) kini: 12 pin `waspada`, Lut Tawar/Bintang/Linge
+`bahaya`/`ekstrem` sesuai bahaya akut yang benar-benar berubah hari itu.
+
+**Mobile tidak berubah** (diverifikasi di 390 px): tanpa bilah ringkasan desktop, `hScroll 0`,
+teksnya tetap "Tingkat tertinggi hari ini: bahaya" dan "Perlu perhatian(3)".
+
+**F-06 — LCP 2.164 → 1.580 ms, CLS 0,935 → 0 (desktop)**
+
+Setelah F-04, Living Map desktop masih punya dua cacat terukur (Chrome headless 156, 1920×1080,
+dist 2.2.6 + API lokal): **layar kosong** dari 164 ms sampai 2.164 ms (FCP cepat, LCP tertahan) dan
+**CLS 0,935**. Rekaman waterfall menunjukkan `main` berukuran **3 px** selama ±1,9 detik, lalu melompat
+ke 977 px, sementara 13 permintaan `/api/*` ditembak serentak dan `/api/hazards?location=all`
+menjadi yang terakhir selesai (2.733 → 4.111 ms).
+
+- `src/services/weatherService.js` — tiga permintaan yang **tidak dibaca satu pun modul risiko**
+  (`consensus`, `external-reports`, `hazards?location=all`) keluar dari jalur tunggu dan dikirim lewat
+  `onLate(key, value)`. `reports` (laporan warga) pindah ke gelombang paralel — dulu ia berjalan
+  serial *setelah* gelombang utama sehingga menjadi ekor tunggu. `bmkg-nowcast`, `flood`, `quakes`,
+  `volcano`, `convective`, `air-quality`, `fire-danger`, `drought` **tetap** ditunggu karena
+  `evaluateAll` membacanya (mis. `convective.js` memakai `ctx.bmkgNowcast`) — aturan dan level risiko
+  tidak bergeser sedikit pun.
+- `src/App.jsx` — payload menyusul digabung dengan `lateRef` + `mergeLate()` (khusus `consensus`
+  masuk ke `disaster.consensus`, bukan menimpa objek `disaster`). Kerangka `LivingMapBoot` mengisi
+  `<main>` sebelum data pertama; skeleton papan tidak lagi dirender sebagai **saudara** `<main>` di
+  desktop (itu yang mendorong `main` keluar layar).
+- `src/components/LivingMapBoot.jsx` + `LivingMapDesktop.css` — kerangka setinggi peta asli
+  (`--lm-shell-height`), `aria-hidden` + `inert`, tanpa angka/label bahaya, animasi denyut yang mati
+  pada `prefers-reduced-motion`.
+- `src/components/SchematicMap.jsx` — prop `levelsPending`: selama ringkasan 15 sentra menyusul, pin
+  berlabel "memuat level" dan muncul catatan "Memuat level 15 sentra…" — **bukan** "Tidak tersedia"
+  atau "belum punya data · coba muat ulang", yang akan menyesatkan.
+- `src/App.jsx` (`dSentra`) — peta tab "Sentra" pada papan desktop kini juga memakai
+  `levelKey="worstAcute"` (F-04): sebelumnya tab itu menulis "Bahaya" sementara bilah ringkasan
+  papan menulis "Waspada".
+- `tests/lcpF06.test.js` — 6 tes mengunci kontrak di atas (termasuk penjaga bahwa `bmkg-nowcast`
+  tidak boleh ikut ditunda).
+
+**Hasil terukur (lokal, 3 skenario):**
+
+| Skenario | LCP sebelum | LCP sesudah | CLS sebelum | CLS sesudah |
+|---|---|---|---|---|
+| peta · tanpa throttle | 2.164 ms | **1.560 ms** | 0,935 | **0** |
+| peta · 4× CPU + 1,6 Mbps | 1.408 ms | **1.424 ms** | 0,935 | **0** |
+| papan · 4× CPU + 1,6 Mbps | 1.520 ms | 1.588 ms | 0,040 | 0,057 |
+
+API selesai 2.019 → **1.416 ms** (tanpa throttle). `main` tidak pernah lagi lebih pendek dari 985 px
+(kerangka 300–2.600 ms, konten 3.000 ms). Di live, seluruh endpoint menjawab 0,68–0,92 detik
+(diukur 14 endpoint paralel), sehingga jalur tunggu yang lebih pendek langsung memangkas LCP.
+
+**Mobile tidak berubah** (390 px): `hScroll 0`, "Tingkat tertinggi hari ini: bahaya", "Perlu perhatian(3)",
+tanpa kerangka/ bilah desktop.
+
+**Gerbang uji:** 623 tes (+12), eslint 0, gerbang a11y 3/3, bundle 166,8 kB gzip, cakupan baris 97,07 %, `npm audit` 0.
+
+**Bonus keamanan dependensi** — `npm audit` sempat melaporkan 2 advisory (moderate `fast-uri`, low
+`serialize-javascript`) yang masuk lewat `vite-plugin-pwa → workbox-build → ajv/@rollup/plugin-terser`.
+Keduanya hanya alat build, tetapi perbaikannya murah dan tidak mengubah hasil: `overrides` di
+`package.json` mengunci `fast-uri@^3.1.9` dan `serialize-javascript@^7.1.3`. `npm audit` kembali **0**,
+hash aset tidak berubah (`index-C0qdPDVL.js` / `index-B8VTY5rg.css`).
+
 ## [2.2.5] — 2026-10-23 — Sumber data: kegagalan IMERG & MAGMA akhirnya bisa didiagnosis
 
 Sprint B bagian 3 — F-05 (IMERG 0/15) dan F-16 (MAGMA 403). Kedua temuan ini **bukan bug parser**:

@@ -46,6 +46,8 @@ export default function LivingMapDesktop({
   data,
   hazards,
   hazardsAll,
+  // F-06 — level 15 sentra menyusul; pin diberi status "memuat" alih-alih "tidak tersedia".
+  hazardsAllPending = false,
   highlightedLocationId,
   onHighlightLocation,
   onSelectLocation,
@@ -369,7 +371,7 @@ export default function LivingMapDesktop({
     condition: (
       <div className="lm-section-stack">
         {data?.current && data?.daily ? (
-          <RingkasMobile current={data.current} daily={data.daily} location={location} modelElevation={data.modelElevation} hazards={hazards} hourly={data.hourly} tr={tr} showAttention={false} showHours={false} showCondition />
+          <RingkasMobile current={data.current} daily={data.daily} location={location} modelElevation={data.modelElevation} hazards={hazards} hourly={data.hourly} tr={tr} showAttention={false} showHours={false} showCondition worstLevel={hazards?.worstAcute} />
         ) : null}
         <AirQualityCard airQuality={data?.airQuality} tr={tr} />
       </div>
@@ -495,6 +497,7 @@ export default function LivingMapDesktop({
       <div className="living-map-canvas" data-lm-react-inert="" inert={isModal || undefined}>
         <SchematicMap
           hazardsAll={hazardsAll}
+          levelsPending={hazardsAllPending}
           selectedLocation={location}
           highlightedLocationId={highlightedLocationId}
           onHighlightLocation={onHighlightLocation}
@@ -502,6 +505,7 @@ export default function LivingMapDesktop({
           hotspots={hotspots}
           layers={layers}
           onLayerChange={setLayer}
+          levelKey="worstAcute"
           bare
         />
 

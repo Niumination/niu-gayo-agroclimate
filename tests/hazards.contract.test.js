@@ -255,3 +255,47 @@ test('evaluateAll: semua hasil memenuhi kontrak §2.1 (tipe field)', () => {
     for (const m of r.metrics) assert.ok(m.key && 'value' in m, `${r.id}: metric ${JSON.stringify(m)}`)
   }
 })
+
+// ── Sprint B · F-04 (audit 23 Okt 2026): karat endemik tidak menentukan "terberat" harian ──
+// Level & skor karat TIDAK diubah (keputusan: aturan risiko tetap). Yang diuji di sini hanya
+// pemisahan agregat: `worst` lama tetap, `worstAcute` mengabaikan bahaya kronis.
+const KONDISI_BASAH = {
+  location: LOC,
+  now: '2026-10-24T10:00:00Z',
+  // 48 jam basah penuh pada suhu 21 °C = kondisi nyata dataran tinggi Gayo (terukur 42–48/48 jam).
+  weather: {
+    now: '2026-10-24T10:00',
+    rolling48h: Array.from({ length: 48 }, () => ({ leafWetness: 100, temp: 21 })),
+  },
+}
+
+test('F-04: karat ditandai chronic; skor & level-nya tidak berubah', () => {
+  const out = evaluateAll(KONDISI_BASAH)
+  const karat = out.results.find((r) => r.id === 'karat')
+  assert.equal(karat.chronic, true)
+  assert.equal(karat.score, 100, 'skor tidak boleh berubah oleh pemisahan agregat')
+  assert.equal(karat.level, 'bahaya', 'level tidak boleh berubah')
+  // Bahaya lain tidak ikut ditandai.
+  assert.equal(out.results.filter((r) => r.chronic).length, 1)
+})
+
+test('F-04: worst tetap apa adanya, worstAcute mengabaikan karat, chronic terdaftar', () => {
+  const out = evaluateAll(KONDISI_BASAH)
+  assert.equal(out.worst, 'bahaya', 'kontrak lama harus tetap')
+  assert.ok(LEVEL_ORDER[out.worstAcute] <= LEVEL_ORDER[out.worst])
+  assert.deepEqual(out.chronic.map((c) => c.id), ['karat'])
+  assert.ok(out.chronic.every((c) => c.level === 'bahaya'))
+})
+
+test('F-04: summarize meneruskan worstAcute & chronic (aditif)', () => {
+  const s = summarize(evaluateAll(KONDISI_BASAH))
+  assert.equal(s.worst, 'bahaya')
+  assert.equal(typeof s.worstAcute, 'string')
+  assert.deepEqual(s.chronic, ['karat'])
+  assert.equal(s.levels.karat, 'bahaya', 'peta level per bahaya tetap memuat karat')
+})
+
+test('F-04: registry menyimpan penanda chronic pada modul karat saja', () => {
+  const chronicIds = HAZARDS.filter((h) => h.chronic).map((h) => h.id)
+  assert.deepEqual(chronicIds, ['karat'])
+})

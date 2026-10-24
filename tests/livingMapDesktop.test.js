@@ -385,7 +385,9 @@ test('Living Map: glyph cuaca fase 3 hanya di panel desktop', () => {
   assert.match(ringkas, /showCondition = false/, 'glyph opt-in, bukan default')
   assert.match(ringkas, /glyphName \? \(/, 'chip kondisi hanya saat diminta')
   assert.match(ringkas, /WeatherIcon key=\{glyphName\}/, 'glyph memakai set ikon Niu yang ada')
-  assert.match(page, /showCondition \/>/, 'Living Map meminta glyph')
+  // F-04 (2.2.6) menyisipkan `worstLevel` sebagai prop terakhir pada elemen yang sama,
+  // jadi penanda akhir tag tidak lagi langsung `/>` setelah `showCondition`.
+  assert.match(page, /showCondition[^/>]*\/>/, 'Living Map meminta glyph (prop lain boleh menyusul)')
   assert.doesNotMatch(page, /<WeatherIcon/, 'halaman tidak menggambar ikon di luar komponen kartu')
 
   // Pemetaan WMO: enam kelompok, tanpa glyph ketujuh.
@@ -447,7 +449,9 @@ test('Living Map: status kesegaran data dan catatan sentra tanpa data', () => {
   assert.match(css, /\.niu-header-desktop \.niu-age\[data-freshness='aging'\]/, 'gaya tingkat aging ada')
 
   // U4 — catatan muncul hanya bila lapisan risiko aktif dan ≥3 sentra tanpa data.
-  assert.match(map, /const missingCount = layers\?\.risk === false \? 0 : sentra\.filter\(\(location\) => location\.worst === 'n\/a'\)\.length/, 'hitung sentra tanpa data')
+  // F-06 (24 Okt 2026): level 15 sentra kini menyusul setelah konten utama, jadi saat masih
+  // dimuat (`levelsPending`) hitungannya dipaksa 0 — data sedang dimuat, bukan hilang.
+  assert.match(map, /const missingCount = layers\?\.risk === false \|\| levelsPending \? 0 : sentra\.filter\(\(location\) => location\.worst === 'n\/a'\)\.length/, 'hitung sentra tanpa data')
   assert.match(map, /\{bare && missingCount >= 3 && \(/, 'ambang tiga sentra')
   assert.match(map, /sentra belum punya data · coba muat ulang/, 'teks penjelasan')
   assert.match(css, /\.niu-map-data-note \{/, 'gaya catatan peta ada')

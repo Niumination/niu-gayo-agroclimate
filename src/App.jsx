@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import AppBar from './components/AppBar'
 import DesktopHeader from './components/DesktopHeader'
 import BottomNav from './components/BottomNav'
@@ -10,6 +10,7 @@ import DesktopHazardInspector from './components/niu/DesktopHazardInspector.jsx'
 import HourStrip from './components/niu/HourStrip.jsx'
 import DesktopBoard from './pages/DesktopBoard.jsx'
 import LivingMapDesktop from './pages/LivingMapDesktop.jsx'
+import LivingMapBoot from './components/LivingMapBoot.jsx'
 import InstallHint from './pwa/InstallHint.jsx'
 import CoffeeAdvisory from './components/CoffeeAdvisory'
 import DisasterWarning from './components/DisasterWarning'
@@ -88,6 +89,22 @@ export default function App() {
   })
   const [highlightedLocationId, setHighlightedLocationId] = useState(null)
   const [data, setData] = useState(null)
+  // F-06 — hasil `hazards?location=all` datang setelah data utama; disimpan di ref supaya
+  // tidak hilang bila tiba sebelum `setData(res)` (balapan waktu).
+  // F-06 — payload "menyusul" (consensus, laporan warga, ringkasan 15 sentra). Disimpan di ref
+  // supaya tidak hilang bila tiba sebelum `setData(res)` (balapan waktu pada jaringan cepat).
+  const lateRef = useRef({})
+  const mergeLate = useCallback(
+    (prev, key, value) =>
+      key === 'consensus'
+        ? { ...prev, disaster: { ...(prev.disaster ?? {}), consensus: value } }
+        : { ...prev, [key]: value },
+    []
+  )
+  // F-06 — penanda "level sentra menyusul". Berhenti tepat saat payload tiba, atau setelah
+  // 8 detik (misal endpoint gagal) supaya catatan "memuat" tidak pernah menggantung.
+  const [hazardsAllPending, setHazardsAllPending] = useState(false)
+  const hazardsAllTimerRef = useRef(null)
   const [fetchedAt, setFetchedAt] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -191,9 +208,23 @@ export default function App() {
       setLoading(true)
       setError(null)
       setErrorDetail(null)
+      lateRef.current = {}
+      setHazardsAllPending(true)
+      clearTimeout(hazardsAllTimerRef.current)
+      hazardsAllTimerRef.current = setTimeout(() => setHazardsAllPending(false), 8000)
       try {
-        const res = await getAgroClimateData(loc)
-        setData(res)
+        const res = await getAgroClimateData(loc, {
+          // F-06 — tiga payload tampilan-saja menyusul; konten utama tidak lagi menunggunya.
+          onLate: (key, value) => {
+            lateRef.current[key] = value
+            if (key === 'hazardsAll') {
+              clearTimeout(hazardsAllTimerRef.current)
+              setHazardsAllPending(false)
+            }
+            setData((prev) => (prev ? mergeLate(prev, key, value) : prev))
+          },
+        })
+        setData(Object.entries(lateRef.current).reduce((acc, [key, value]) => mergeLate(acc, key, value), res))
         setFetchedAt(Date.now())
         const level = res?.hazards?.worst
         const jam = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
@@ -209,7 +240,7 @@ export default function App() {
         setLoading(false)
       }
     },
-    [tr]
+    [tr, mergeLate]
   )
 
   useEffect(() => {
@@ -431,8 +462,13 @@ export default function App() {
 
   const dSentra = data && (
     <div className="niu-desktop-locations">
+      {/* F-04/F-06 — papan desktop memakai level AKUT, sama dengan bilah ringkasannya.
+          Tanpa ini, tab "Sentra" menulis "Bahaya" sementara bilah menulis "Waspada".
+          Peta mobile tetap memakai `worst` (bawaan) karena tidak melewati cabang ini. */}
       <SchematicMap
         hazardsAll={data.hazardsAll}
+        levelsPending={hazardsAllPending}
+        levelKey="worstAcute"
         selectedLocation={selectedLocation}
         highlightedLocationId={highlightedLocationId}
         onHighlightLocation={setHighlightedLocationId}
@@ -469,6 +505,7 @@ export default function App() {
       data={data}
       hazards={data.hazards}
       hazardsAll={data.hazardsAll}
+      hazardsAllPending={hazardsAllPending}
       highlightedLocationId={highlightedLocationId}
       onHighlightLocation={setHighlightedLocationId}
       onSelectLocation={onSelectLocation}
@@ -594,7 +631,10 @@ export default function App() {
           <p role="status" aria-live="polite" className="sr-only">
             {tr('loadingData')}
           </p>
-          {showSkeleton && (
+          {/* F-06: di desktop, kerangka `LivingMapBoot` di dalam <main> sudah mencadangkan ruang.
+              Skeleton papan ini dulu dirender sebagai saudara <main> sehingga mendorongnya keluar
+              layar (CLS 0,47). Mobile tetap memakai skeleton seperti sebelumnya. */}
+          {showSkeleton && !isDesktop && (
             <div aria-busy="true" className="flex-1 w-full max-w-shell mx-auto px-4 py-4">
               <AppSkeleton />
             </div>
@@ -611,7 +651,9 @@ export default function App() {
               ? `Peta hidup cuaca dan peringatan dini sentra ${selectedLocation?.name ?? 'Aceh Tengah'}`
               : `Cuaca dan peringatan dini sentra ${selectedLocation?.name ?? 'Aceh Tengah'}`}
           </h1>
-          {desktopLayout}
+          {/* F-06 — sebelum data pertama tiba, ruang final sudah dicadangkan (bukan <main> 3 px).
+              Tidak ditampilkan saat galat, agar pesan kesalahan tidak terlihat seperti "memuat". */}
+          {desktopLayout ?? (error ? null : <LivingMapBoot />)}
         </main>
       ) : (
         <>

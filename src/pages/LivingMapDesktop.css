@@ -1000,4 +1000,73 @@ html.is-lm-paused *::after {
   .lm-bars[data-grow='on'] .niu-hour-rainbar-fill { animation: none; }
   .niu-condition-icon { animation: none; opacity: 1; transform: none; }
   .niu-condition-icon[data-weather-motion='live'] > * { animation: none !important; }
+  .lm-boot-canvas::after, .lm-boot-summary, .lm-boot-panel { animation: none; }
+}
+
+/* -------------------------------------------------------------------------
+   F-06 — kerangka ruang saat data pertama masih dimuat.
+   Tinggi memakai variabel yang sama dengan peta asli (--lm-shell-height),
+   jadi transisi kerangka → konten tidak menggeser tata letak (CLS).
+   Hanya bidang netral: tanpa angka, label, atau level bahaya.
+   ------------------------------------------------------------------------- */
+.lm-boot {
+  overflow: hidden;
+  border-block: 1px solid var(--lm-line);
+}
+.lm-boot-canvas {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--lm-card) 22%, transparent), transparent 70%),
+    var(--lm-surface);
+}
+.lm-boot-canvas::after {
+  content: '';
+  position: absolute;
+  inset: 18% 14%;
+  border-radius: 18px;
+  border: 1px dashed var(--lm-line);
+  background: color-mix(in srgb, var(--lm-card) 40%, transparent);
+  opacity: 0.5;
+}
+.lm-boot-summary {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  left: 12px;
+  width: min(330px, calc(100% - 24px));
+  height: 132px;
+  border: 1px solid var(--lm-line);
+  border-radius: 14px;
+  background: var(--lm-glass-strong);
+}
+.lm-boot-panel {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  bottom: calc(var(--lm-bottom-rest-height, 58px) + 30px);
+  width: min(390px, calc(100% - 24px));
+  border: 1px solid var(--lm-line);
+  border-radius: 14px;
+  background: var(--lm-glass-strong);
+}
+.lm-boot-bottom {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  bottom: 0;
+  height: var(--lm-bottom-rest-height, 58px);
+  border-top: 1px solid var(--lm-line);
+  background: var(--lm-glass);
+}
+/* Denyut sangat ringan supaya terasa "memuat", tetap tenang; mati saat reduced-motion. */
+@keyframes lm-boot-breathe {
+  from { opacity: 0.55; }
+  to { opacity: 0.85; }
+}
+.lm-boot-canvas::after,
+.lm-boot-summary,
+.lm-boot-panel {
+  animation: lm-boot-breathe 1.6s ease-in-out infinite alternate;
 }

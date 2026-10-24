@@ -9,6 +9,11 @@ export default {
   id: 'karat',
   group: 'agro',
   label: { id: 'Karat Daun Kopi' },
+  // F-04 (audit 23 Okt 2026) — karat endemik di dataran tinggi Gayo: daun basah 42–48 dari 48 jam
+  // hampir sepanjang tahun, sehingga model ambang absolut selalu memberi skor 100 dan level
+  // "bahaya". Level itu TIDAK diubah (tidak ada nilai agronomi yang dipalsukan); yang berubah
+  // hanya cara membawanya: bahaya kronis tidak dipakai menentukan `worst` harian.
+  chronic: true,
   requires: ['weather'],
   evaluate(ctx) {
     const w = ctx.weather

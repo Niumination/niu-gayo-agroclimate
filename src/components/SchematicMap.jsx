@@ -20,6 +20,15 @@ export default function SchematicMap({
   layers,
   onLayerChange,
   bare = false,
+  // F-04 (audit 23 Okt 2026): desktop memakai level akut (`worstAcute`) supaya warna pin tidak
+  // seragam "bahaya" akibat karat endemik. Nilai bawaan tetap `worst`, jadi peta mobile tidak
+  // berubah sama sekali.
+  levelKey = 'worst',
+  // F-06 (audit 24 Okt 2026) — level 15 sentra kini menyusul setelah konten utama
+  // (`hazards?location=all` tidak lagi menahan dashboard). Selama menunggu, pin TIDAK
+  // boleh mengaku "Tidak tersedia" dan catatan "belum punya data" tidak boleh muncul,
+  // karena datanya sedang dimuat — bukan hilang.
+  levelsPending = false,
 }) {
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
@@ -54,7 +63,7 @@ export default function SchematicMap({
       ...location,
       x,
       y,
-      worst: layers?.risk === false ? 'n/a' : row?.worst ?? 'n/a',
+      worst: layers?.risk === false ? 'n/a' : row?.[levelKey] ?? row?.worst ?? 'n/a',
       active: layers?.risk === false ? [] : row?.active ?? [],
       distVolcanoKm: haversineKm(location.lat, location.lon, BURNI_TELONG.lat, BURNI_TELONG.lon),
     }
@@ -75,7 +84,7 @@ export default function SchematicMap({
   const narrowLabelSize = 9.5
   // U4 — jangan biarkan peta "kosong tanpa alasan": hitung sentra yang belum
   // punya level. Saat lapisan risiko dimatikan, semua memang n/a, jadi diamkan.
-  const missingCount = layers?.risk === false ? 0 : sentra.filter((location) => location.worst === 'n/a').length
+  const missingCount = layers?.risk === false || levelsPending ? 0 : sentra.filter((location) => location.worst === 'n/a').length
   const nearVolcano = sentra.filter((location) => location.distVolcanoKm <= 15).sort((a, b) => a.distVolcanoKm - b.distVolcanoKm)
   const rank = { ekstrem: 4, bahaya: 3, waspada: 2, rendah: 1, 'n/a': 0 }
   const shortName = (name) => name.replace(/\s*\(.*\)$/, '')
@@ -340,9 +349,9 @@ export default function SchematicMap({
           <h2 className="text-body font-semibold tracking-tight text-ink dark:text-mist">Peta skematik bahaya</h2>
           <p className="text-body text-ink-muted dark:text-mist-muted mt-0.5">Warna = level tertinggi per sentra{asOf ? ` · ${asOf} WIB` : ''} · bukan peta navigasi</p>
         </div>
-        {hazardsAll?.worst && (
+        {(hazardsAll?.[levelKey] ?? hazardsAll?.worst) && (
           <span className="text-caption text-ink-muted dark:text-mist-muted text-right">
-            Tertinggi: <span className="font-semibold" style={{ color: FILL[hazardsAll.worst.level] }}>{hazardsAll.worst.name}</span>
+            Tertinggi: <span className="font-semibold" style={{ color: FILL[(hazardsAll[levelKey] ?? hazardsAll.worst).level] }}>{(hazardsAll[levelKey] ?? hazardsAll.worst).name}</span>
           </span>
         )}
       </div>}
@@ -395,7 +404,10 @@ export default function SchematicMap({
             {layers?.sentra !== false && sentra.map((location) => {
               const selected = location.id === selectedLocation?.id
               const highlighted = location.id === activeHighlight
-              const label = layers?.risk === false ? location.name : `${location.name}: ${LABEL[location.worst]}${location.active.length ? ` (${location.active.join(', ')})` : ''}`
+              const pendingLevel = levelsPending && !levels[location.id]
+              const label = layers?.risk === false
+                ? location.name
+                : `${location.name}: ${pendingLevel ? 'memuat level' : LABEL[location.worst]}${location.active.length ? ` (${location.active.join(', ')})` : ''}`
               return (
                 <g
                   key={location.id}
@@ -451,6 +463,12 @@ export default function SchematicMap({
         </svg>
         {bare && scanTick > 0 && <span key={scanTick} className="niu-map-scan" aria-hidden="true" />}
       </div>
+
+      {bare && levelsPending && (
+        <p className="niu-map-data-note" role="status">
+          Memuat level {sentra.length} sentra…
+        </p>
+      )}
 
       {bare && missingCount >= 3 && (
         <p className="niu-map-data-note" role="status">

@@ -19,7 +19,17 @@ function colorForLevel(level) {
   return 'text-level-rendah dark:text-level-rendah-dark'
 }
 
-export async function getAgroClimateData(location) {
+/**
+ * @param {object} location sentra terpilih
+ * @param {{ onLate?: (key: 'consensus'|'externalReports'|'hazardsAll', value: any) => void }} [options]
+ *   F-06 (audit 24 Okt 2026) — tiga permintaan yang TIDAK dipakai modul risiko dikeluarkan dari
+ *   jalur tunggu: `consensus` (kartu krisis), `external-reports` (kartu laporan warga), dan
+ *   `hazards?location=all` (ringkasan 15 sentra untuk peta). Dulu dashboard — termasuk suhu yang
+ *   menjadi elemen LCP — menunggu yang paling lambat di antaranya. Hasilnya kini dikirim lewat
+ *   `onLate` dan digabung ke state pemanggil; level/skor bahaya TIDAK berubah sedikit pun karena
+ *   `evaluateAll` tidak membaca ketiga payload ini.
+ */
+export async function getAgroClimateData(location, { onLate } = {}) {
   const data = await fetchForecast(location)
 
   const curr = data.current
@@ -97,7 +107,7 @@ export async function getAgroClimateData(location) {
   }
 
   // --- F1 konsensus + F5 nowcast BMKG via proxy server (best-effort, gagal = null) ---
-  let consensus = null
+  const consensus = null
   let bmkgNowcast = null
   let disasterHistory = null
   let seasonal = null
@@ -105,17 +115,35 @@ export async function getAgroClimateData(location) {
   let airQuality = null
   let fireDanger = null
   let drought = null
-  let hazardsAll = null
+  const hazardsAll = null
   let quakes = null
   let volcano = null
   let convective = null
   let flood = null
-  let externalReports = null
+  const externalReports = null
   try {
     const base = import.meta.env.BASE_URL || '/agroclimate/'
     const api = (p) => `${base.replace(/\/$/, '')}/api/${p}`
-    const [cRes, bRes, hRes, sRes, aRes, fRes, dRes, qRes, vRes, kRes, gRes, pRes] = await Promise.allSettled([
-      fetch(api(`consensus?location=${encodeURIComponent(location.id)}`)),
+    // F-06: laporan warga ikut gelombang paralel (dulu serial setelah gelombang utama,
+    // sehingga menambah ekor tunggu tanpa alasan).
+    const reportsP = fetch(api(`reports?location=${encodeURIComponent(location.id)}`))
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+    // F-06: pengirim hasil "menyusul" — semua kegagalan ditelan, tidak pernah memblokir data inti.
+    const emitLate = (key, value) => {
+      if (value == null) return
+      try { onLate?.(key, value) } catch { /* jangan blokir dashboard */ }
+    }
+    // Dua permintaan tampilan-saja: tetap berjalan sekarang, hasilnya lewat `onLate`.
+    fetch(api(`consensus?location=${encodeURIComponent(location.id)}`))
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((payload) => emitLate('consensus', payload))
+    fetch(api('external-reports'))
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((payload) => emitLate('externalReports', payload))
+    const [bRes, hRes, sRes, aRes, fRes, dRes, qRes, vRes, kRes, gRes] = await Promise.allSettled([
       fetch(api('bmkg-nowcast')),
       fetch(api(`disaster-history?location=${encodeURIComponent(location.id)}`)),
       fetch(api('seasonal')),
@@ -129,12 +157,16 @@ export async function getAgroClimateData(location) {
       fetch(api('volcano')),
       fetch(api(`convective?location=${encodeURIComponent(location.id)}`)),
       fetch(api('flood')),
-      // Fase 2.4b — laporan warga PetaBencana.id (CC BY-NC, best-effort)
-      fetch(api('external-reports')),
     ])
-    // 1.6b — ringkasan level 15 sentra untuk peta skematik (best-effort)
-    const hzAllP = fetch(api('hazards?location=all')).then((r) => (r.ok ? r.json() : null)).catch(() => null)
-    if (cRes.status === 'fulfilled' && cRes.value.ok) consensus = await cRes.value.json()
+    // 1.6b — ringkasan level 15 sentra untuk peta skematik (best-effort).
+    // F-06: tetap dimulai lebih awal, tetapi TIDAK ditunggu di sini (lihat `onHazardsAll`).
+    const hzAllP = fetch(api('hazards?location=all'))
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
+      .then((payload) => {
+        emitLate('hazardsAll', payload)
+        return payload
+      })
     if (bRes.status === 'fulfilled' && bRes.value.ok) bmkgNowcast = await bRes.value.json()
     // F4 — riwayat bencana per sentra (best-effort)
     if (hRes.status === 'fulfilled' && hRes.value.ok) {
@@ -151,18 +183,15 @@ export async function getAgroClimateData(location) {
     if (vRes.status === 'fulfilled' && vRes.value.ok) volcano = await vRes.value.json()
     if (kRes.status === 'fulfilled' && kRes.value.ok) convective = await kRes.value.json()
     if (gRes.status === 'fulfilled' && gRes.value.ok) flood = await gRes.value.json()
-    if (pRes.status === 'fulfilled' && pRes.value.ok) externalReports = await pRes.value.json()
     // FR-ASAP-5 — dampak asap ke jendela penjemuran (ISPU ≥ 101 atau AOD ≥ 1 & DNI < 300 → "Tunda (asap)")
     const aq = airQuality?.assessment
     if (aq?.ispu) {
       ds = dryingStatus(rain, solarRad, rh, { ispu: aq.ispu.index, aod: aq.measurements?.aod ?? null, dni: solarRad })
     }
-    // F8 — laporan warga 7 hari terakhir (best-effort)
-    try {
-      const rRes = await fetch(api(`reports?location=${encodeURIComponent(location.id)}`))
-      if (rRes.ok) communityReports = await rRes.json()
-    } catch { /* abaikan */ }
-    hazardsAll = await hzAllP
+    // F8 — laporan warga 7 hari terakhir (best-effort) — hasil gelombang paralel di atas
+    communityReports = await reportsP
+    // F-06: `hazardsAll` sengaja TIDAK di-await. Callback `onHazardsAll` mengirimnya begitu tiba.
+    void hzAllP
   } catch {
     // jangan blokir dashboard
   }

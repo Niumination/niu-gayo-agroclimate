@@ -33,10 +33,14 @@ export default function RingkasMobile({
   showHours = true,
   showCondition = false,
   className = '',
+  // F-04: layar desktop boleh mengirim level akut (tanpa bahaya kronis/endemik) supaya badge
+  // di panel konteks tidak bertentangan dengan bilah ringkasan. Tanpa prop ini perilaku mobile
+  // sepenuhnya tetap memakai `hazards.worst`.
+  worstLevel,
 }) {
   const [technicalOpen, setTechnicalOpen] = useState(false)
   if (!current || !daily) return null
-  const worst = hazards?.worst
+  const worst = worstLevel ?? hazards?.worst
   const rhTone = current.rh > 85 ? 'warn' : 'default'
   const rainTone = current.rain > 5 ? 'info' : 'default'
   const windTone = current.wind > 20 ? 'warn' : 'default'
