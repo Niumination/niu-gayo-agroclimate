@@ -102,17 +102,38 @@ export function parseCoverage(stdout) {
  * Baris per berkas dari tabel cakupan → `{ 'server/routes.js': { lines, branches, functions } }`.
  * Hanya metrik **baris** yang dipakai lantai lingkup: ia paling langsung dibaca manusia
  * ("berapa persen berkas ini dijalankan uji"), sedangkan cabang/fungsi tetap dilacak global.
+ *
+ * Dua format keluaran `--experimental-test-coverage` diterima:
+ *  - Node < 22: satu baris per berkas dengan jalur penuh (`# server/alerts.js | ...`);
+ *  - Node ≥ 22: tabel bersarang — grup memakai indentasi 1+spasi per kedalaman
+ *    (`# server`, `#  api`) dengan kolom metrik KOSONG, berkas hanya bernama dengan
+ *    indentasi = kedalaman + 1. Kedalaman = jumlah spasi lead − 1; jalur dibangun
+ *    dari tumpukan grup.
  */
 export function parseFileRows(stdout) {
   const rows = {}
+  const groupStack = []
   for (const line of String(stdout).split('\n')) {
-    const m = /^#\s+(\S.*?)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|/.exec(line)
+    if (!line.startsWith('# ')) continue
+    const content = line.slice(2)
+    const m = /^(\s*)(\S.*?)\s*\|\s*([\d.]+)?\s*\|\s*([\d.]+)?\s*\|\s*([\d.]+)?\s*\|/.exec(content)
     if (!m) continue
-    const file = m[1].trim()
-    if (file === 'all files' || file === 'file' || !file.includes('.')) continue
-    const [lines, branches, functions] = [m[2], m[3], m[4]].map(Number)
-    if (![lines, branches, functions].every(Number.isFinite)) continue
-    rows[file] = { lines, branches, functions }
+    const [, lead, rawName, linesS, branchesS, funcsS] = m
+    const name = rawName.trim()
+    if (name === 'all files' || name === 'file') continue
+    // Node ≥ 22: jumlah spasi lead = jumlah grup leluhur. Node < 22: lead 0 dengan
+    // jalur penuh di kolom nama — rumus yang sama menghasilkan hasil yang sama.
+    const depth = lead.length
+    if (linesS === undefined) {
+      // Baris grup tanpa metrik (format Node ≥ 22).
+      groupStack.length = depth
+      groupStack[depth] = name
+      continue
+    }
+    const [l, b, f] = [linesS, branchesS, funcsS].map(Number)
+    if (![l, b, f].every(Number.isFinite)) continue
+    const pathStr = [...groupStack.slice(0, depth), name].filter(Boolean).join('/')
+    rows[pathStr] = { lines: l, branches: b, functions: f }
   }
   return rows
 }
