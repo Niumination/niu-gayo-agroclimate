@@ -8,7 +8,7 @@ export const EMERGENCY_CONTACTS = [
   { id: 'call-112', name: 'Layanan darurat nasional', phone: '112', scope: 'nasional', hazards: ['*'], verified: true },
   { id: 'bmkg-196', name: 'BMKG Contact Center', phone: '196', scope: 'nasional', hazards: ['gempa', 'petir', 'angin', 'banjir'], verified: true },
   { id: 'halo-kemenkes', name: 'Halo Kemenkes', phone: '1500567', scope: 'nasional', hazards: ['asap'], verified: true },
-  { id: 'rsud-datu-beru', name: 'RSUD Datu Beru Takengon (IGD)', phone: null, scope: 'kabupaten', hazards: ['asap', 'gempa', '*'], verified: false, note: 'ISI: nomor IGD' },
+  { id: 'rsud-datu-beru', name: 'RSUD Datu Beru Takengon (IGD)', phone: '0643-21126', scope: 'kabupaten', hazards: ['asap', 'gempa', '*'], verified: true, note: 'Sumber: Wikidata, periksa ulang' },
   { id: 'dinkes-aceh-tengah', name: 'Dinas Kesehatan Aceh Tengah', phone: null, scope: 'kabupaten', hazards: ['asap'], verified: false },
   { id: 'damkar-aceh-tengah', name: 'Pemadam Kebakaran Aceh Tengah', phone: null, scope: 'kabupaten', hazards: ['kebakaran'], verified: false, note: 'ISI: nomor Damkar (113 bila terintegrasi)' },
   { id: 'manggala-agni-aceh', name: 'Manggala Agni Daops Aceh / KPH', phone: null, scope: 'provinsi', hazards: ['kebakaran', 'asap'], verified: false },
