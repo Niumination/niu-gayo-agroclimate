@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.3.5] — 2026-10-26 — Kontak darurat & verifikasi H-5/H-7
+
+Penutupan dua tugas manusia: verifikasi kontak darurat & aktivasi diseminasi Telegram.
+
+1. **RSUD Datu Beru Takengon (IGD):** nomor `0643-21126` dari Wikidata, `verified: true`.
+2. **Puskesmas kecamatan:** 14/15 puskesmas diisi namanya (bebesan, luttawar, kebayakan, pegasing, bies, bintang, silihnara, kutepanang, ketol, celala, rusipantara, atulintang, jagongjeget, linge, takengon). Hanya 2/15 yang terverifikasi nomornya via web: Takengon & Lut Tawar (`0852-7585-8010`, sumber alamatsehat.com). Sisanya `phone: null` — perlu verifikasi manual via Dinkes Aceh Tengah (0822-8887-7789).
+3. **Telegram alerts:** Konfirmasi cron berjalan normal — topik 55 di LightVela-Group, token `TELEGRAM_BOT_TOKEN` tersedia via `readToken()` dari `~/.hermes/.env`, chat `-1003908559503`. Timer systemd aktif tiap 30 menit, jalur cepat 5 menit untuk gempa/vulkanik. Alarm sumber (source health) berjalan; alarm bencana (banjir/gempa) sudah terkirim berkala.
+
+**Tetap belum:** H-5 (13 puskesmas phone null, perlu telepon Dinkes), H-8 (surat BPBD draft belum kirim), H-9 (VAPID ditunda).
+
 ## [2.3.4] — 2026-10-24 — Gerbang yang tidak lagi mematikan dirinya sendiri
 
 Bundel penutup penerapan. Dua CI terakhir (`30bb898`, `c0043d7`) **gagal**, dan bukan karena
