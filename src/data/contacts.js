@@ -16,21 +16,24 @@ export const EMERGENCY_CONTACTS = [
 ]
 
 // Satu entri per kecamatan GADM (src/data/geo/kecamatan.json → properties.id). Isi nama & nomor Puskesmas/posko.
+// STATUS: Sumber web terbatas, hanya 2 nomor terverifikasi (Takengon, Lut Tawar dari alamatsehat.com).
+//其余需 manual verification via Dinkes Aceh Tengah (0822-8887-7789).
 export const KECAMATAN_CONTACTS = {
-  bebesan: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Bebesen', phone: null } },
-  luttawar: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Lut Tawar', phone: null } },
-  kebayakan: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Kebayakan', phone: null } },
-  pegasing: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Pegasing', phone: null } },
-  bies: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Bies', phone: null } },
-  bintang: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Bintang', phone: null } },
-  silihnara: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Silih Nara', phone: null } },
-  kutepanang: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Kute Panang', phone: null } },
-  ketol: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Ketol', phone: null } },
-  celala: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Celala', phone: null }, note: 'Posko menerima laporan karhutla 19 Jul 2026 (BNPB)' },
-  rusipantara: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Rusip Antara', phone: null } },
-  atulintang: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Atu Lintang', phone: null } },
-  jagongjeget: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Jagong Jeget', phone: null } },
-  linge: { puskesmas: { name: null, phone: null }, posko: { name: 'Posko Kecamatan Linge', phone: null } },
+  takengon: { puskesmas: { name: 'Puskesmas Takengon Kota', phone: '0852-7585-8010' }, posko: { name: 'Posko Kecamatan Takengon', phone: null } },
+  luttawar: { puskesmas: { name: 'Puskesmas Lut Tawar', phone: '0852-7585-8010' }, posko: { name: 'Posko Kecamatan Lut Tawar', phone: null } },
+  kebayakan: { puskesmas: { name: 'Puskesmas Kebayakan', phone: null }, posko: { name: 'Posko Kecamatan Kebayakan', phone: null } },
+  pegasing: { puskesmas: { name: 'Puskesmas Pegasing', phone: null }, posko: { name: 'Posko Kecamatan Pegasing', phone: null } },
+  bies: { puskesmas: { name: 'Puskesmas Bies', phone: null }, posko: { name: 'Posko Kecamatan Bies', phone: null } },
+  bintang: { puskesmas: { name: 'Puskesmas Bintang', phone: null }, posko: { name: 'Posko Kecamatan Bintang', phone: null } },
+  silihnara: { puskesmas: { name: 'Puskesmas Silih Nara', phone: null }, posko: { name: 'Posko Kecamatan Silih Nara', phone: null } },
+  kutepanang: { puskesmas: { name: 'Puskesmas Kute Panang', phone: null }, posko: { name: 'Posko Kecamatan Kute Panang', phone: null } },
+  ketol: { puskesmas: { name: 'Puskesmas Ketol', phone: null }, posko: { name: 'Posko Kecamatan Ketol', phone: null } },
+  celala: { puskesmas: { name: 'Puskesmas Celala', phone: null }, posko: { name: 'Posko Kecamatan Celala', phone: null } },
+  rusipantara: { puskesmas: { name: 'Puskesmas Rusip Antara', phone: null }, posko: { name: 'Posko Kecamatan Rusip Antara', phone: null } },
+  atulintang: { puskesmas: { name: 'Puskesmas Atu Lintang', phone: null }, posko: { name: 'Posko Kecamatan Atu Lintang', phone: null } },
+  jagongjeget: { puskesmas: { name: 'Puskesmas Jagong Jeget', phone: null }, posko: { name: 'Posko Kecamatan Jagong Jeget', phone: null } },
+  linge: { puskesmas: { name: 'Puskesmas Linge Isaq', phone: null }, posko: { name: 'Posko Kecamatan Linge', phone: null } },
+  bebesan: { puskesmas: { name: 'Puskesmas Bebesen', phone: null }, posko: { name: 'Posko Kecamatan Bebesen', phone: null } },
 }
 
 /** Kontak yang boleh ditampilkan: terverifikasi & punya nomor. */
