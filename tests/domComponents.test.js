@@ -100,7 +100,7 @@ test('DOM · ClimateBanner: peran status, ringkasan terkurasi, dan tombol terlip
   assert.match(html, /data-niu-banner="climate"/)
   assert.match(html, /<h[1-6][^>]*>|<span class="font-semibold">Perkiraan iklim musiman</)
   assert.match(html, /Kemarau dapat berlangsung lebih panjang/, 'ringkasan dari data terkurasi ikut dirender')
-  assert.match(html, /rilis 2026-10-13/, 'tanggal rilis BMKG tampil, bukan tanggal hari ini')
+  assert.match(html, /rilis 2026-10-23/, 'tanggal rilis BMKG tampil, bukan tanggal hari ini')
   assert.match(html, /aria-expanded="false"/, 'rincian mulai terlipat')
   assert.doesNotMatch(html, /Angka dan istilah teknis/, 'rincian tidak membocor sebelum dibuka')
   assert.doesNotMatch(html, /undefined|\[object Object\]|NaN/, 'tidak ada nilai kosong yang bocor ke layar')

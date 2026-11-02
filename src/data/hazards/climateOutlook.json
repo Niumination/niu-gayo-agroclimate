@@ -2,44 +2,44 @@
   "_meta": {
     "description": "Konteks iklim musiman terkurasi manual dari rilis BMKG (tanpa API). Diperbarui tiap dasarian/bulan oleh maintainer; UI menampilkan banner bila `validUntil` belum lewat, selain itu menampilkan 'perlu pembaruan'.",
     "howToUpdate": "Cek rilis BMKG (bmkg.go.id -> Iklim -> Prediksi musim / ENSO-IOD dasarian) & Staklim Aceh; cek silang NOAA CPC ENSO Diagnostics (bulanan): https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml; perbarui angka, tanggal rilis, sumber, validUntil. CI menjalankan `npm run check:outlook` (gagal bila kedaluwarsa, peringatan bila <= 14 hari).",
-    "lastReviewed": "2026-10-18",
+    "lastReviewed": "2026-11-02",
     "cadence": "BMKG menerbitkan analisis atmosfer per dasarian dan buletin bulanan; NOAA CPC menerbitkan diskusi ENSO bulanan. Pembaruan berikutnya NOAA CPC: 2026-11-12."
   },
   "current": {
-    "issuedAt": "2026-10-13",
-    "validUntil": "2026-11-12",
+    "issuedAt": "2026-10-23",
+    "validUntil": "2026-11-26",
     "enso": {
       "phase": "El Niño",
       "strength": "sangat kuat",
-      "nino34Dasarian": 3.33,
-      "index3Month": 3.08,
-      "note": "Anomali suhu muka laut Niño-3.4 Dasarian I Oktober +3,33 °C; indeks ENSO tiga bulanan ASO +3,08 (sumber BMKG). Nilai ini memakai periode dan indeks berbeda dari NOAA CPC; jangan dibandingkan langsung.",
-      "nino34Period": "Dasarian I Oktober 2026 (BMKG)",
+      "nino34Dasarian": 3.19,
+      "index3Month": 3.05,
+      "note": "Anomali suhu muka laut Niño-3.4 Dasarian II Oktober +3,19 °C; indeks ENSO tiga bulanan ASO +3,05 (sumber BMKG). Nilai ini memakai periode dan indeks berbeda dari NOAA CPC; jangan dibandingkan langsung.",
+      "nino34Period": "Dasarian II Oktober 2026 (BMKG)",
       "index3MonthPeriod": "ASO: Agustus–September–Oktober 2026 (BMKG)"
     },
     "iod": {
       "phase": "positif",
-      "index": 0.703,
-      "period": "Dasarian I Oktober 2026 (BMKG); indeks bulanan September +0,72",
-      "note": "IOD dasarian +0,703; indeks bulanan September +0,72 (sumber BMKG)."
+      "index": 0.765,
+      "period": "Dasarian II Oktober 2026 (BMKG); indeks bulanan September +0,72",
+      "note": "IOD dasarian +0,765; indeks bulanan September +0,72 (sumber BMKG). BMKG memprediksi IOD berpeluang tetap positif hingga akhir 2026."
     },
     "season": {
-      "status": "kemarau diperpanjang",
-      "rainyOnset": "November–Desember 2026; awal musim hujan mundur di sebagian besar wilayah Indonesia.",
+      "status": "peralihan kemarau ke hujan",
+      "rainyOnset": "November–Desember 2026; 8,3% wilayah (58 ZOM) sudah masuk musim hujan per Dasarian II Oktober — termasuk Aceh; awal musim hujan mundur di 61,08% wilayah Indonesia.",
       "peak": "Desember 2026–Februari 2027",
-      "note": "BMKG memprakirakan awal musim hujan 2026/27 mundur di 61,08% wilayah Indonesia; waktu mulai berbeda antarwilayah. Dampak El Niño dapat berkurang ketika hujan setempat mulai konsisten."
+      "note": "BMKG memprakirakan sebagian Sumatra (termasuk Aceh) masuk musim hujan November 2026, sisanya Desember. Dasarian I November: presipitasi menengah dominan (77,72% wilayah); hujan signifikan harian tetap mungkin meski akumulasi dasarian rendah–menengah. Dampak El Niño berkurang saat hujan setempat konsisten."
     },
     "implications": {
       "id": [
-        "Risiko kebakaran lahan dan asap dapat tetap tinggi sampai hujan turun teratur.",
-        "Hari kering berkepanjangan dapat menekan tanaman kopi; gunakan mulsa, atur naungan, dan hemat air kebun.",
-        "Saat hujan deras datang setelah masa kering, waspadai lereng retak dan luapan sungai."
+        "Masa peralihan: kekeringan masih mungkin terjadi di sela hujan lokal; kendalikan air kebun dan awasi titik api.",
+        "Saat hujan deras datang setelah masa kering, waspadai lereng retak, luapan sungai, dan longsor.",
+        "Musim hujan diprediksi lebih pendek dari normal (51,90% wilayah) — atur jadwal tanam/penjemuran lebih ketat."
       ]
     },
     "sources": [
       {
-        "title": "BMKG — Analisis Dinamika Atmosfer Dasarian I Oktober 2026 (13 Okt 2026)",
-        "url": "https://www.bmkg.go.id/iklim/analisis-dinamika-atmosfer-dasarian-i-oktober-2026"
+        "title": "BMKG — Analisis Dinamika Atmosfer Dasarian II Oktober 2026 (23 Okt 2026)",
+        "url": "https://www.bmkg.go.id/iklim/dinamika-atmosfer/analisis-dinamika-atmosfer-dasarian-ii-oktober-2026"
       },
       {
         "title": "BMKG — Prediksi Musim Hujan 2026/2027 di Indonesia (2 Okt 2026)",
@@ -69,6 +69,12 @@
       "validUntil": "2026-11-10",
       "supersededAt": "2026-10-16",
       "note": "Validitas diperpanjang ke 2026-11-12 setelah cek silang NOAA CPC (temuan audit F-14); angka BMKG tidak berubah."
+    },
+    {
+      "issuedAt": "2026-10-13",
+      "validUntil": "2026-11-12",
+      "supersededAt": "2026-11-02",
+      "note": "Ditimpa Dasarian II Oktober 2026 (rilis BMKG 23 Okt) saat audit kesegaran 2 Nov 2026."
     }
   ]
 }
